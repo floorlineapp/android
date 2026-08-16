@@ -112,6 +112,12 @@ interface FloorApi {
     @POST("v1/talk/posts/{id}/comments")
     suspend fun createComment(@Path("id") postId: String, @Body body: CreateCommentRequestDto): CommentDto
 
+    @DELETE("v1/talk/posts/{id}")
+    suspend fun deletePost(@Path("id") postId: String)
+
+    @DELETE("v1/talk/comments/{id}")
+    suspend fun deleteComment(@Path("id") commentId: String)
+
     @PUT("v1/talk/posts/{id}/reaction")
     suspend fun setReaction(@Path("id") postId: String, @Body body: ReactionRequestDto)
 

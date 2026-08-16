@@ -39,8 +39,9 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
-            // Emulator loopback to a locally running backend. No secrets — a URL only.
-            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/\"")
+            // Live beta backend on Railway. Sideloaded testers on real phones hit
+            // this over HTTPS. No secrets — a public URL only.
+            buildConfigField("String", "API_BASE_URL", "\"https://backend-production-957f.up.railway.app/\"")
             buildConfigField("String", "WEB_BASE_URL", "\"https://thefloor.example\"")
         }
         release {

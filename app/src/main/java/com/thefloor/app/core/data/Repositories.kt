@@ -172,9 +172,20 @@ class TalkRepository @Inject constructor(
             page.items.map { Comment(it.id, it.authorId, it.authorName, it.parentId, it.body, it.createdAt) }
         }
 
-    suspend fun addComment(postId: String, body: String, parentId: String?): AppResult<Comment> =
-        safeCall { api.createComment(postId, CreateCommentRequestDto(body, parentId)) }
+    suspend fun addComment(
+        postId: String,
+        body: String,
+        parentId: String? = null,
+        mentionUserIds: List<String> = emptyList(),
+    ): AppResult<Comment> =
+        safeCall { api.createComment(postId, CreateCommentRequestDto(body, parentId, mentionUserIds)) }
             .map { Comment(it.id, it.authorId, it.authorName, it.parentId, it.body, it.createdAt) }
+
+    suspend fun deletePost(postId: String): AppResult<Unit> =
+        safeCall { api.deletePost(postId) }.map { }
+
+    suspend fun deleteComment(commentId: String): AppResult<Unit> =
+        safeCall { api.deleteComment(commentId) }.map { }
 
     suspend fun setReaction(postId: String, kind: String): AppResult<Unit> =
         safeCall { api.setReaction(postId, ReactionRequestDto(kind)) }.map { }

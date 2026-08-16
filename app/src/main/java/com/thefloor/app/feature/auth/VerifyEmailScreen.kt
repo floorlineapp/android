@@ -68,11 +68,16 @@ class VerifyEmailViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            val signedIn = authRepository.session.firstOrNull() != null
-            _state.update { it.copy(signedIn = signedIn) }
+            val session = authRepository.session.firstOrNull()
+            _state.update { it.copy(signedIn = session != null) }
+            // Auto-verified (beta) sessions are already verified — advance instantly.
+            if (session?.emailVerified == true) {
+                _state.update { it.copy(verified = true) }
+                return@launch
+            }
             // Poll only with a session — signed-out polling would just spray
             // 401s at /users/me every five seconds.
-            if (signedIn) {
+            if (session != null) {
                 while (!_state.value.verified) {
                     checkStatus()
                     delay(5_000)

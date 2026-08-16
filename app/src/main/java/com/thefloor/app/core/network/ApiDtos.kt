@@ -177,7 +177,11 @@ data class CommentPageDto(val items: List<CommentDto> = emptyList(), val nextCur
 data class CreatePostRequestDto(val categoryId: String, val body: String, val communityId: String? = null)
 
 @Serializable
-data class CreateCommentRequestDto(val body: String, val parentId: String? = null)
+data class CreateCommentRequestDto(
+    val body: String,
+    val parentId: String? = null,
+    val mentionUserIds: List<String> = emptyList(),
+)
 
 @Serializable
 data class ReactionRequestDto(val kind: String)
