@@ -43,15 +43,12 @@ fun FloorNavHost(
     sessionState: SessionState,
     modifier: Modifier = Modifier,
 ) {
-    val startDestination = when (sessionState) {
-        SessionState.LOADING -> Routes.WELCOME // splash covers this frame
-        SessionState.SIGNED_OUT -> Routes.WELCOME
-        SessionState.SIGNED_IN -> Routes.HOME
-    }
-
+    // Static start destination: a dynamic one rebuilds the graph on every
+    // session transition and races in-flight auth navigation (QA finding H1).
+    // FloorApp's session effect routes WELCOME→HOME for restored sessions.
     NavHost(
         navController = navController,
-        startDestination = startDestination,
+        startDestination = Routes.WELCOME,
         modifier = modifier,
     ) {
         // ---------------- auth ----------------
@@ -66,7 +63,7 @@ fun FloorNavHost(
             arguments = listOf(navArgument("code") { type = NavType.StringType; nullable = true }),
         ) {
             SignUpScreen(
-                onSignedUp = { navController.navigate(Routes.VERIFY_EMAIL) { popUpTo(Routes.WELCOME) { inclusive = true } } },
+                onSignedUp = { navController.navigate(Routes.verifyEmail()) { popUpTo(Routes.WELCOME) { inclusive = true } } },
                 onLogIn = { navController.navigate(Routes.LOG_IN) },
                 onBack = { navController.popBackStack() },
             )
@@ -74,16 +71,20 @@ fun FloorNavHost(
         composable(Routes.LOG_IN) {
             LoginScreen(
                 onLoggedIn = { verified ->
-                    val next = if (verified) Routes.HOME else Routes.VERIFY_EMAIL
+                    val next = if (verified) Routes.HOME else Routes.verifyEmail()
                     navController.navigate(next) { popUpTo(Routes.WELCOME) { inclusive = true } }
                 },
                 onForgotPassword = { navController.navigate(Routes.FORGOT_PASSWORD) },
                 onBack = { navController.popBackStack() },
             )
         }
-        composable(Routes.VERIFY_EMAIL) {
+        composable(
+            Routes.VERIFY_EMAIL,
+            arguments = listOf(navArgument("token") { type = NavType.StringType; nullable = true }),
+        ) {
             VerifyEmailScreen(
                 onVerified = { navController.navigate(Routes.ONBOARDING) { popUpTo(Routes.VERIFY_EMAIL) { inclusive = true } } },
+                onLogIn = { navController.navigate(Routes.LOG_IN) { popUpTo(Routes.WELCOME) } },
             )
         }
         composable(Routes.FORGOT_PASSWORD) {
@@ -184,6 +185,8 @@ fun FloorNavHost(
                 onBack = { navController.popBackStack() },
                 onOpenTransactions = { navController.navigate(Routes.REWARD_TRANSACTIONS) },
                 onOpenInvite = { navController.navigate(Routes.INVITE_EARN) },
+                onOpenProfileEdit = { navController.navigate(Routes.PROFILE_EDIT) },
+                onOpenFloorTab = { navController.navigate(Routes.FLOOR) },
             )
         }
         composable(Routes.REWARD_TRANSACTIONS) {
@@ -204,6 +207,18 @@ fun FloorNavHost(
                             navController.navigate(Routes.communityDetail(target.communityId))
                         com.thefloor.app.domain.DeepLinkParser.Target.Rewards ->
                             navController.navigate(Routes.REWARDS)
+                        com.thefloor.app.domain.DeepLinkParser.Target.ProfileEdit ->
+                            navController.navigate(Routes.PROFILE_EDIT)
+                        is com.thefloor.app.domain.DeepLinkParser.Target.Profile ->
+                            navController.navigate(Routes.publicProfile(target.userId))
+                        is com.thefloor.app.domain.DeepLinkParser.Target.Job ->
+                            navController.navigate(Routes.JOBS)
+                        is com.thefloor.app.domain.DeepLinkParser.Target.Course ->
+                            navController.navigate(Routes.ACADEMY)
+                        is com.thefloor.app.domain.DeepLinkParser.Target.Deal ->
+                            navController.navigate(Routes.MARKETPLACE)
+                        com.thefloor.app.domain.DeepLinkParser.Target.Home ->
+                            navController.navigate(Routes.HOME)
                         else -> Unit
                     }
                 },

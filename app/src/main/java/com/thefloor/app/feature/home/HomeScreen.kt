@@ -63,6 +63,9 @@ class HomeViewModel @Inject constructor(
     private val _state = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
+    /** True while a pull-to-refresh is in flight (spec: refreshable lists). */
+    val refreshing = MutableStateFlow(false)
+
     private var lastGood: HomeContent? = null
 
     init {
@@ -71,6 +74,7 @@ class HomeViewModel @Inject constructor(
 
     fun refresh() {
         viewModelScope.launch {
+            refreshing.value = true
             homeRepository.load()
                 .onSuccess { content ->
                     lastGood = content
@@ -85,6 +89,7 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                 }
+            refreshing.value = false
         }
     }
 
@@ -92,6 +97,7 @@ class HomeViewModel @Inject constructor(
 }
 
 @Composable
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 fun HomeScreen(
     onOpenInvite: () -> Unit,
     onOpenRewards: () -> Unit,
@@ -131,18 +137,25 @@ fun HomeScreen(
                     .padding(padding),
             )
             is HomeUiState.Ready -> {
-                Column(modifier = Modifier.padding(padding)) {
-                    if (s.offline) OfflineBanner()
-                    HomeContentList(
-                        content = s.content,
-                        greeting = viewModel.greeting(),
-                        onOpenInvite = onOpenInvite,
-                        onOpenRewards = onOpenRewards,
-                        onOpenFloorTab = onOpenFloorTab,
-                        onOpenCommunity = onOpenCommunity,
-                        onOpenPost = onOpenPost,
-                        onOpenProfileEdit = onOpenProfileEdit,
-                    )
+                val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
+                androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+                    isRefreshing = refreshing,
+                    onRefresh = viewModel::refresh,
+                    modifier = Modifier.padding(padding),
+                ) {
+                    Column {
+                        if (s.offline) OfflineBanner()
+                        HomeContentList(
+                            content = s.content,
+                            greeting = viewModel.greeting(),
+                            onOpenInvite = onOpenInvite,
+                            onOpenRewards = onOpenRewards,
+                            onOpenFloorTab = onOpenFloorTab,
+                            onOpenCommunity = onOpenCommunity,
+                            onOpenPost = onOpenPost,
+                            onOpenProfileEdit = onOpenProfileEdit,
+                        )
+                    }
                 }
             }
         }

@@ -32,6 +32,21 @@ class DeepLinkParserTest {
     }
 
     @Test
+    fun `own-profile editor link is not mistaken for a member profile`() {
+        assertEquals(Target.ProfileEdit, DeepLinkParser.parse("thefloor://profile/edit"))
+        assertEquals(Target.ProfileEdit, DeepLinkParser.parse("https://thefloor.example/profile/edit"))
+        assertEquals(Target.Profile("u-1"), DeepLinkParser.parse("thefloor://profile/u-1"))
+    }
+
+    @Test
+    fun `verify email link carries its token`() {
+        assertEquals(
+            Target.VerifyEmail("tok123"),
+            DeepLinkParser.parse("https://thefloor.example/verify/tok123"),
+        )
+    }
+
+    @Test
     fun `foreign hosts are rejected to Home`() {
         assertEquals(Target.Home, DeepLinkParser.parse("https://evil.example/invite/ABC123XY"))
     }

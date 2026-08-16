@@ -36,19 +36,30 @@ class InstallReferrerHandler @Inject constructor(
         client.startConnection(object : InstallReferrerStateListener {
             override fun onInstallReferrerSetupFinished(responseCode: Int) {
                 try {
-                    if (responseCode == InstallReferrerClient.InstallReferrerResponse.OK) {
-                        val referrer = client.installReferrer.installReferrer // e.g. utm_source=floor&floor_ref=ABC123
-                        val code = referrer
-                            .split('&')
-                            .map { it.split('=', limit = 2) }
-                            .firstOrNull { it.size == 2 && it[0] == "floor_ref" }
-                            ?.get(1)
-                        if (code != null && Validators.referralCodeFormat(code)) {
-                            scope.launch { referralStore.save(code, "INSTALL_REFERRER") }
-                            Timber.i("Install referrer captured")
+                    when (responseCode) {
+                        InstallReferrerClient.InstallReferrerResponse.OK -> {
+                            val referrer = client.installReferrer.installReferrer // e.g. utm_source=floor&floor_ref=ABC123
+                            val code = referrer
+                                .split('&')
+                                .map { it.split('=', limit = 2) }
+                                .firstOrNull { it.size == 2 && it[0] == "floor_ref" }
+                                ?.get(1)
+                            if (code != null && Validators.referralCodeFormat(code)) {
+                                scope.launch { referralStore.save(code, "INSTALL_REFERRER") }
+                                Timber.i("Install referrer captured")
+                            }
+                            prefs.edit().putBoolean("captured", true).apply()
                         }
+                        // Definitive terminal states — no point retrying.
+                        InstallReferrerClient.InstallReferrerResponse.FEATURE_NOT_SUPPORTED,
+                        InstallReferrerClient.InstallReferrerResponse.PERMISSION_ERROR,
+                        InstallReferrerClient.InstallReferrerResponse.DEVELOPER_ERROR ->
+                            prefs.edit().putBoolean("captured", true).apply()
+                        // Transient (SERVICE_UNAVAILABLE / DISCONNECTED): leave the
+                        // flag unset so the next launch retries — a one-off flaky
+                        // connection must not forfeit the referral forever.
+                        else -> Timber.i("Install referrer transient failure (%d) — will retry next launch", responseCode)
                     }
-                    prefs.edit().putBoolean("captured", true).apply()
                 } catch (e: Exception) {
                     Timber.w(e, "Install referrer read failed")
                 } finally {

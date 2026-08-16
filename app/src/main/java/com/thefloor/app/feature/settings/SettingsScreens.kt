@@ -64,11 +64,17 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             userRepository.deleteAccount(password)
                 .onSuccess {
+                    // Do NOT log out yet — the grace-period explanation must be
+                    // readable first; acknowledgeDeletion() completes the logout.
                     deleteState.update { it.copy(submitting = false, done = true) }
-                    authRepository.logOut()
                 }
                 .onError { e -> deleteState.update { it.copy(submitting = false, error = e.userMessage) } }
         }
+    }
+
+    /** User has read the grace-period message — now clear the session. */
+    fun acknowledgeDeletion() {
+        viewModelScope.launch { authRepository.logOut() }
     }
 }
 
@@ -132,6 +138,12 @@ fun DeleteAccountScreen(
                     "Your deletion request is in. Your account will be removed after a 14-day grace period — log in before then to cancel.",
                     style = FloorTheme.typography.bodyL,
                     color = FloorTheme.colors.textPrimary,
+                )
+                Spacer(Modifier.height(24.dp))
+                com.thefloor.app.core.designsystem.components.FloorPrimaryButton(
+                    text = "Got it — log me out",
+                    onClick = viewModel::acknowledgeDeletion,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             } else {
                 Text(

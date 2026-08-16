@@ -81,6 +81,8 @@ fun RewardsScreen(
     onBack: () -> Unit,
     onOpenTransactions: () -> Unit,
     onOpenInvite: () -> Unit,
+    onOpenProfileEdit: () -> Unit = {},
+    onOpenFloorTab: () -> Unit = {},
     viewModel: RewardsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -121,7 +123,16 @@ fun RewardsScreen(
                         Text("Ways to earn", style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
                     }
                     items(summary.waysToEarn, key = { it.title }) { way ->
-                        FloorCard(onClick = { if (way.deepLink.contains("invite")) onOpenInvite() }) {
+                        // Every "way to earn" navigates somewhere — dispatch via the
+                        // deep-link parser (substring matching misroutes: every brand
+                        // URI contains "floor").
+                        FloorCard(onClick = {
+                            when (com.thefloor.app.domain.DeepLinkParser.parse(way.deepLink)) {
+                                com.thefloor.app.domain.DeepLinkParser.Target.ProfileEdit -> onOpenProfileEdit()
+                                com.thefloor.app.domain.DeepLinkParser.Target.FloorTab -> onOpenFloorTab()
+                                else -> onOpenInvite()
+                            }
+                        }) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -197,7 +208,7 @@ fun RewardTransactionsScreen(
                             Column {
                                 Text(reasonLabel(tx.reason), style = FloorTheme.typography.body, color = FloorTheme.colors.textPrimary)
                                 Text(
-                                    TimeAgo.format(tx.createdAt) + " ago",
+                                    TimeAgo.format(tx.createdAt).let { if (it == "now") "just now" else "$it ago" },
                                     style = FloorTheme.typography.caption,
                                     color = FloorTheme.colors.textMuted,
                                 )

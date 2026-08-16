@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
@@ -103,6 +104,13 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    // Refresh whenever the screen resumes — returning from the editor must
+    // show the just-saved data, not the stale pre-edit snapshot.
+    androidx.lifecycle.compose.LifecycleResumeEffect(Unit) {
+        viewModel.refresh()
+        onPauseOrDispose { }
+    }
 
     Scaffold(
         containerColor = FloorTheme.colors.ink,
@@ -285,7 +293,10 @@ fun EditProfileScreen(
     }
 }
 
-private fun Modifier.horizontalScrollChips(): Modifier = this
+/** Career-level chips overflow narrow screens — they must actually scroll. */
+@Composable
+private fun Modifier.horizontalScrollChips(): Modifier =
+    this.horizontalScroll(androidx.compose.foundation.rememberScrollState())
 
 private val privacyFields = listOf(
     "employer" to "Employer",

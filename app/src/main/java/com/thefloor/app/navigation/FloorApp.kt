@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /** Session gate: which world the user is in. */
-enum class SessionState { LOADING, SIGNED_OUT, SIGNED_IN }
+enum class SessionState { LOADING, SIGNED_OUT, SIGNED_IN, SIGNED_IN_UNVERIFIED }
 
 @HiltViewModel
 class RootViewModel @Inject constructor(
@@ -49,7 +49,13 @@ class RootViewModel @Inject constructor(
 ) : ViewModel() {
 
     val sessionState: StateFlow<SessionState> = authRepository.session
-        .map { if (it == null) SessionState.SIGNED_OUT else SessionState.SIGNED_IN }
+        .map { session ->
+            when {
+                session == null -> SessionState.SIGNED_OUT
+                !session.emailVerified -> SessionState.SIGNED_IN_UNVERIFIED
+                else -> SessionState.SIGNED_IN
+            }
+        }
         .stateIn(viewModelScope, SharingStarted.Eagerly, SessionState.LOADING)
 
     val radioEnabled = MutableStateFlow(false)
@@ -103,6 +109,12 @@ fun FloorApp(
                 navController.navigate(Routes.HOME) {
                     popUpTo(Routes.WELCOME) { inclusive = true }
                 }
+            // Restored-but-unverified sessions must pass the verify gate,
+            // never land on Home.
+            sessionState == SessionState.SIGNED_IN_UNVERIFIED && route == Routes.WELCOME ->
+                navController.navigate(Routes.verifyEmail()) {
+                    popUpTo(Routes.WELCOME) { inclusive = true }
+                }
             sessionState == SessionState.SIGNED_OUT &&
                 route != null && !authRoutesSet.contains(route) ->
                 navController.navigate(Routes.WELCOME) {
@@ -127,7 +139,9 @@ fun FloorApp(
                             selected = currentRoute == tab.route,
                             onClick = {
                                 navController.navigate(tab.route) {
-                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                    // WELCOME (the graph start) is popped inclusively
+                                    // once signed in — anchor tab stacks on HOME.
+                                    popUpTo(Routes.HOME) { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
@@ -166,6 +180,10 @@ private fun navigateToTarget(
                 navController.navigate(Routes.signUp(target.referralCode)) { launchSingleTop = true }
             is DeepLinkParser.Target.ResetPassword ->
                 navController.navigate(Routes.resetPassword(target.token)) { launchSingleTop = true }
+            is DeepLinkParser.Target.VerifyEmail ->
+                // Confirm endpoint is public — the token can be consumed pre-login.
+                // No launchSingleTop: a fresh entry carries the fresh token.
+                navController.navigate(Routes.verifyEmail(target.token))
             else -> Unit // Auth flow first; other targets are dropped by design.
         }
         return
@@ -182,10 +200,16 @@ private fun navigateToTarget(
         is DeepLinkParser.Target.Job -> navController.navigate(Routes.JOBS) { launchSingleTop = true }
         is DeepLinkParser.Target.Course -> navController.navigate(Routes.ACADEMY) { launchSingleTop = true }
         is DeepLinkParser.Target.Deal -> navController.navigate(Routes.MARKETPLACE) { launchSingleTop = true }
+        DeepLinkParser.Target.ProfileEdit ->
+            navController.navigate(Routes.PROFILE_EDIT) { launchSingleTop = true }
         is DeepLinkParser.Target.Profile ->
             navController.navigate(Routes.publicProfile(target.userId)) { launchSingleTop = true }
         DeepLinkParser.Target.Rewards -> navController.navigate(Routes.REWARDS) { launchSingleTop = true }
-        is DeepLinkParser.Target.VerifyEmail, is DeepLinkParser.Target.ResetPassword,
+        // Verify links carry a token that must be consumed server-side —
+        // route to the Verify screen in every session state.
+        is DeepLinkParser.Target.VerifyEmail ->
+            navController.navigate(Routes.verifyEmail(target.token)) // fresh entry, fresh token
+        is DeepLinkParser.Target.ResetPassword,
         DeepLinkParser.Target.Home -> navController.navigate(Routes.HOME) { launchSingleTop = true }
     }
 }

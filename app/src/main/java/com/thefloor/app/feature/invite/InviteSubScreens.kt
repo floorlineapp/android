@@ -195,7 +195,7 @@ fun InviteHistoryScreen(
                                 // Privacy: referred members are shown as anonymous entries.
                                 Text("Referral", style = FloorTheme.typography.label, color = FloorTheme.colors.textPrimary)
                                 Text(
-                                    TimeAgo.format(item.createdAt) + " ago",
+                                    TimeAgo.format(item.createdAt).let { if (it == "now") "just now" else "$it ago" },
                                     style = FloorTheme.typography.caption,
                                     color = FloorTheme.colors.textMuted,
                                 )

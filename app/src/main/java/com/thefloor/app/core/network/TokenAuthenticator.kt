@@ -31,8 +31,10 @@ class TokenAuthenticator @Inject constructor(
     private val lock = Any()
 
     override fun authenticate(route: Route?, response: Response): Request? {
-        // Give up after one retry, and never try to refresh the refresh call itself.
-        if (response.request.url.encodedPath.startsWith("/v1/auth/")) return null
+        // Never try to refresh the refresh call itself, and give up after one
+        // retry. Other /v1/auth/ paths (e.g. verify/resend) ARE auth-protected
+        // and must be refreshable like any endpoint.
+        if (response.request.url.encodedPath == "/v1/auth/refresh") return null
         if (responseCount(response) >= 2) return null
 
         synchronized(lock) {

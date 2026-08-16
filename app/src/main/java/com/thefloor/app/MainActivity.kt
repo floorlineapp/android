@@ -31,8 +31,13 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        analytics.track(Events.APP_OPEN)
-        handleIntent(intent)
+        // Guard against configuration changes / process restore: the launch
+        // intent must only be interpreted once, or rotation re-fires deep links
+        // and inflates app_open counts.
+        if (savedInstanceState == null) {
+            analytics.track(Events.APP_OPEN)
+            handleIntent(intent)
+        }
 
         setContent {
             FloorTheme {

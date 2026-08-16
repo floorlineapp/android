@@ -15,6 +15,7 @@ object DeepLinkParser {
         data class Course(val courseId: String) : Target
         data class Deal(val dealId: String) : Target
         data class Profile(val userId: String) : Target
+        data object ProfileEdit : Target
         data class ResetPassword(val token: String) : Target
         data class VerifyEmail(val token: String) : Target
         data object InviteEarn : Target
@@ -47,6 +48,9 @@ object DeepLinkParser {
             segments.size == 2 && segments[0] == "job" -> Target.Job(segments[1])
             segments.size == 2 && segments[0] == "course" -> Target.Course(segments[1])
             segments.size == 2 && segments[0] == "marketplace" -> Target.Deal(segments[1])
+            // Own-profile editor (backend-emitted thefloor://profile/edit) — must
+            // not be mistaken for a member profile with id "edit".
+            segments.size == 2 && segments[0] == "profile" && segments[1] == "edit" -> Target.ProfileEdit
             segments.size == 2 && segments[0] == "profile" -> Target.Profile(segments[1])
             segments.size == 2 && segments[0] == "reset" -> Target.ResetPassword(segments[1])
             segments.size == 2 && segments[0] == "verify" -> Target.VerifyEmail(segments[1])

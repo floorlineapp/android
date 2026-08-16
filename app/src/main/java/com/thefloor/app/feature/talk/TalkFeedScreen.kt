@@ -47,6 +47,7 @@ import javax.inject.Inject
 
 data class TalkFeedUiState(
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     val categories: List<TalkCategory> = emptyList(),
     val selectedCategoryId: String? = null,
     val posts: List<Post> = emptyList(),
@@ -79,21 +80,21 @@ class TalkFeedViewModel @Inject constructor(
     }
 
     fun refresh() {
-        _state.update { it.copy(loading = it.posts.isEmpty(), error = null) }
+        _state.update { it.copy(loading = it.posts.isEmpty(), refreshing = it.posts.isNotEmpty(), error = null) }
         viewModelScope.launch {
             talkRepository.feed(_state.value.selectedCategoryId, cursor = null)
                 .onSuccess { (posts, cursor) ->
-                    _state.update { it.copy(loading = false, posts = posts, nextCursor = cursor, offline = false) }
+                    _state.update { it.copy(loading = false, refreshing = false, posts = posts, nextCursor = cursor, offline = false) }
                 }
                 .onError { error ->
                     if (error is AppError.Network) {
                         val cached = talkRepository.cachedFeed.firstOrNull().orEmpty()
                         if (cached.isNotEmpty()) {
-                            _state.update { it.copy(loading = false, posts = cached, offline = true) }
+                            _state.update { it.copy(loading = false, refreshing = false, posts = cached, offline = true) }
                             return@onError
                         }
                     }
-                    _state.update { it.copy(loading = false, error = error.userMessage) }
+                    _state.update { it.copy(loading = false, refreshing = false, error = error.userMessage) }
                 }
         }
     }
@@ -116,6 +117,7 @@ class TalkFeedViewModel @Inject constructor(
 }
 
 @Composable
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 fun TalkFeedScreen(
     onOpenPost: (String) -> Unit,
     onCompose: () -> Unit,
@@ -168,22 +170,27 @@ fun TalkFeedScreen(
                     actionText = "Write a post",
                     onAction = onCompose,
                 )
-                else -> LazyColumn(
-                    contentPadding = PaddingValues(horizontal = FloorTheme.spacing.gutter, vertical = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                else -> androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+                    isRefreshing = state.refreshing,
+                    onRefresh = viewModel::refresh,
                 ) {
-                    items(state.posts, key = { it.id }) { post ->
-                        PostCard(post = post, onClick = { onOpenPost(post.id) })
-                    }
-                    if (state.nextCursor != null) {
-                        item {
-                            androidx.compose.runtime.LaunchedEffect(state.nextCursor) { viewModel.loadMore() }
-                            Text(
-                                "Loading more…",
-                                style = FloorTheme.typography.caption,
-                                color = FloorTheme.colors.textMuted,
-                                modifier = Modifier.padding(8.dp),
-                            )
+                    LazyColumn(
+                        contentPadding = PaddingValues(horizontal = FloorTheme.spacing.gutter, vertical = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(state.posts, key = { it.id }) { post ->
+                            PostCard(post = post, onClick = { onOpenPost(post.id) })
+                        }
+                        if (state.nextCursor != null) {
+                            item {
+                                androidx.compose.runtime.LaunchedEffect(state.nextCursor) { viewModel.loadMore() }
+                                Text(
+                                    "Loading more…",
+                                    style = FloorTheme.typography.caption,
+                                    color = FloorTheme.colors.textMuted,
+                                    modifier = Modifier.padding(8.dp),
+                                )
+                            }
                         }
                     }
                 }
