@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">The Floor</string>
+    <string name="tagline">The global home of the people behind every customer conversation.</string>
+    <string name="invite_share_message">Come work The Floor with me — %1$s</string>
+</resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "F" over floor-line mark in brand amber. Placeholder identity; replace with final art. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#F5A623"
+        android:pathData="M40,32 L72,32 L72,40 L48,40 L48,50 L66,50 L66,58 L48,58 L48,76 L40,76 Z" />
+    <path
+        android:fillColor="#2DD9A3"
+        android:pathData="M32,82 L76,82 L76,86 L32,86 Z" />
+</vector>
