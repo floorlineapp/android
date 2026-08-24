@@ -25,6 +25,28 @@ data class FloorColors(
     val textSecondary: Color = Color(0xFF9AA3C0),
     val textMuted: Color = Color(0xFF6B7594),
     val onAmber: Color = Color(0xFF1A1205),
+    /** True for the light palette — drives the Material scheme and system-bar icons. */
+    val isLight: Boolean = false,
+)
+
+/** Dark is the brand default. */
+fun darkFloorColors(): FloorColors = FloorColors()
+
+/** Light theme — the same brand amber over inverted surfaces and text. */
+fun lightFloorColors(): FloorColors = FloorColors(
+    ink = Color(0xFFF5F7FB),
+    surface = Color(0xFFFFFFFF),
+    surfaceAlt = Color(0xFFEDF1F8),
+    border = Color(0xFFD8DEE9),
+    borderSoft = Color(0xFFE6EAF1),
+    teal = Color(0xFF10B981),
+    tealSoft = Color(0x2410B981),
+    coral = Color(0xFFE5544A),
+    coralSoft = Color(0x24E5544A),
+    textPrimary = Color(0xFF141A2A),
+    textSecondary = Color(0xFF56607A),
+    textMuted = Color(0xFF8A93A8),
+    isLight = true,
 )
 
 val LocalFloorColors = staticCompositionLocalOf { FloorColors() }

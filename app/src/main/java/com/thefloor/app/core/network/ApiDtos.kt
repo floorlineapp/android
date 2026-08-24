@@ -183,6 +183,24 @@ data class CreateCommentRequestDto(
     val mentionUserIds: List<String> = emptyList(),
 )
 
+// ---- pulse ----
+@Serializable
+data class PulseDto(
+    val id: String,
+    val authorId: String = "",
+    val authorName: String = "",
+    val body: String = "",
+    val likeCount: Int = 0,
+    val liked: Boolean = false,
+    val createdAt: String = "",
+)
+
+@Serializable
+data class PulsePageDto(val items: List<PulseDto> = emptyList(), val nextCursor: String? = null)
+
+@Serializable
+data class CreatePulseRequestDto(val body: String)
+
 @Serializable
 data class ReactionRequestDto(val kind: String)
 

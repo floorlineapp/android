@@ -1,5 +1,9 @@
 package com.thefloor.app.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -23,6 +27,7 @@ import com.thefloor.app.feature.invite.InviteFaqScreen
 import com.thefloor.app.feature.invite.InviteHistoryScreen
 import com.thefloor.app.feature.invite.InviteMilestonesScreen
 import com.thefloor.app.feature.more.MoreScreen
+import com.thefloor.app.feature.pulse.PulseScreen
 import com.thefloor.app.feature.notifications.NotificationCenterScreen
 import com.thefloor.app.feature.notifications.NotificationPrefsScreen
 import com.thefloor.app.feature.profile.EditProfileScreen
@@ -50,6 +55,19 @@ fun FloorNavHost(
         navController = navController,
         startDestination = Routes.WELCOME,
         modifier = modifier,
+        // Native push/pop feel: content slides and cross-fades between screens.
+        enterTransition = {
+            fadeIn(tween(220)) + slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(220))
+        },
+        exitTransition = {
+            fadeOut(tween(180)) + slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(180))
+        },
+        popEnterTransition = {
+            fadeIn(tween(220)) + slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(220))
+        },
+        popExitTransition = {
+            fadeOut(tween(180)) + slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(180))
+        },
     ) {
         // ---------------- auth ----------------
         composable(Routes.WELCOME) {
@@ -264,6 +282,9 @@ fun FloorNavHost(
         }
 
         // ---------------- phase-2 stubs (flag-gated; deep links never dead-end) ----------------
+        composable(Routes.PULSE) {
+            PulseScreen(onBack = { navController.popBackStack() })
+        }
         composable(Routes.JOBS) { ComingSoon("Employers & Jobs", "Browse and apply to roles from verified employers — coming soon.") }
         composable(Routes.ACADEMY) { ComingSoon("Academy", "Courses that move you from Agent to Director — coming soon.") }
         composable(Routes.MARKETPLACE) { ComingSoon("Marketplace", "Partner deals for the people on The Floor — coming soon.") }

@@ -8,6 +8,7 @@ import com.thefloor.app.core.model.MilestoneTier
 import com.thefloor.app.core.model.Money
 import com.thefloor.app.core.model.NextMilestone
 import com.thefloor.app.core.model.Post
+import com.thefloor.app.core.model.Pulse
 import com.thefloor.app.core.model.ReferralSummary
 import com.thefloor.app.core.model.UserProfile
 import com.thefloor.app.core.model.WorkMode
@@ -17,6 +18,7 @@ import com.thefloor.app.core.network.MilestoneTierDto
 import com.thefloor.app.core.network.NextMilestoneDto
 import com.thefloor.app.core.network.PostDto
 import com.thefloor.app.core.network.ProfileDto
+import com.thefloor.app.core.network.PulseDto
 import com.thefloor.app.core.network.ReferralSummaryDto
 
 /** DTO → domain. Enums parse defensively: unknown server values degrade, never crash. */
@@ -66,6 +68,16 @@ fun PostDto.toDomain() = Post(
     reactionCount = reactionCount,
     myReaction = myReaction,
     saved = saved,
+    createdAt = createdAt,
+)
+
+fun PulseDto.toDomain() = Pulse(
+    id = id,
+    authorId = authorId,
+    authorName = authorName,
+    body = body,
+    likeCount = likeCount,
+    liked = liked,
     createdAt = createdAt,
 )
 

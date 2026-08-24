@@ -23,6 +23,7 @@ object Routes {
     const val TALK = "talk"
     const val RADIO = "radio"
     const val MORE = "more"
+    const val PULSE = "pulse"
 
     // Detail destinations
     const val COMMUNITY_DETAIL = "floor/{communityId}"

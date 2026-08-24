@@ -80,12 +80,6 @@ class RadioPlayerController @Inject constructor(
         _state.value = RadioPlaybackState.Stopped
     }
 
-    fun release() {
-        player?.release()
-        player = null
-        _state.value = RadioPlaybackState.Stopped
-    }
-
     private companion object {
         // Placeholder — replaced by /v1/radio/now config when the origin exists.
         const val DEFAULT_STREAM_URL = "https://stream.thefloor.example/live.m3u8"

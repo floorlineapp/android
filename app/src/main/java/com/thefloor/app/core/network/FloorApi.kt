@@ -118,6 +118,25 @@ interface FloorApi {
     @DELETE("v1/talk/comments/{id}")
     suspend fun deleteComment(@Path("id") commentId: String)
 
+    // ---- pulse ----
+    @GET("v1/pulse")
+    suspend fun pulseFeed(
+        @Query("cursor") cursor: String? = null,
+        @Query("limit") limit: Int = 20,
+    ): PulsePageDto
+
+    @POST("v1/pulse")
+    suspend fun createPulse(@Body body: CreatePulseRequestDto): PulseDto
+
+    @DELETE("v1/pulse/{id}")
+    suspend fun deletePulse(@Path("id") id: String)
+
+    @PUT("v1/pulse/{id}/like")
+    suspend fun likePulse(@Path("id") id: String)
+
+    @DELETE("v1/pulse/{id}/like")
+    suspend fun unlikePulse(@Path("id") id: String)
+
     @PUT("v1/talk/posts/{id}/reaction")
     suspend fun setReaction(@Path("id") postId: String, @Body body: ReactionRequestDto)
 

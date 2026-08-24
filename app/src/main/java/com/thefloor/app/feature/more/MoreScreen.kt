@@ -6,6 +6,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.CardGiftcard
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Info
@@ -63,6 +64,12 @@ fun MoreScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState()),
         ) {
+            FloorListItem(
+                title = "Pulse",
+                subtitle = "The live status feed — what's happening now",
+                icon = Icons.Outlined.Bolt,
+                onClick = { onNavigate(Routes.PULSE) },
+            )
             FloorListItem(
                 title = "Rewards & Games",
                 subtitle = "Credits, competitions, leaderboards",

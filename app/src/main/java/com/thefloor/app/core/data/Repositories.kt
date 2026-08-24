@@ -3,6 +3,8 @@ package com.thefloor.app.core.data
 import com.thefloor.app.core.common.AppResult
 import com.thefloor.app.core.common.map
 import com.thefloor.app.core.common.onSuccess
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import com.thefloor.app.core.database.CachedCommunityEntity
 import com.thefloor.app.core.database.CachedNotificationEntity
 import com.thefloor.app.core.database.CachedPostEntity
@@ -19,6 +21,7 @@ import com.thefloor.app.core.model.HomeContent
 import com.thefloor.app.core.model.MembershipState
 import com.thefloor.app.core.model.MilestoneTier
 import com.thefloor.app.core.model.Post
+import com.thefloor.app.core.model.Pulse
 import com.thefloor.app.core.model.ReferralHistoryItem
 import com.thefloor.app.core.model.ReferralSummary
 import com.thefloor.app.core.model.RewardTransaction
@@ -281,15 +284,35 @@ class NotificationRepository @Inject constructor(
 @Singleton
 class ConfigRepository @Inject constructor(private val api: FloorApi) {
 
+    private val flagsMutex = Mutex()
     @Volatile private var cachedFlags: Map<String, Boolean> = emptyMap()
 
     suspend fun flags(): Map<String, Boolean> {
-        if (cachedFlags.isEmpty()) {
-            safeCall { api.config() }.onSuccess { cachedFlags = it.flags }
+        cachedFlags.takeIf { it.isNotEmpty() }?.let { return it }
+        return flagsMutex.withLock {
+            if (cachedFlags.isEmpty()) {
+                safeCall { api.config() }.onSuccess { cachedFlags = it.flags }
+            }
+            cachedFlags
         }
-        return cachedFlags
     }
 
     suspend fun resolveReferral(code: String): AppResult<Pair<Boolean, String?>> =
         safeCall { api.resolveReferralCode(code) }.map { it.valid to it.inviterFirstName }
+}
+
+@Singleton
+class PulseRepository @Inject constructor(private val api: FloorApi) {
+
+    suspend fun feed(cursor: String? = null): AppResult<Pair<List<Pulse>, String?>> =
+        safeCall { api.pulseFeed(cursor) }.map { page -> page.items.map { it.toDomain() } to page.nextCursor }
+
+    suspend fun create(body: String): AppResult<Pulse> =
+        safeCall { api.createPulse(com.thefloor.app.core.network.CreatePulseRequestDto(body)) }.map { it.toDomain() }
+
+    suspend fun delete(id: String): AppResult<Unit> = safeCall { api.deletePulse(id) }.map { }
+
+    suspend fun like(id: String): AppResult<Unit> = safeCall { api.likePulse(id) }.map { }
+
+    suspend fun unlike(id: String): AppResult<Unit> = safeCall { api.unlikePulse(id) }.map { }
 }

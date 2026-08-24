@@ -3,13 +3,17 @@ package com.thefloor.app.core.designsystem
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.thefloor.app.core.datastore.ThemeMode
 
 @Immutable
 data class FloorSpacing(
@@ -46,20 +50,34 @@ private val FloorShapes = Shapes(
     extraLarge = RoundedCornerShape(20.dp),
 )
 
+/** Resolves a [ThemeMode] to an effective dark/light state, honoring the System option. */
 @Composable
-fun FloorTheme(content: @Composable () -> Unit) {
-    val colors = FloorColors()
+fun ThemeMode.isDark(): Boolean = when (this) {
+    ThemeMode.DARK -> true
+    ThemeMode.LIGHT -> false
+    ThemeMode.SYSTEM -> isSystemInDarkTheme()
+}
+
+@Composable
+fun FloorTheme(
+    mode: ThemeMode = ThemeMode.LIGHT,
+    content: @Composable () -> Unit,
+) {
+    val dark = mode.isDark()
+    val colors = if (dark) darkFloorColors() else lightFloorColors()
     val typography = FloorTypography()
     val spacing = FloorSpacing()
 
-    // Material components inherit brand colors; custom components use FloorTheme.* directly.
-    val materialScheme = darkColorScheme(
+    // Custom components read FloorTheme.colors directly; Material components inherit the
+    // brand mapping below. The light/dark base only fills roles we don't override.
+    val base = if (dark) darkColorScheme() else lightColorScheme()
+    val materialScheme = base.copy(
         primary = colors.amber,
         onPrimary = colors.onAmber,
         primaryContainer = colors.amberSoft,
         onPrimaryContainer = colors.amber,
         secondary = colors.teal,
-        onSecondary = colors.ink,
+        onSecondary = if (dark) colors.ink else Color.White,
         background = colors.ink,
         onBackground = colors.textPrimary,
         surface = colors.surface,
@@ -72,7 +90,7 @@ fun FloorTheme(content: @Composable () -> Unit) {
         outline = colors.border,
         outlineVariant = colors.borderSoft,
         error = colors.coral,
-        onError = colors.ink,
+        onError = if (dark) colors.ink else Color.White,
     )
 
     CompositionLocalProvider(

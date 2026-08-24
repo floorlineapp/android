@@ -83,6 +83,16 @@ data class Post(
     val createdAt: String,
 )
 
+data class Pulse(
+    val id: String,
+    val authorId: String,
+    val authorName: String,
+    val body: String,
+    val likeCount: Int,
+    val liked: Boolean,
+    val createdAt: String,
+)
+
 data class Comment(
     val id: String,
     val authorId: String,

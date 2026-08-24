@@ -38,8 +38,13 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RadioViewModel @Inject constructor(
-    val controller: RadioPlayerController,
+    private val controller: RadioPlayerController,
 ) : ViewModel() {
+
+    val state = controller.state
+
+    fun play() = controller.play()
+    fun stop() = controller.stop()
 
     override fun onCleared() {
         // Keep playing across screens; release happens at app-process level.
@@ -51,7 +56,7 @@ class RadioViewModel @Inject constructor(
 fun RadioScreen(
     viewModel: RadioViewModel = hiltViewModel(),
 ) {
-    val playback by viewModel.controller.state.collectAsStateWithLifecycle()
+    val playback by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = FloorTheme.colors.ink,
@@ -88,7 +93,7 @@ fun RadioScreen(
                     } else {
                         val playing = (s as? RadioPlaybackState.OnAir)?.playing == true
                         IconButton(
-                            onClick = { if (playing) viewModel.controller.stop() else viewModel.controller.play() },
+                            onClick = { if (playing) viewModel.stop() else viewModel.play() },
                             modifier = Modifier.size(72.dp),
                         ) {
                             Icon(
@@ -111,7 +116,7 @@ fun RadioScreen(
                     Spacer(Modifier.height(16.dp))
                     com.thefloor.app.core.designsystem.components.FloorSecondaryButton(
                         text = "Try again",
-                        onClick = { viewModel.controller.play() },
+                        onClick = { viewModel.play() },
                     )
                 }
             }

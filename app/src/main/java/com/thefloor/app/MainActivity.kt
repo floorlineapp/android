@@ -5,12 +5,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.thefloor.app.core.analytics.AnalyticsTracker
 import com.thefloor.app.core.analytics.Events
 import com.thefloor.app.core.datastore.ReferralStore
+import com.thefloor.app.core.datastore.ThemeMode
+import com.thefloor.app.core.datastore.ThemeStore
 import com.thefloor.app.core.designsystem.FloorTheme
+import com.thefloor.app.core.designsystem.isDark
 import com.thefloor.app.domain.DeepLinkParser
 import com.thefloor.app.navigation.FloorApp
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,6 +30,7 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var referralStore: ReferralStore
     @Inject lateinit var analytics: AnalyticsTracker
+    @Inject lateinit var themeStore: ThemeStore
 
     /** Latest deep-link target; the nav host consumes and clears it. */
     private val pendingDeepLink = MutableStateFlow<DeepLinkParser.Target?>(null)
@@ -40,7 +48,16 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            FloorTheme {
+            val themeMode by themeStore.mode.collectAsStateWithLifecycle(initialValue = ThemeMode.LIGHT)
+            val dark = themeMode.isDark()
+            // Keep the system bar icons legible against whichever theme is active.
+            LaunchedEffect(dark) {
+                WindowCompat.getInsetsController(window, window.decorView).apply {
+                    isAppearanceLightStatusBars = !dark
+                    isAppearanceLightNavigationBars = !dark
+                }
+            }
+            FloorTheme(mode = themeMode) {
                 FloorApp(
                     pendingDeepLink = pendingDeepLink,
                     onDeepLinkConsumed = { pendingDeepLink.value = null },

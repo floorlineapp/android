@@ -1,16 +1,25 @@
 package com.thefloor.app.feature.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -21,6 +30,8 @@ import com.thefloor.app.core.common.onError
 import com.thefloor.app.core.common.onSuccess
 import com.thefloor.app.core.data.AuthRepository
 import com.thefloor.app.core.data.UserRepository
+import com.thefloor.app.core.datastore.ThemeMode
+import com.thefloor.app.core.datastore.ThemeStore
 import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.FloorDestructiveButton
 import com.thefloor.app.core.designsystem.components.FloorListItem
@@ -29,6 +40,9 @@ import com.thefloor.app.core.designsystem.components.FloorTextField
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -37,6 +51,7 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
+    private val themeStore: ThemeStore,
 ) : ViewModel() {
 
     data class DeleteState(
@@ -47,6 +62,13 @@ class SettingsViewModel @Inject constructor(
     )
 
     val deleteState = MutableStateFlow(DeleteState())
+
+    val themeMode: StateFlow<ThemeMode> = themeStore.mode
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeMode.LIGHT)
+
+    fun setThemeMode(mode: ThemeMode) {
+        viewModelScope.launch { themeStore.setMode(mode) }
+    }
 
     fun logOut() {
         viewModelScope.launch { authRepository.logOut() }
@@ -86,11 +108,28 @@ fun SettingsScreen(
     onDeleteAccount: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
+    val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+
     Scaffold(
         containerColor = FloorTheme.colors.ink,
         topBar = { FloorTopBar(title = "Settings", onBack = onBack) },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
+            Column(
+                modifier = Modifier.padding(
+                    horizontal = FloorTheme.spacing.gutter,
+                    vertical = FloorTheme.spacing.s,
+                ),
+            ) {
+                Text(
+                    "APPEARANCE",
+                    style = FloorTheme.typography.label,
+                    color = FloorTheme.colors.textMuted,
+                )
+                Spacer(Modifier.height(10.dp))
+                ThemeModeSelector(selected = themeMode, onSelect = viewModel::setThemeMode)
+            }
+
             FloorListItem(title = "Notification preferences", onClick = onNotificationPrefs)
             FloorListItem(title = "Privacy controls", onClick = onPrivacy)
             FloorListItem(
@@ -110,6 +149,46 @@ fun SettingsScreen(
                     "The Floor v${BuildConfig.VERSION_NAME}",
                     style = FloorTheme.typography.caption,
                     color = FloorTheme.colors.textMuted,
+                )
+            }
+        }
+    }
+}
+
+/** Segmented Light / Dark / System control, styled from brand tokens. */
+@Composable
+private fun ThemeModeSelector(
+    selected: ThemeMode,
+    onSelect: (ThemeMode) -> Unit,
+) {
+    val options = listOf(
+        ThemeMode.LIGHT to "Light",
+        ThemeMode.DARK to "Dark",
+        ThemeMode.SYSTEM to "System",
+    )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(FloorTheme.colors.surfaceAlt)
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        options.forEach { (mode, label) ->
+            val active = mode == selected
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(9.dp))
+                    .background(if (active) FloorTheme.colors.amber else Color.Transparent)
+                    .clickable { onSelect(mode) }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    label,
+                    style = FloorTheme.typography.label,
+                    color = if (active) FloorTheme.colors.onAmber else FloorTheme.colors.textSecondary,
                 )
             }
         }
