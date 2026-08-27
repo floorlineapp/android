@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -151,7 +152,7 @@ fun PulseScreen(
         containerColor = FloorTheme.colors.ink,
         topBar = { FloorTopBar(title = "Pulse", onBack = onBack) },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+        Column(modifier = Modifier.padding(padding).fillMaxSize().imePadding()) {
             when {
                 state.loading -> FloorLoading(Modifier.weight(1f))
                 state.error != null -> FloorErrorState(

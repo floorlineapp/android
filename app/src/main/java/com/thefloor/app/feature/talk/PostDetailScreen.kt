@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.defaultMinSize
@@ -310,7 +311,7 @@ fun PostDetailScreen(
             )
             state.post != null -> {
                 val post = state.post!!
-                Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+                Column(modifier = Modifier.padding(padding).fillMaxSize().imePadding()) {
                     LazyColumn(
                         modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(FloorTheme.spacing.gutter),

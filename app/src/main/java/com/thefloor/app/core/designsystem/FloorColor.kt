@@ -32,13 +32,17 @@ data class FloorColors(
 /** Dark is the brand default. */
 fun darkFloorColors(): FloorColors = FloorColors()
 
-/** Light theme — the same brand amber over inverted surfaces and text. */
+/** Light theme — a deeper amber (readable as text on white) over inverted surfaces. */
 fun lightFloorColors(): FloorColors = FloorColors(
     ink = Color(0xFFF5F7FB),
     surface = Color(0xFFFFFFFF),
     surfaceAlt = Color(0xFFEDF1F8),
     border = Color(0xFFD8DEE9),
     borderSoft = Color(0xFFE6EAF1),
+    // Deeper than the dark-mode amber so small accent text clears contrast on white,
+    // while still reading as a warm amber fill under dark on-amber text.
+    amber = Color(0xFFC77800),
+    amberSoft = Color(0x24C77800),
     teal = Color(0xFF10B981),
     tealSoft = Color(0x2410B981),
     coral = Color(0xFFE5544A),
