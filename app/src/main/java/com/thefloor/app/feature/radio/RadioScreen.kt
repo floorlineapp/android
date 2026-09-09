@@ -74,18 +74,25 @@ fun RadioScreen(
                 is RadioPlaybackState.OnAir, RadioPlaybackState.Loading, RadioPlaybackState.Stopped -> {
                     if (s is RadioPlaybackState.OnAir && s.playing) {
                         FloorBadge(text = "ON AIR", tone = BadgeTone.TEAL, showDot = true)
+                    } else {
+                        com.thefloor.app.core.designsystem.components.FloorEyebrow(
+                            "Floor Radio · Always on",
+                            accent = com.thefloor.app.core.designsystem.components.FloorAccent.CORAL,
+                        )
                     }
-                    Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.height(20.dp))
                     Text(
-                        (s as? RadioPlaybackState.OnAir)?.programName ?: "Floor Radio",
+                        (s as? RadioPlaybackState.OnAir)?.programName ?: "When words stop, the shift keeps moving.",
                         style = FloorTheme.typography.headline,
                         color = FloorTheme.colors.textPrimary,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     )
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(10.dp))
                     Text(
-                        "Music and voices for every shift.",
-                        style = FloorTheme.typography.body,
+                        "One station, every timezone. Music and voices for every shift on The Floor.",
+                        style = FloorTheme.typography.bodyL,
                         color = FloorTheme.colors.textSecondary,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     )
                     Spacer(Modifier.height(40.dp))
                     if (s == RadioPlaybackState.Loading) {

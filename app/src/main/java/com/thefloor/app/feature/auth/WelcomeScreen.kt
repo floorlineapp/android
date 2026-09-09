@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.FloorPrimaryButton
 import com.thefloor.app.core.designsystem.components.FloorSecondaryButton
@@ -36,8 +37,20 @@ fun WelcomeScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("THE FLOOR", style = FloorTheme.typography.displayL, color = colors.amber)
-        Spacer(Modifier.height(12.dp))
+        com.thefloor.app.core.designsystem.components.FloorLogoMark(size = 76.dp)
+        Spacer(Modifier.height(20.dp))
+        Text(
+            "THE FLOOR",
+            style = FloorTheme.typography.displayL.copy(letterSpacing = 1.5.sp),
+            color = colors.textPrimary,
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "GLOBAL WORKFORCE ECOSYSTEM",
+            style = FloorTheme.typography.eyebrow,
+            color = colors.textMuted,
+        )
+        Spacer(Modifier.height(22.dp))
         Text(
             "The global home of the people behind every customer conversation.",
             style = FloorTheme.typography.bodyL,

@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.thefloor.app.R
 import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.FloorAccent
 import com.thefloor.app.core.designsystem.components.FloorBadge
@@ -84,6 +85,38 @@ private fun FeatureCard(
                 Spacer(Modifier.height(4.dp))
                 Text(desc, style = FloorTheme.typography.body, color = FloorTheme.colors.textSecondary)
             }
+        }
+    }
+}
+
+/**
+ * Card fronted by real artwork — the partner/course imagery carried over from
+ * the web prototype so these pages read the same as the HTML.
+ */
+@Composable
+private fun PhotoCard(
+    @androidx.annotation.DrawableRes image: Int,
+    title: String,
+    desc: String,
+    badge: String? = null,
+) {
+    FloorCard(contentPadding = 0.dp) {
+        androidx.compose.foundation.Image(
+            painter = androidx.compose.ui.res.painterResource(image),
+            contentDescription = null,
+            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(132.dp),
+        )
+        Column(Modifier.padding(16.dp)) {
+            if (badge != null) {
+                FloorEyebrow(badge, accent = FloorAccent.AMBER)
+                Spacer(Modifier.height(6.dp))
+            }
+            Text(title, style = FloorTheme.typography.titleSm, color = FloorTheme.colors.textPrimary)
+            Spacer(Modifier.height(4.dp))
+            Text(desc, style = FloorTheme.typography.body, color = FloorTheme.colors.textSecondary)
         }
     }
 }
@@ -166,9 +199,11 @@ fun AcademyScreen(onBack: () -> Unit) {
                 )
             }
         }
-        item { FloorSectionHeader(title = "Free learning library") }
-        item { FeatureCard(Icons.Filled.School, "Contact-centre foundations", "De-escalation, active listening, and handling difficult calls with confidence.", FloorAccent.AMBER) }
-        item { FeatureCard(Icons.Filled.Checklist, "Quality & QA", "Understand scorecards, coaching feedback and how to raise your QA numbers.", FloorAccent.TEAL) }
+        item { FloorSectionHeader(title = "Free learning library", subtitle = "Curated external courses. The Floor credits sources rather than reproducing them.") }
+        item { PhotoCard(R.drawable.img_ai_for_customer_service, "AI for Customer Service", "How AI is reshaping quality, routing and the agent's day.", "Course") }
+        item { PhotoCard(R.drawable.img_call_center_excellence, "Call Center Excellence", "De-escalation, active listening and handling difficult calls.", "Course") }
+        item { PhotoCard(R.drawable.img_communication_skills, "Communication Skills", "The craft behind every good customer conversation.", "Course") }
+        item { PhotoCard(R.drawable.img_data_analysis_for_everyone, "Data Analysis for Everyone", "Read your own numbers — AHT, CSAT, shrinkage and beyond.", "Course") }
         item { FeatureCard(Icons.Filled.TrendingUp, "Path to Team Leader", "The skills, habits and metrics that move you from Agent to leadership.", FloorAccent.CORAL) }
     }
 }
@@ -240,10 +275,15 @@ fun MarketplaceScreen(onBack: () -> Unit) {
                 )
             }
         }
-        item { FloorSectionHeader(title = "Browse by category") }
+        item { FloorSectionHeader(title = "Travel & experiences") }
+        item { PhotoCard(R.drawable.img_flight_deals, "Flight Deals", "Get home for the holidays for less — member fares across regions.", "Deal") }
+        item { PhotoCard(R.drawable.img_hotel_stays, "Hotel Stays", "Rest days done properly, at member rates.", "Deal") }
+        item { PhotoCard(R.drawable.img_experiences, "Experiences", "Things worth doing on your days off.", "Deal") }
+        item { PhotoCard(R.drawable.img_fly_anywhere, "Fly Anywhere", "Compare and book the whole trip in one place.", "Deal") }
+        item { FloorSectionHeader(title = "Protection & wellbeing") }
+        item { PhotoCard(R.drawable.img_health_insurance, "Health Insurance", "Cover that works around shift patterns.", "Cover") }
+        item { PhotoCard(R.drawable.img_life_cover, "Life Cover", "Straightforward protection for the people who depend on you.", "Cover") }
         item { FeatureCard(Icons.Filled.Devices, "Electronics & headsets", "Noise-cancelling headsets, webcams and home-office essentials.", FloorAccent.AMBER) }
-        item { FeatureCard(Icons.Filled.LocalOffer, "Member perks", "Data bundles, transport, food and everyday savings for shift workers.", FloorAccent.TEAL) }
-        item { FeatureCard(Icons.Filled.HealthAndSafety, "Health & wellbeing", "Wellness, fitness and mental-health services at member rates.", FloorAccent.CORAL) }
     }
 }
 
@@ -265,6 +305,11 @@ fun ResourcesScreen(onBack: () -> Unit) {
         item { FeatureCard(Icons.Filled.Calculate, "Calculators", "Shrinkage, occupancy, AHT and SLA calculators for the floor.", FloorAccent.AMBER) }
         item { FeatureCard(Icons.Filled.Checklist, "Templates & checklists", "Coaching forms, QA scorecards and shift handover templates.", FloorAccent.TEAL) }
         item { FeatureCard(Icons.Filled.AutoStories, "Guides & references", "Plain-language WFM, quality and operations references.", FloorAccent.CORAL) }
+        item { FloorSectionHeader(title = "Financial wellbeing", subtitle = "Practical money guides for shift pay.") }
+        item { PhotoCard(R.drawable.img_open_your_first_bank_account, "Open Your First Bank Account", "A starter guide for new agents getting paid properly.", "New agent starter") }
+        item { PhotoCard(R.drawable.img_budget_save_like_a_pro, "Budget & Save Like a Pro", "Make shift pay stretch — plan, save, invest, grow.", "Save smarter") }
+        item { PhotoCard(R.drawable.img_money_tips_that_matter, "Money Tips That Matter", "Small habits that change what payday feels like.", "Financial tips") }
+        item { PhotoCard(R.drawable.img_start_trading_the_right_way, "Start Trading the Right Way", "Understand the risk before you put money in.", "Learn to trade") }
         item {
             ProseCard(
                 "What we add next",
@@ -357,6 +402,9 @@ fun WellbeingScreen(onBack: () -> Unit) {
         }
         item { FeatureCard(Icons.Filled.SupportAgent, "Human help, not a bot", "Real people across The Floor, in your timezone, when you need them.", FloorAccent.TEAL) }
         item { FeatureCard(Icons.Filled.HealthAndSafety, "Mental health check-in", "A calmer live room for stress, burnout and supporting each other — moderated with care.", FloorAccent.CORAL) }
+        item { FloorSectionHeader(title = "Looking after yourself") }
+        item { PhotoCard(R.drawable.img_calm_premium, "Calm Premium", "Sleep, focus and wind-down tools built for people on rotating shifts.", "Wellbeing") }
+        item { PhotoCard(R.drawable.img_betterup_coaching, "BetterUp Coaching", "One-to-one coaching for stress, confidence and career direction.", "Wellbeing") }
         item {
             FloorCard {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {

@@ -118,6 +118,13 @@ fun InviteEarnScreen(
                 ) {
                     // 1 — header
                     item {
+                        com.thefloor.app.core.designsystem.components.FloorHero(
+                            eyebrow = "Invite & Grow · Free to refer",
+                            title = "Bring good people to The Floor.",
+                            subtitle = "Invite the people you work with — free for you, free for them. Every qualified referral is tracked, and nobody ever pays to unlock earning.",
+                        )
+                    }
+                    item {
                         Column {
                             Text("Bring your floor with you.", style = FloorTheme.typography.headline, color = FloorTheme.colors.textPrimary)
                             Spacer(Modifier.height(4.dp))

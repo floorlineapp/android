@@ -53,6 +53,7 @@ import com.thefloor.app.core.designsystem.components.FloorPillButton
 import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTile
 import com.thefloor.app.core.designsystem.components.FloorTopBar
+import com.thefloor.app.core.designsystem.components.FloorWordmark
 import com.thefloor.app.core.designsystem.components.OfflineBanner
 import com.thefloor.app.core.designsystem.components.SkeletonList
 import com.thefloor.app.core.model.HomeContent
@@ -134,7 +135,7 @@ fun HomeScreen(
         containerColor = FloorTheme.colors.ink,
         topBar = {
             FloorTopBar(
-                title = "Home",
+                titleContent = { FloorWordmark() },
                 actions = {
                     IconButton(onClick = onOpenNotifications) {
                         Icon(Icons.Outlined.Search, contentDescription = "Search", tint = FloorTheme.colors.textPrimary)

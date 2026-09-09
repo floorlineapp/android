@@ -93,6 +93,10 @@ dependencies {
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
 
+    // Remote imagery (Floor community photos). Declared directly rather than via
+    // the version catalog to keep this a single-file change.
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
     implementation(libs.navigation.compose)
 
     implementation(libs.hilt.android)

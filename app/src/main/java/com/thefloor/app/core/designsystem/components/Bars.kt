@@ -21,8 +21,27 @@ fun FloorTopBar(
     onBack: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
+    FloorTopBar(
+        modifier = modifier,
+        onBack = onBack,
+        actions = actions,
+        titleContent = {
+            Text(title, style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
+        },
+    )
+}
+
+/** Slot variant — lets Home fly the brand lockup instead of a text title. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FloorTopBar(
+    titleContent: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    onBack: (() -> Unit)? = null,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
     TopAppBar(
-        title = { Text(title, style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary) },
+        title = titleContent,
         modifier = modifier,
         navigationIcon = {
             if (onBack != null) {

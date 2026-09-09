@@ -105,6 +105,13 @@ fun RewardsScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     item {
+                        com.thefloor.app.core.designsystem.components.FloorHero(
+                            eyebrow = "Floor Rewards · Transparent by design",
+                            title = "Good things should feel good — and make sense.",
+                            subtitle = "Earn Floor Points for verified participation across The Floor. Every point has a source, a timestamp and a transaction record, so you always know why your balance changed.",
+                        )
+                    }
+                    item {
                         FloorCard {
                             Text("Your balance", style = FloorTheme.typography.label, color = FloorTheme.colors.textSecondary)
                             Spacer(Modifier.height(8.dp))
@@ -120,7 +127,10 @@ fun RewardsScreen(
                         }
                     }
                     item {
-                        Text("Ways to earn", style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
+                        com.thefloor.app.core.designsystem.components.FloorSectionHeader(
+                            title = "Ways to earn",
+                            subtitle = "Participation, not payment.",
+                        )
                     }
                     items(summary.waysToEarn, key = { it.title }) { way ->
                         // Every "way to earn" navigates somewhere — dispatch via the

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import com.thefloor.app.core.designsystem.components.FloorHero
+import com.thefloor.app.core.designsystem.components.floorPhotoUrl
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -256,24 +257,26 @@ fun CommunityTile(
         border = androidx.compose.foundation.BorderStroke(1.dp, FloorTheme.colors.border),
     ) {
         Column {
-            // Banner strip (gradient placeholder in lieu of a photo).
+            // Community photo, matching the web prototype. The brand gradient sits
+            // underneath so the card still reads while loading, or offline.
             androidx.compose.foundation.layout.Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(96.dp)
+                    .height(120.dp)
                     .background(
                         androidx.compose.ui.graphics.Brush.linearGradient(
                             listOf(amber.copy(alpha = 0.28f), teal.copy(alpha = 0.22f)),
                         ),
                     ),
-                contentAlignment = Alignment.BottomStart,
             ) {
-                Text(
-                    "${community.name} community",
-                    style = FloorTheme.typography.caption,
-                    color = FloorTheme.colors.textPrimary.copy(alpha = 0.85f),
-                    modifier = Modifier.padding(12.dp),
-                )
+                floorPhotoUrl(community.name)?.let { url ->
+                    coil.compose.AsyncImage(
+                        model = url,
+                        contentDescription = null,
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        modifier = Modifier.fillMaxWidth().height(120.dp),
+                    )
+                }
             }
             Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
