@@ -132,10 +132,26 @@ fun ProfileScreen(
                 message = state.error!!, onRetry = viewModel::refresh,
                 modifier = Modifier.fillMaxSize().padding(padding),
             )
-            state.profile != null -> {
-                val profile = state.profile!!
+            state.profile != null -> ProfileBody(
+                profile = state.profile!!,
+                modifier = Modifier.padding(padding),
+                onEdit = onEdit,
+                onPrivacy = onPrivacy,
+            )
+        }
+    }
+}
+
+/** Stateless Profile body — internal so the screenshot suite can render it. */
+@Composable
+internal fun ProfileBody(
+    profile: UserProfile,
+    modifier: Modifier = Modifier,
+    onEdit: () -> Unit = {},
+    onPrivacy: () -> Unit = {},
+) {
                 LazyColumn(
-                    modifier = Modifier.padding(padding),
+                    modifier = modifier,
                     contentPadding = PaddingValues(FloorTheme.spacing.gutter),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
@@ -223,9 +239,6 @@ fun ProfileScreen(
                     }
                     item { Spacer(Modifier.height(8.dp)) }
                 }
-            }
-        }
-    }
 }
 
 /** Career-profile row: mono uppercase label above the value, prototype-style. */

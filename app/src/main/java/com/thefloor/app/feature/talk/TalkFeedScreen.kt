@@ -159,11 +159,35 @@ fun TalkFeedScreen(
             }
         },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
+        TalkBody(
+            state = state,
+            modifier = Modifier.padding(padding),
+            onOpenPost = onOpenPost,
+            onCompose = onCompose,
+            onSelectCategory = viewModel::selectCategory,
+            onLoadMore = viewModel::loadMore,
+            onRefresh = viewModel::refresh,
+        )
+    }
+}
+
+/** Stateless Talk body — internal so the screenshot suite can render it. */
+@Composable
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+internal fun TalkBody(
+    state: TalkFeedUiState,
+    modifier: Modifier = Modifier,
+    onOpenPost: (String) -> Unit = {},
+    onCompose: () -> Unit = {},
+    onSelectCategory: (String?) -> Unit = {},
+    onLoadMore: () -> Unit = {},
+    onRefresh: () -> Unit = {},
+) {
+        Column(modifier = modifier) {
             if (state.offline) OfflineBanner()
             androidx.compose.material3.pulltorefresh.PullToRefreshBox(
                 isRefreshing = state.refreshing,
-                onRefresh = viewModel::refresh,
+                onRefresh = onRefresh,
             ) {
                 LazyColumn(
                     contentPadding = PaddingValues(horizontal = FloorTheme.spacing.gutter, vertical = 12.dp),
@@ -183,17 +207,17 @@ fun TalkFeedScreen(
                     item {
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             item {
-                                FloorChip(text = "All Discussions", selected = state.selectedCategoryId == null, onClick = { viewModel.selectCategory(null) })
+                                FloorChip(text = "All Discussions", selected = state.selectedCategoryId == null, onClick = { onSelectCategory(null) })
                             }
                             items(state.categories, key = { it.id }) { category ->
-                                FloorChip(text = category.name, selected = state.selectedCategoryId == category.id, onClick = { viewModel.selectCategory(category.id) })
+                                FloorChip(text = category.name, selected = state.selectedCategoryId == category.id, onClick = { onSelectCategory(category.id) })
                             }
                         }
                     }
 
                     when {
                         state.loading -> item { SkeletonList(rows = 4) }
-                        state.error != null -> item { FloorErrorState(message = state.error!!, onRetry = viewModel::refresh) }
+                        state.error != null -> item { FloorErrorState(message = state.error!!, onRetry = onRefresh) }
                         state.posts.isEmpty() -> item {
                             FloorEmptyState(
                                 title = "Start the first conversation",
@@ -208,7 +232,7 @@ fun TalkFeedScreen(
                             }
                             if (state.nextCursor != null) {
                                 item {
-                                    androidx.compose.runtime.LaunchedEffect(state.nextCursor) { viewModel.loadMore() }
+                                    androidx.compose.runtime.LaunchedEffect(state.nextCursor) { onLoadMore() }
                                     Text("Loading more…", style = FloorTheme.typography.caption, color = FloorTheme.colors.textMuted, modifier = Modifier.padding(8.dp))
                                 }
                             }
@@ -236,5 +260,4 @@ fun TalkFeedScreen(
                 }
             }
         }
-    }
 }

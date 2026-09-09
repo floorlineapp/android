@@ -34,8 +34,25 @@ import com.thefloor.app.core.model.CompletionCard
 import com.thefloor.app.core.model.HomeContent
 import com.thefloor.app.core.model.MembershipState
 import com.thefloor.app.core.model.Post
+import com.thefloor.app.core.model.Pulse
+import com.thefloor.app.core.model.RewardTransaction
+import com.thefloor.app.core.model.RewardsSummary
+import com.thefloor.app.core.model.TalkCategory
+import com.thefloor.app.core.model.UserProfile
+import com.thefloor.app.core.model.WayToEarn
+import com.thefloor.app.core.model.WorkMode
 import com.thefloor.app.feature.auth.WelcomeScreen
+import com.thefloor.app.feature.floor.DiscoverBody
+import com.thefloor.app.feature.floor.DiscoverUiState
 import com.thefloor.app.feature.home.HomeContentList
+import com.thefloor.app.feature.profile.ProfileBody
+import com.thefloor.app.feature.pulse.PulseBody
+import com.thefloor.app.feature.pulse.PulseUiState
+import com.thefloor.app.feature.radio.RadioBody
+import com.thefloor.app.feature.radio.RadioPlaybackState
+import com.thefloor.app.feature.rewards.RewardsBody
+import com.thefloor.app.feature.talk.TalkBody
+import com.thefloor.app.feature.talk.TalkFeedUiState
 import com.thefloor.app.feature.pages.AboutScreen
 import com.thefloor.app.feature.pages.AcademyScreen
 import com.thefloor.app.feature.pages.EventsScreen
@@ -96,6 +113,17 @@ class ScreenshotTest {
     // ---------- Home, rendered from the real screen body ----------
     @Test fun home() = snap("page_home") { HomeBody() }
     @Test fun homeLight() = snap("page_home_light", dark = false) { HomeBody() }
+
+    // ---------- the rest of the real screens ----------
+    @Test fun talk() = snap("page_talk") { TalkBody(state = fakeTalk) }
+    @Test fun talkLight() = snap("page_talk_light", dark = false) { TalkBody(state = fakeTalk) }
+    @Test fun floor() = snap("page_floor") { DiscoverBody(state = fakeDiscover, query = "", selectedKind = null) }
+    @Test fun profile() = snap("page_profile") { ProfileBody(profile = fakeProfile) }
+    @Test fun profileLight() = snap("page_profile_light", dark = false) { ProfileBody(profile = fakeProfile) }
+    @Test fun pulse() = snap("page_pulse") { PulseBody(state = fakePulse) }
+    @Test fun rewards() = snap("page_rewards") { RewardsBody(summary = fakeRewards, transactions = fakeTx) }
+    @Test fun rewardsLight() = snap("page_rewards_light", dark = false) { RewardsBody(summary = fakeRewards, transactions = fakeTx) }
+    @Test fun radio() = snap("page_radio") { RadioBody(playback = RadioPlaybackState.OnAir(playing = true, programName = "Night Shift")) }
 }
 
 /** Real Home content, fed representative data. */
@@ -189,3 +217,88 @@ private fun Gallery() {
         )
     }
 }
+
+// ---------------------------------------------------------------- fixtures
+
+private val fakeTalk = TalkFeedUiState(
+    loading = false,
+    categories = listOf(
+        TalkCategory("c1", "the-job", "The Job"),
+        TalkCategory("c2", "leadership", "Leadership"),
+        TalkCategory("c3", "pay", "Pay & Progression"),
+        TalkCategory("c4", "ai", "AI & The Future"),
+    ),
+    posts = listOf(
+        Post("p1", "u1", "Mika R.", CareerLevel.TEAM_LEADER, "c1", "The Job", "za",
+            "Should agents be penalised for AHT when the customer genuinely needs more time?",
+            118, 296, null, false, "2026-09-08T10:00:00Z"),
+        Post("p2", "u2", "Priya S.", CareerLevel.SME, "c3", "Pay & Progression", "ph",
+            "Are BPO salaries keeping pace with what companies now expect agents to handle?",
+            129, 341, null, false, "2026-09-07T10:00:00Z"),
+        Post("p3", "u3", "Owen K.", CareerLevel.AGENT, "c4", "AI & The Future", "za",
+            "AI quality scoring is here. Should an algorithm be allowed to affect an agent bonus?",
+            143, 267, null, false, "2026-09-06T10:00:00Z"),
+    ),
+)
+
+private val fakeDiscover = DiscoverUiState.Ready(
+    listOf(
+        Community("za", "south-africa", "South Africa Floor",
+            "From Cape Town to Joburg, Durban to everywhere in between.",
+            "COUNTRY", 23461, false, MembershipState.JOINED),
+        Community("ph", "philippines", "Philippines Floor",
+            "The heart of global outsourcing. Always on, always awake.",
+            "COUNTRY", 41208, false, MembershipState.NOT_JOINED),
+        Community("co", "colombia", "Colombia Floor",
+            "Passion. Resilience. World-class customer experience.",
+            "COUNTRY", 17894, false, MembershipState.NOT_JOINED),
+    ),
+)
+
+private val fakeProfile = UserProfile(
+    userId = "u1",
+    displayName = "Naledi M.",
+    photoUrl = null,
+    country = "South Africa",
+    city = "Johannesburg",
+    languages = listOf("English", "Zulu"),
+    employer = "Meridian Contact Solutions",
+    site = "Rosebank Contact Center",
+    industry = "Telecom",
+    role = "Senior Agent",
+    careerLevel = CareerLevel.SENIOR_AGENT,
+    experienceYears = 4,
+    workMode = WorkMode.HYBRID,
+    skills = listOf("De-escalation", "Billing systems", "CRM", "Coaching new hires"),
+    completeness = 50,
+    emailVerified = true,
+    visibility = emptyMap(),
+)
+
+private val fakePulse = PulseUiState(
+    loading = false,
+    myUserId = "u1",
+    pulses = listOf(
+        Pulse("x1", "u2", "Thabo N.", "Third escalation before 9am and the coffee machine is broken. Send help.", 24, false, "2026-09-09T07:00:00Z"),
+        Pulse("x1b", "u1", "Naledi M.", "Just closed the longest call of my life. 74 minutes. We got there.", 61, true, "2026-09-09T06:10:00Z"),
+        Pulse("x2", "u3", "Grace A.", "Night shift crew — what are we listening to tonight?", 12, false, "2026-09-09T05:30:00Z"),
+    ),
+)
+
+private val fakeRewards = RewardsSummary(
+    creditsBalance = 12480,
+    waysToEarn = listOf(
+        WayToEarn("Complete your verified profile", 50, "floor://profile/edit"),
+        WayToEarn("Start a meaningful Talk discussion", 10, "floor://talk"),
+        WayToEarn("Attend a verified Floor event", 50, "floor://events"),
+    ),
+    recentTransactions = emptyList(),
+)
+
+private val fakeTx = listOf(
+    RewardTransaction("t1", 150, "Friday Trivia winner", "2026-09-05T10:00:00Z"),
+    RewardTransaction("t2", -155, "Historic reward redemption", "2026-09-04T10:00:00Z"),
+    RewardTransaction("t3", 75, "Approved Workplace Spotlight", "2026-09-03T10:00:00Z"),
+    RewardTransaction("t4", 10, "Meaningful discussion posted", "2026-09-02T10:00:00Z"),
+    RewardTransaction("t5", 25, "Floor-verified learning: Soft Skills", "2026-09-01T10:00:00Z"),
+)

@@ -152,12 +152,47 @@ fun PulseScreen(
         containerColor = FloorTheme.colors.ink,
         topBar = { FloorTopBar(title = "Pulse", onBack = onBack) },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).fillMaxSize().imePadding()) {
+        PulseBody(
+            state = state,
+            modifier = Modifier.padding(padding),
+            onInput = viewModel::onInput,
+            onPost = viewModel::post,
+            onLike = viewModel::toggleLike,
+            onDelete = viewModel::delete,
+            onRetry = viewModel::refresh,
+        )
+
+        state.actionMessage?.let { message ->
+            androidx.compose.runtime.LaunchedEffect(message) {
+                kotlinx.coroutines.delay(2500)
+                viewModel.clearActionMessage()
+            }
+            androidx.compose.material3.Snackbar(
+                modifier = Modifier.padding(16.dp),
+                containerColor = FloorTheme.colors.surfaceAlt,
+                contentColor = FloorTheme.colors.textPrimary,
+            ) { Text(message) }
+        }
+    }
+}
+
+/** Stateless Pulse body — internal so the screenshot suite can render it. */
+@Composable
+internal fun PulseBody(
+    state: PulseUiState,
+    modifier: Modifier = Modifier,
+    onInput: (String) -> Unit = {},
+    onPost: () -> Unit = {},
+    onLike: (Pulse) -> Unit = {},
+    onDelete: (Pulse) -> Unit = {},
+    onRetry: () -> Unit = {},
+) {
+        Column(modifier = modifier.fillMaxSize().imePadding()) {
             when {
                 state.loading -> FloorLoading(Modifier.weight(1f))
                 state.error != null -> FloorErrorState(
                     message = state.error!!,
-                    onRetry = viewModel::refresh,
+                    onRetry = onRetry,
                     modifier = Modifier.weight(1f).fillMaxSize(),
                 )
                 else -> LazyColumn(
@@ -187,8 +222,8 @@ fun PulseScreen(
                         PulseCard(
                             pulse = pulse,
                             isMine = pulse.authorId == state.myUserId,
-                            onLike = { viewModel.toggleLike(pulse) },
-                            onDelete = { viewModel.delete(pulse) },
+                            onLike = { onLike(pulse) },
+                            onDelete = { onDelete(pulse) },
                         )
                     }
                 }
@@ -203,32 +238,19 @@ fun PulseScreen(
             ) {
                 FloorTextField(
                     value = state.input,
-                    onValueChange = viewModel::onInput,
+                    onValueChange = onInput,
                     label = "What's happening?",
                     modifier = Modifier.weight(1f),
                 )
                 Spacer(Modifier.width(8.dp))
                 FloorPrimaryButton(
                     text = "Post",
-                    onClick = viewModel::post,
+                    onClick = onPost,
                     loading = state.posting,
                     enabled = state.input.isNotBlank(),
                 )
             }
         }
-
-        state.actionMessage?.let { message ->
-            androidx.compose.runtime.LaunchedEffect(message) {
-                kotlinx.coroutines.delay(2500)
-                viewModel.clearActionMessage()
-            }
-            androidx.compose.material3.Snackbar(
-                modifier = Modifier.padding(16.dp),
-                containerColor = FloorTheme.colors.surfaceAlt,
-                contentColor = FloorTheme.colors.textPrimary,
-            ) { Text(message) }
-        }
-    }
 }
 
 @Composable

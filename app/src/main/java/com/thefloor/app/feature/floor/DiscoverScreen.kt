@@ -149,15 +149,42 @@ fun DiscoverScreen(
         containerColor = FloorTheme.colors.ink,
         topBar = { FloorTopBar(title = "The Floor") },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
+        DiscoverBody(
+            state = state,
+            query = query,
+            selectedKind = selectedKind,
+            modifier = Modifier.padding(padding),
+            onQueryChange = { viewModel.query.value = it },
+            onFilter = viewModel::onFilter,
+            onOpenCommunity = onOpenCommunity,
+            onToggle = viewModel::toggleMembership,
+            onRetry = viewModel::refresh,
+        )
+    }
+}
+
+/** Stateless Floor body — internal so the screenshot suite can render it. */
+@Composable
+internal fun DiscoverBody(
+    state: DiscoverUiState,
+    query: String,
+    selectedKind: String?,
+    modifier: Modifier = Modifier,
+    onQueryChange: (String) -> Unit = {},
+    onFilter: (String?) -> Unit = {},
+    onOpenCommunity: (String) -> Unit = {},
+    onToggle: (Community) -> Unit = {},
+    onRetry: () -> Unit = {},
+) {
+        Column(modifier = modifier) {
             when (val s = state) {
                 DiscoverUiState.Loading -> Column {
-                    DiscoverHeader(query, selectedKind, viewModel)
+                    DiscoverHeader(query, onQueryChange)
                     SkeletonList(rows = 5)
                 }
                 is DiscoverUiState.Error -> Column {
-                    DiscoverHeader(query, selectedKind, viewModel)
-                    FloorErrorState(message = s.message, onRetry = viewModel::refresh)
+                    DiscoverHeader(query, onQueryChange)
+                    FloorErrorState(message = s.message, onRetry = onRetry)
                 }
                 is DiscoverUiState.Ready -> {
                     if (s.offline) OfflineBanner()
@@ -175,7 +202,7 @@ fun DiscoverScreen(
                         item {
                             FloorTextField(
                                 value = query,
-                                onValueChange = { viewModel.query.value = it },
+                                onValueChange = onQueryChange,
                                 label = "Search Floors",
                             )
                         }
@@ -185,7 +212,7 @@ fun DiscoverScreen(
                                     FloorChip(
                                         text = filter.label,
                                         selected = selectedKind == filter.kind,
-                                        onClick = { viewModel.onFilter(filter.kind) },
+                                        onClick = { onFilter(filter.kind) },
                                     )
                                 }
                             }
@@ -196,7 +223,7 @@ fun DiscoverScreen(
                                     title = "No Floors match",
                                     message = "Try fewer filters or a different search.",
                                     actionText = "Clear filters",
-                                    onAction = { viewModel.query.value = ""; viewModel.onFilter(null) },
+                                    onAction = { onQueryChange(""); onFilter(null) },
                                 )
                             }
                         } else {
@@ -204,7 +231,7 @@ fun DiscoverScreen(
                                 CommunityTile(
                                     community = community,
                                     onOpen = { onOpenCommunity(community.id) },
-                                    onToggle = { viewModel.toggleMembership(community) },
+                                    onToggle = { onToggle(community) },
                                 )
                             }
                         }
@@ -213,19 +240,18 @@ fun DiscoverScreen(
                 }
             }
         }
-    }
 }
 
 /** Header used for the non-Ready states (Ready renders header inside the list). */
 @Composable
-private fun DiscoverHeader(query: String, selectedKind: String?, viewModel: DiscoverViewModel) {
+private fun DiscoverHeader(query: String, onQueryChange: (String) -> Unit) {
     Column(modifier = Modifier.padding(FloorTheme.spacing.gutter), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         FloorHero(
             eyebrow = "Section · The Community",
             title = "The Floor",
             subtitle = "Find your community. Connect. Learn. Grow.",
         )
-        FloorTextField(value = query, onValueChange = { viewModel.query.value = it }, label = "Search Floors")
+        FloorTextField(value = query, onValueChange = onQueryChange, label = "Search Floors")
     }
 }
 
