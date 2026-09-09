@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
+
 package com.thefloor.app.core.designsystem
 
 import androidx.compose.runtime.Immutable
