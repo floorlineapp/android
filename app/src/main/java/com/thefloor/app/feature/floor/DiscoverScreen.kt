@@ -1,5 +1,6 @@
 package com.thefloor.app.feature.floor
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,8 +11,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import com.thefloor.app.core.designsystem.components.FloorHero
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -142,45 +146,59 @@ fun DiscoverScreen(
 
     Scaffold(
         containerColor = FloorTheme.colors.ink,
-        topBar = { FloorTopBar(title = "Find your Floor") },
+        topBar = { FloorTopBar(title = "The Floor") },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            Column(modifier = Modifier.padding(horizontal = FloorTheme.spacing.gutter)) {
-                FloorTextField(
-                    value = query,
-                    onValueChange = { viewModel.query.value = it },
-                    label = "Search Floors",
-                )
-                Spacer(Modifier.height(8.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(discoverFilters, key = { it.label }) { filter ->
-                        FloorChip(
-                            text = filter.label,
-                            selected = selectedKind == filter.kind,
-                            onClick = { viewModel.onFilter(filter.kind) },
-                        )
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-            }
-
             when (val s = state) {
-                DiscoverUiState.Loading -> SkeletonList(rows = 5)
-                is DiscoverUiState.Error -> FloorErrorState(message = s.message, onRetry = viewModel::refresh)
+                DiscoverUiState.Loading -> Column {
+                    DiscoverHeader(query, selectedKind, viewModel)
+                    SkeletonList(rows = 5)
+                }
+                is DiscoverUiState.Error -> Column {
+                    DiscoverHeader(query, selectedKind, viewModel)
+                    FloorErrorState(message = s.message, onRetry = viewModel::refresh)
+                }
                 is DiscoverUiState.Ready -> {
                     if (s.offline) OfflineBanner()
-                    if (s.communities.isEmpty()) {
-                        FloorEmptyState(
-                            title = "No Floors match",
-                            message = "Try fewer filters or a different search.",
-                            actionText = "Clear filters",
-                            onAction = { viewModel.query.value = ""; viewModel.onFilter(null) },
-                        )
-                    } else {
-                        LazyColumn(
-                            contentPadding = PaddingValues(horizontal = FloorTheme.spacing.gutter, vertical = 8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
+                    LazyColumn(
+                        contentPadding = PaddingValues(horizontal = FloorTheme.spacing.gutter, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        item {
+                            FloorHero(
+                                eyebrow = "Section · The Community",
+                                title = "The Floor",
+                                subtitle = "Find your community. Connect. Learn. Grow. Join any Floor to become a member — no approval needed.",
+                            )
+                        }
+                        item {
+                            FloorTextField(
+                                value = query,
+                                onValueChange = { viewModel.query.value = it },
+                                label = "Search Floors",
+                            )
+                        }
+                        item {
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                items(discoverFilters, key = { it.label }) { filter ->
+                                    FloorChip(
+                                        text = filter.label,
+                                        selected = selectedKind == filter.kind,
+                                        onClick = { viewModel.onFilter(filter.kind) },
+                                    )
+                                }
+                            }
+                        }
+                        if (s.communities.isEmpty()) {
+                            item {
+                                FloorEmptyState(
+                                    title = "No Floors match",
+                                    message = "Try fewer filters or a different search.",
+                                    actionText = "Clear filters",
+                                    onAction = { viewModel.query.value = ""; viewModel.onFilter(null) },
+                                )
+                            }
+                        } else {
                             items(s.communities, key = { it.id }) { community ->
                                 CommunityTile(
                                     community = community,
@@ -189,11 +207,38 @@ fun DiscoverScreen(
                                 )
                             }
                         }
+                        item { Spacer(Modifier.height(8.dp)) }
                     }
                 }
             }
         }
     }
+}
+
+/** Header used for the non-Ready states (Ready renders header inside the list). */
+@Composable
+private fun DiscoverHeader(query: String, selectedKind: String?, viewModel: DiscoverViewModel) {
+    Column(modifier = Modifier.padding(FloorTheme.spacing.gutter), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        FloorHero(
+            eyebrow = "Section · The Community",
+            title = "The Floor",
+            subtitle = "Find your community. Connect. Learn. Grow.",
+        )
+        FloorTextField(value = query, onValueChange = { viewModel.query.value = it }, label = "Search Floors")
+    }
+}
+
+/** Derives a flag emoji from a community name; falls back to a globe. */
+private fun flagFor(name: String): String {
+    val n = name.lowercase()
+    val map = listOf(
+        "south africa" to "🇿🇦", "philippin" to "🇵🇭", "colombia" to "🇨🇴", "india" to "🇮🇳",
+        "mexico" to "🇲🇽", "poland" to "🇵🇱", "jamaica" to "🇯🇲", "albania" to "🇦🇱",
+        "egypt" to "🇪🇬", "brazil" to "🇧🇷", "united states" to "🇺🇸", "usa" to "🇺🇸",
+        "kenya" to "🇰🇪", "nigeria" to "🇳🇬", "united kingdom" to "🇬🇧", "morocco" to "🇲🇦",
+        "remote" to "🌐", "global" to "🌍",
+    )
+    return map.firstOrNull { n.contains(it.first) }?.second ?: "🌍"
 }
 
 @Composable
@@ -202,33 +247,73 @@ fun CommunityTile(
     onOpen: () -> Unit,
     onToggle: () -> Unit,
 ) {
-    FloorCard(onClick = onOpen) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(community.name, style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    "${community.memberCount} members",
-                    style = FloorTheme.typography.caption,
-                    color = FloorTheme.colors.textMuted,
-                )
-            }
-            val (label, tone) = when (community.membershipState) {
-                MembershipState.JOINED -> "Joined" to BadgeTone.TEAL
-                MembershipState.PENDING -> "Pending" to BadgeTone.AMBER
-                MembershipState.MUTED -> "Muted" to BadgeTone.NEUTRAL
-                MembershipState.RESTRICTED -> "Restricted" to BadgeTone.CORAL
-                MembershipState.NOT_JOINED -> "Join" to BadgeTone.AMBER
-            }
+    val amber = FloorTheme.colors.amber
+    val teal = FloorTheme.colors.teal
+    androidx.compose.material3.Surface(
+        modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable(onClick = onOpen),
+        shape = RoundedCornerShape(12.dp),
+        color = FloorTheme.colors.surface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, FloorTheme.colors.border),
+    ) {
+        Column {
+            // Banner strip (gradient placeholder in lieu of a photo).
             androidx.compose.foundation.layout.Box(
                 modifier = Modifier
-                    .padding(start = 8.dp)
-                    .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-                    .clip(RoundedCornerShape(999.dp))
-                    .clickable(onClick = onToggle),
-                contentAlignment = Alignment.Center,
+                    .fillMaxWidth()
+                    .height(96.dp)
+                    .background(
+                        androidx.compose.ui.graphics.Brush.linearGradient(
+                            listOf(amber.copy(alpha = 0.28f), teal.copy(alpha = 0.22f)),
+                        ),
+                    ),
+                contentAlignment = Alignment.BottomStart,
             ) {
-                FloorBadge(text = label, tone = tone)
+                Text(
+                    "${community.name} community",
+                    style = FloorTheme.typography.caption,
+                    color = FloorTheme.colors.textPrimary.copy(alpha = 0.85f),
+                    modifier = Modifier.padding(12.dp),
+                )
+            }
+            Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(flagFor(community.name), style = FloorTheme.typography.title)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        community.name.uppercase(),
+                        style = FloorTheme.typography.label,
+                        color = FloorTheme.colors.textPrimary,
+                    )
+                }
+                Spacer(Modifier.height(5.dp))
+                Text(
+                    "%,d members".format(community.memberCount),
+                    style = FloorTheme.typography.monoTag,
+                    color = FloorTheme.colors.textMuted,
+                )
+                if (community.description.isNotBlank()) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(community.description, style = FloorTheme.typography.body, color = FloorTheme.colors.textSecondary)
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    val (label, tone) = when (community.membershipState) {
+                        MembershipState.JOINED -> "Joined" to BadgeTone.TEAL
+                        MembershipState.PENDING -> "Pending" to BadgeTone.AMBER
+                        MembershipState.MUTED -> "Muted" to BadgeTone.NEUTRAL
+                        MembershipState.RESTRICTED -> "Restricted" to BadgeTone.CORAL
+                        MembershipState.NOT_JOINED -> "Join" to BadgeTone.AMBER
+                    }
+                    androidx.compose.foundation.layout.Box(
+                        modifier = Modifier
+                            .defaultMinSize(minWidth = 48.dp, minHeight = 44.dp)
+                            .clip(RoundedCornerShape(999.dp))
+                            .clickable(onClick = onToggle),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        FloorBadge(text = label, tone = tone)
+                    }
+                }
             }
         }
     }

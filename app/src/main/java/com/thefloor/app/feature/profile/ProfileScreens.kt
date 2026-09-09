@@ -32,16 +32,23 @@ import com.thefloor.app.core.common.onSuccess
 import com.thefloor.app.core.data.UserRepository
 import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.BadgeTone
+import com.thefloor.app.core.designsystem.components.FloorAccent
+import com.thefloor.app.core.designsystem.components.FloorAvatar
 import com.thefloor.app.core.designsystem.components.FloorBadge
 import com.thefloor.app.core.designsystem.components.FloorCard
 import com.thefloor.app.core.designsystem.components.FloorChip
 import com.thefloor.app.core.designsystem.components.FloorErrorState
+import com.thefloor.app.core.designsystem.components.FloorEyebrow
+import com.thefloor.app.core.designsystem.components.FloorHero
 import com.thefloor.app.core.designsystem.components.FloorListItem
 import com.thefloor.app.core.designsystem.components.FloorLoading
+import com.thefloor.app.core.designsystem.components.FloorPillButton
 import com.thefloor.app.core.designsystem.components.FloorPrimaryButton
 import com.thefloor.app.core.designsystem.components.FloorProgressBar
 import com.thefloor.app.core.designsystem.components.FloorTextField
 import com.thefloor.app.core.designsystem.components.FloorTopBar
+import com.thefloor.app.core.designsystem.components.FloorVerifiedBadge
+import androidx.compose.foundation.layout.width
 import com.thefloor.app.core.model.CareerLevel
 import com.thefloor.app.core.model.UserProfile
 import com.thefloor.app.core.model.WorkMode
@@ -132,71 +139,118 @@ fun ProfileScreen(
                     contentPadding = PaddingValues(FloorTheme.spacing.gutter),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
+                    // ---- Identity header ----
                     item {
-                        FloorCard {
+                        FloorCard(contentPadding = 20.dp) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
+                                FloorAvatar(name = profile.displayName, ring = FloorAccent.TEAL, size = 64.dp)
+                                Spacer(Modifier.width(16.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text(profile.displayName, style = FloorTheme.typography.headline, color = FloorTheme.colors.textPrimary)
                                     Spacer(Modifier.height(4.dp))
-                                    profile.careerLevel?.let {
-                                        FloorBadge(text = it.label, tone = BadgeTone.AMBER)
-                                    }
+                                    Text(
+                                        listOfNotNull(profile.careerLevel?.label, profile.industry, profile.city).joinToString(" · ").ifBlank { "Add your workplace" },
+                                        style = FloorTheme.typography.body,
+                                        color = FloorTheme.colors.textSecondary,
+                                    )
                                 }
                             }
                             Spacer(Modifier.height(16.dp))
-                            FloorProgressBar(
-                                progress = profile.completeness / 100f,
-                                label = "Profile ${profile.completeness}% complete",
-                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                FloorPillButton(if (profile.completeness < 100) "Complete profile" else "Edit profile", onClick = onEdit)
+                                FloorPillButton("Privacy", onClick = onPrivacy, primary = false)
+                            }
                         }
+                    }
+
+                    // ---- Recognition & Access ----
+                    item {
+                        FloorHero(
+                            eyebrow = "Recognition & Access",
+                            eyebrowAccent = FloorAccent.TEAL,
+                            title = "Floor Voice",
+                            subtitle = "Recognition grows through a complete verified profile, helpful participation, Academy activity and a trusted history on The Floor.",
+                        )
                     }
                     item {
                         FloorCard {
-                            Text("Work", style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
-                            Spacer(Modifier.height(8.dp))
-                            ProfileField("Employer", profile.employer)
-                            ProfileField("Role", profile.role)
-                            ProfileField("Industry", profile.industry)
-                            ProfileField("Work mode", profile.workMode?.label)
-                            ProfileField("Country", profile.country)
-                            ProfileField("City", profile.city)
+                            if (profile.emailVerified) {
+                                FloorVerifiedBadge("Workplace verified")
+                                Spacer(Modifier.height(14.dp))
+                            }
+                            FloorProgressBar(
+                                progress = profile.completeness / 100f,
+                                label = "Profile ${profile.completeness}% complete · path to Workplace Ambassador",
+                            )
                         }
                     }
+
+                    // ---- Career profile ----
+                    item {
+                        Spacer(Modifier.height(4.dp))
+                        Text("Career profile", style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
+                    }
+                    item {
+                        FloorCard(contentPadding = 18.dp) {
+                            ProfileField("Country", profile.country)
+                            ProfileField("City", profile.city)
+                            ProfileField("Languages", profile.languages.joinToString(", ").ifBlank { null })
+                            ProfileField("Employer / BPO", profile.employer)
+                            ProfileField("Site", profile.site)
+                            ProfileField("Industry", profile.industry)
+                            ProfileField("Role", profile.role)
+                            ProfileField("Career level", profile.careerLevel?.label)
+                            ProfileField("Experience", profile.experienceYears?.let { "$it years" })
+                            ProfileField("Work mode", profile.workMode?.label)
+                        }
+                    }
+
                     if (profile.skills.isNotEmpty()) {
                         item {
                             FloorCard {
                                 Text("Skills", style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
-                                Spacer(Modifier.height(8.dp))
-                                Text(
-                                    profile.skills.joinToString(" · "),
-                                    style = FloorTheme.typography.body,
-                                    color = FloorTheme.colors.textSecondary,
-                                )
+                                Spacer(Modifier.height(12.dp))
+                                SkillsFlow(profile.skills)
                             }
                         }
                     }
+
                     item {
                         FloorCard(contentPadding = 0.dp) {
                             FloorListItem(title = "Edit profile", onClick = onEdit)
                             FloorListItem(title = "Privacy controls", subtitle = "Who sees what", onClick = onPrivacy)
                         }
                     }
+                    item { Spacer(Modifier.height(8.dp)) }
                 }
             }
         }
     }
 }
 
+/** Career-profile row: mono uppercase label above the value, prototype-style. */
 @Composable
 private fun ProfileField(label: String, value: String?) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(vertical = 8.dp),
     ) {
-        Text(label, style = FloorTheme.typography.body, color = FloorTheme.colors.textSecondary)
-        Text(value ?: "—", style = FloorTheme.typography.body, color = FloorTheme.colors.textPrimary)
+        FloorEyebrow(label, accent = FloorAccent.FAINT)
+        Spacer(Modifier.height(3.dp))
+        Text(value ?: "—", style = FloorTheme.typography.bodyL, color = FloorTheme.colors.textPrimary)
+    }
+}
+
+/** Wraps skill pills across lines. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun SkillsFlow(skills: List<String>) {
+    androidx.compose.foundation.layout.FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        skills.forEach { FloorBadge(text = it, tone = BadgeTone.NEUTRAL) }
     }
 }
 

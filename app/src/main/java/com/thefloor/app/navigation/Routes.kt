@@ -52,10 +52,13 @@ object Routes {
     const val SETTINGS = "settings"
     const val DELETE_ACCOUNT = "settings/delete_account"
 
-    // Phase-2 stubs (flag-gated, deep links never dead-end)
+    // Editorial content pages
     const val JOBS = "jobs"
     const val ACADEMY = "academy"
     const val MARKETPLACE = "marketplace"
     const val INSIGHTS = "insights"
     const val ABOUT = "about"
+    const val EVENTS = "events"
+    const val RESOURCES = "resources"
+    const val WELLBEING = "wellbeing"
 }

@@ -7,10 +7,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CardGiftcard
 import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.Headphones
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.Settings
@@ -83,28 +86,52 @@ fun MoreScreen(
                 onClick = { onNavigate(Routes.INVITE_EARN) },
             )
             FloorListItem(
-                title = "Marketplace",
-                subtitle = if (flags["marketplace"] == true) "Partner deals" else "Coming soon",
-                icon = Icons.Outlined.Storefront,
-                onClick = { onNavigate(Routes.MARKETPLACE) },
+                title = "Workplace Spotlight",
+                subtitle = "Recognition for great BPO workplaces",
+                icon = Icons.Outlined.Insights,
+                onClick = { onNavigate(Routes.INSIGHTS) },
             )
             FloorListItem(
                 title = "Academy",
-                subtitle = if (flags["academy"] == true) "Courses & career growth" else "Coming soon",
+                subtitle = "Courses & career growth",
                 icon = Icons.Outlined.School,
                 onClick = { onNavigate(Routes.ACADEMY) },
             )
             FloorListItem(
+                title = "Floor Radio",
+                subtitle = "When words stop, the shift keeps moving",
+                icon = Icons.Outlined.Headphones,
+                onClick = { onNavigate(Routes.RADIO) },
+            )
+            FloorListItem(
+                title = "Events",
+                subtitle = "Webinars, meetups & radio sessions",
+                icon = Icons.Outlined.CalendarMonth,
+                onClick = { onNavigate(Routes.EVENTS) },
+            )
+            FloorListItem(
+                title = "Marketplace",
+                subtitle = "Member deals around the BPO lifestyle",
+                icon = Icons.Outlined.Storefront,
+                onClick = { onNavigate(Routes.MARKETPLACE) },
+            )
+            FloorListItem(
+                title = "Resources",
+                subtitle = "Calculators, templates & BPO guides",
+                icon = Icons.Outlined.MenuBook,
+                onClick = { onNavigate(Routes.RESOURCES) },
+            )
+            FloorListItem(
                 title = "Employers & Jobs",
-                subtitle = if (flags["jobs"] == true) "Verified employers hiring now" else "Coming soon",
+                subtitle = "See who is hiring",
                 icon = Icons.Outlined.Work,
                 onClick = { onNavigate(Routes.JOBS) },
             )
             FloorListItem(
-                title = "Workplace Insights",
-                subtitle = if (flags["insights"] == true) "How floors compare" else "Coming soon",
-                icon = Icons.Outlined.Insights,
-                onClick = { onNavigate(Routes.INSIGHTS) },
+                title = "Support",
+                subtitle = "Walker — live human help, anywhere",
+                icon = Icons.AutoMirrored.Outlined.HelpOutline,
+                onClick = { onNavigate(Routes.WELLBEING) },
             )
             FloorListItem(
                 title = "Profile",
@@ -115,11 +142,6 @@ fun MoreScreen(
                 title = "Settings",
                 icon = Icons.Outlined.Settings,
                 onClick = { onNavigate(Routes.SETTINGS) },
-            )
-            FloorListItem(
-                title = "Help",
-                icon = Icons.AutoMirrored.Outlined.HelpOutline,
-                onClick = { onNavigate(Routes.INVITE_FAQ) },
             )
             FloorListItem(
                 title = "About The Floor",

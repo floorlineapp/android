@@ -129,6 +129,10 @@ fun FloorNavHost(
                 onOpenInvite = { navController.navigate(Routes.INVITE_EARN) },
                 onOpenRewards = { navController.navigate(Routes.REWARDS) },
                 onOpenFloorTab = { navController.navigate(Routes.FLOOR) },
+                onOpenTalk = { navController.navigate(Routes.TALK) },
+                onOpenRadio = { navController.navigate(Routes.RADIO) },
+                onOpenAcademy = { navController.navigate(Routes.ACADEMY) },
+                onOpenMarketplace = { navController.navigate(Routes.MARKETPLACE) },
                 onOpenCommunity = { navController.navigate(Routes.communityDetail(it)) },
                 onOpenPost = { navController.navigate(Routes.postDetail(it)) },
                 onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
@@ -285,17 +289,13 @@ fun FloorNavHost(
         composable(Routes.PULSE) {
             PulseScreen(onBack = { navController.popBackStack() })
         }
-        composable(Routes.JOBS) { ComingSoon("Employers & Jobs", "Browse and apply to roles from verified employers — coming soon.") }
-        composable(Routes.ACADEMY) { ComingSoon("Academy", "Courses that move you from Agent to Director — coming soon.") }
-        composable(Routes.MARKETPLACE) { ComingSoon("Marketplace", "Partner deals for the people on The Floor — coming soon.") }
-        composable(Routes.INSIGHTS) { ComingSoon("Workplace Insights", "Anonymous, aggregated workplace insight — coming soon.") }
-        composable(Routes.ABOUT) {
-            ComingSoon("About The Floor", "The global home of the people behind every customer conversation.")
-        }
+        composable(Routes.JOBS) { com.thefloor.app.feature.pages.JobsScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.ACADEMY) { com.thefloor.app.feature.pages.AcademyScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.MARKETPLACE) { com.thefloor.app.feature.pages.MarketplaceScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.INSIGHTS) { com.thefloor.app.feature.pages.InsightsScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.ABOUT) { com.thefloor.app.feature.pages.AboutScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.EVENTS) { com.thefloor.app.feature.pages.EventsScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.RESOURCES) { com.thefloor.app.feature.pages.ResourcesScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.WELLBEING) { com.thefloor.app.feature.pages.WellbeingScreen(onBack = { navController.popBackStack() }) }
     }
-}
-
-@Composable
-private fun ComingSoon(title: String, message: String) {
-    FloorEmptyState(title = title, message = message)
 }

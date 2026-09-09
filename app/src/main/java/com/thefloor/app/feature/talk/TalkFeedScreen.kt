@@ -10,7 +10,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.HealthAndSafety
+import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -31,6 +37,10 @@ import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.FloorChip
 import com.thefloor.app.core.designsystem.components.FloorEmptyState
 import com.thefloor.app.core.designsystem.components.FloorErrorState
+import com.thefloor.app.core.designsystem.components.FloorHero
+import com.thefloor.app.core.designsystem.components.FloorLiveRoomCard
+import com.thefloor.app.core.designsystem.components.FloorPillButton
+import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.core.designsystem.components.OfflineBanner
 import com.thefloor.app.core.designsystem.components.SkeletonList
@@ -116,6 +126,17 @@ class TalkFeedViewModel @Inject constructor(
     }
 }
 
+private data class LiveRoom(val topic: String, val desc: String, val online: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector)
+
+private val liveRooms = listOf(
+    LiveRoom("Love & dating while WFH", "Swipe stories, long-distance shifts, and dating when your schedule is upside down.", 42, Icons.Filled.FavoriteBorder),
+    LiveRoom("Music on shift", "What's in your headset right now? Playlists, new finds, and Floor Radio requests.", 67, Icons.Filled.Headphones),
+    LiveRoom("Movies & shows", "Whatever you're bingeing between calls or after the night shift.", 38, Icons.Filled.Movie),
+    LiveRoom("Gaming lounge", "Mobile, console, PC — squad up or just talk trash.", 54, Icons.Filled.SportsEsports),
+    LiveRoom("Mental health check-in", "A calmer room for stress, burnout and supporting each other. Moderated with care.", 29, Icons.Filled.HealthAndSafety),
+    LiveRoom("Off-topic hangout", "Nothing to do with work. Just people, talking.", 81, Icons.Filled.ChatBubbleOutline),
+)
+
 @Composable
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 fun TalkFeedScreen(
@@ -139,60 +160,79 @@ fun TalkFeedScreen(
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = FloorTheme.spacing.gutter),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                item {
-                    FloorChip(
-                        text = "All",
-                        selected = state.selectedCategoryId == null,
-                        onClick = { viewModel.selectCategory(null) },
-                    )
-                }
-                items(state.categories, key = { it.id }) { category ->
-                    FloorChip(
-                        text = category.name,
-                        selected = state.selectedCategoryId == category.id,
-                        onClick = { viewModel.selectCategory(category.id) },
-                    )
-                }
-            }
-            Spacer(Modifier.height(8.dp))
             if (state.offline) OfflineBanner()
-
-            when {
-                state.loading -> SkeletonList(rows = 5)
-                state.error != null -> FloorErrorState(message = state.error!!, onRetry = viewModel::refresh)
-                state.posts.isEmpty() -> FloorEmptyState(
-                    title = "Start the first conversation",
-                    message = "Nobody has posted here yet. Be the one who breaks the silence.",
-                    actionText = "Write a post",
-                    onAction = onCompose,
-                )
-                else -> androidx.compose.material3.pulltorefresh.PullToRefreshBox(
-                    isRefreshing = state.refreshing,
-                    onRefresh = viewModel::refresh,
+            androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+                isRefreshing = state.refreshing,
+                onRefresh = viewModel::refresh,
+            ) {
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = FloorTheme.spacing.gutter, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    LazyColumn(
-                        contentPadding = PaddingValues(horizontal = FloorTheme.spacing.gutter, vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        items(state.posts, key = { it.id }) { post ->
-                            PostCard(post = post, onClick = { onOpenPost(post.id) })
-                        }
-                        if (state.nextCursor != null) {
+                    item {
+                        FloorHero(
+                            eyebrow = "Talk · Discussions that matter",
+                            title = "The conversations our industry needs to have.",
+                            subtitle = "Talk follows subjects, not status updates. Raise a point, hear different BPO perspectives, and turn frontline experience into useful industry insight.",
+                            actions = {
+                                FloorPillButton("Start a discussion", onClick = onCompose)
+                            },
+                        )
+                    }
+                    // category chips
+                    item {
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             item {
-                                androidx.compose.runtime.LaunchedEffect(state.nextCursor) { viewModel.loadMore() }
-                                Text(
-                                    "Loading more…",
-                                    style = FloorTheme.typography.caption,
-                                    color = FloorTheme.colors.textMuted,
-                                    modifier = Modifier.padding(8.dp),
-                                )
+                                FloorChip(text = "All Discussions", selected = state.selectedCategoryId == null, onClick = { viewModel.selectCategory(null) })
+                            }
+                            items(state.categories, key = { it.id }) { category ->
+                                FloorChip(text = category.name, selected = state.selectedCategoryId == category.id, onClick = { viewModel.selectCategory(category.id) })
                             }
                         }
                     }
+
+                    when {
+                        state.loading -> item { SkeletonList(rows = 4) }
+                        state.error != null -> item { FloorErrorState(message = state.error!!, onRetry = viewModel::refresh) }
+                        state.posts.isEmpty() -> item {
+                            FloorEmptyState(
+                                title = "Start the first conversation",
+                                message = "Nobody has posted here yet. Be the one who breaks the silence.",
+                                actionText = "Write a post",
+                                onAction = onCompose,
+                            )
+                        }
+                        else -> {
+                            items(state.posts, key = { it.id }) { post ->
+                                PostCard(post = post, onClick = { onOpenPost(post.id) })
+                            }
+                            if (state.nextCursor != null) {
+                                item {
+                                    androidx.compose.runtime.LaunchedEffect(state.nextCursor) { viewModel.loadMore() }
+                                    Text("Loading more…", style = FloorTheme.typography.caption, color = FloorTheme.colors.textMuted, modifier = Modifier.padding(8.dp))
+                                }
+                            }
+                        }
+                    }
+
+                    // ---- Live Rooms ----
+                    item {
+                        Spacer(Modifier.height(6.dp))
+                        FloorSectionHeader(
+                            title = "Live Rooms",
+                            subtitle = "Drop into a live topic room — BPO talk or just a hangout.",
+                        )
+                    }
+                    items(liveRooms, key = { it.topic }) { room ->
+                        FloorLiveRoomCard(
+                            icon = room.icon,
+                            topic = room.topic,
+                            desc = room.desc,
+                            onlineText = "${room.online} online now",
+                            onClick = onCompose,
+                        )
+                    }
+                    item { Spacer(Modifier.height(8.dp)) }
                 }
             }
         }

@@ -165,6 +165,15 @@ fun PulseScreen(
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(FloorTheme.spacing.gutter),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
+                    item {
+                        com.thefloor.app.core.designsystem.components.FloorEyebrow("Pulse · The live floor", accent = com.thefloor.app.core.designsystem.components.FloorAccent.CORAL)
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            "Quick status updates from people on shift right now.",
+                            style = FloorTheme.typography.body,
+                            color = FloorTheme.colors.textSecondary,
+                        )
+                    }
                     if (state.pulses.isEmpty()) {
                         item {
                             Text(
@@ -237,7 +246,11 @@ private fun PulseCard(
             .padding(16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            PulseAvatar(pulse.authorName)
+            com.thefloor.app.core.designsystem.components.FloorAvatar(
+                name = pulse.authorName,
+                ring = com.thefloor.app.core.designsystem.components.FloorAccent.AMBER,
+                size = 36.dp,
+            )
             Spacer(Modifier.width(10.dp))
             Column {
                 Text(pulse.authorName, style = FloorTheme.typography.label, color = FloorTheme.colors.textPrimary)
