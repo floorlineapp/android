@@ -37,9 +37,24 @@ jobs:
           set -o pipefail
           ./gradlew assembleDebug --stacktrace 2>&1 | tee -a build.log
 
-      - name: List rendered screenshots
+      # Diagnostics travel back as annotations, which are readable via the API
+      # even where artifact downloads are not.
+      - name: Collect and report screenshots
         if: always()
-        run: ls -la screenshots/ 2>/dev/null || echo "no screenshots directory"
+        run: |
+          mkdir -p screenshots
+          echo "::error::SHOTS test-ran=$(grep -c 'ScreenshotTest' build.log || echo 0)"
+          found=$(find . -name '*.png' -not -path './screenshots/*' -not -path './.git/*' | head -60)
+          n=$(echo "$found" | grep -c . || echo 0)
+          echo "::error::SHOTS png-found=$n"
+          for f in $found; do
+            echo "::error::SHOTS at $f"
+            cp -f "$f" screenshots/ 2>/dev/null || true
+          done
+          echo "::error::SHOTS in-screenshots=$(ls -1 screenshots 2>/dev/null | wc -l)"
+          grep -iE "roborazzi|robolectric" build.log | tail -5 | while IFS= read -r l; do
+            echo "::error::SHOTSLOG ${l:0:200}"
+          done || true
 
       # Publicly visible error surface: compile/test failures become annotations
       # readable without signing in (log bodies are auth-gated on github.com).
