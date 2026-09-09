@@ -20,8 +20,8 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.PersonAddAlt1
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -54,6 +54,7 @@ import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTile
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.core.designsystem.components.FloorWordmark
+import com.thefloor.app.core.designsystem.components.ThemeToggleAction
 import com.thefloor.app.core.designsystem.components.OfflineBanner
 import com.thefloor.app.core.designsystem.components.SkeletonList
 import com.thefloor.app.core.model.HomeContent
@@ -127,6 +128,7 @@ fun HomeScreen(
     onOpenPost: (String) -> Unit,
     onOpenNotifications: () -> Unit,
     onOpenProfileEdit: () -> Unit,
+    onOpenSupport: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -137,14 +139,22 @@ fun HomeScreen(
             FloorTopBar(
                 titleContent = { FloorWordmark() },
                 actions = {
-                    IconButton(onClick = onOpenNotifications) {
-                        Icon(Icons.Outlined.Search, contentDescription = "Search", tint = FloorTheme.colors.textPrimary)
-                    }
+                    ThemeToggleAction()
                     IconButton(onClick = onOpenNotifications) {
                         Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = FloorTheme.colors.textPrimary)
                     }
                 },
             )
+        },
+        // Walker rides along on every main screen, as in the prototype.
+        floatingActionButton = {
+            androidx.compose.material3.FloatingActionButton(
+                onClick = onOpenSupport,
+                containerColor = FloorTheme.colors.amber,
+                contentColor = FloorTheme.colors.onAmber,
+            ) {
+                Icon(Icons.Filled.SupportAgent, contentDescription = "Walker — live support")
+            }
         },
     ) { padding ->
         when (val s = state) {
@@ -184,8 +194,9 @@ fun HomeScreen(
     }
 }
 
+/** Stateless body of Home — kept internal so screenshot tests can render it. */
 @Composable
-private fun HomeContentList(
+internal fun HomeContentList(
     content: HomeContent,
     greeting: String,
     onOpenInvite: () -> Unit,

@@ -2,6 +2,7 @@ package com.thefloor.app.feature.pages
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -101,13 +102,15 @@ private fun PhotoCard(
     badge: String? = null,
 ) {
     FloorCard(contentPadding = 0.dp) {
+        // Fit, not Crop: these cards carry brand marks along the top edge that a
+        // centre-crop slices off. 3:2 matches the source artwork.
         androidx.compose.foundation.Image(
             painter = androidx.compose.ui.res.painterResource(image),
             contentDescription = null,
-            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+            contentScale = androidx.compose.ui.layout.ContentScale.Fit,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(132.dp),
+                .aspectRatio(1.5f),
         )
         Column(Modifier.padding(16.dp)) {
             if (badge != null) {

@@ -137,6 +137,7 @@ fun FloorNavHost(
                 onOpenPost = { navController.navigate(Routes.postDetail(it)) },
                 onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onOpenProfileEdit = { navController.navigate(Routes.PROFILE_EDIT) },
+                onOpenSupport = { navController.navigate(Routes.WELLBEING) },
             )
         }
         composable(Routes.FLOOR) {

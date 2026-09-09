@@ -28,7 +28,14 @@ import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTile
 import com.thefloor.app.core.designsystem.components.FloorVerifiedBadge
 import com.thefloor.app.core.designsystem.components.FloorWordmark
+import com.thefloor.app.core.model.CareerLevel
+import com.thefloor.app.core.model.Community
+import com.thefloor.app.core.model.CompletionCard
+import com.thefloor.app.core.model.HomeContent
+import com.thefloor.app.core.model.MembershipState
+import com.thefloor.app.core.model.Post
 import com.thefloor.app.feature.auth.WelcomeScreen
+import com.thefloor.app.feature.home.HomeContentList
 import com.thefloor.app.feature.pages.AboutScreen
 import com.thefloor.app.feature.pages.AcademyScreen
 import com.thefloor.app.feature.pages.EventsScreen
@@ -85,7 +92,63 @@ class ScreenshotTest {
 
     @Test fun academyLight() = snap("page_academy_light", dark = false) { AcademyScreen {} }
     @Test fun aboutLight() = snap("page_about_light", dark = false) { AboutScreen {} }
+
+    // ---------- Home, rendered from the real screen body ----------
+    @Test fun home() = snap("page_home") { HomeBody() }
+    @Test fun homeLight() = snap("page_home_light", dark = false) { HomeBody() }
 }
+
+/** Real Home content, fed representative data. */
+@Composable
+private fun HomeBody() {
+    HomeContentList(
+        content = fakeHome,
+        greeting = "Good afternoon shift, Naledi.",
+        onOpenInvite = {}, onOpenRewards = {}, onOpenFloorTab = {}, onOpenTalk = {},
+        onOpenRadio = {}, onOpenAcademy = {}, onOpenMarketplace = {},
+        onOpenCommunity = {}, onOpenPost = {}, onOpenProfileEdit = {},
+    )
+}
+
+private val fakeHome = HomeContent(
+    displayName = "Naledi M.",
+    presenceCount = 2347,
+    completionCards = listOf(
+        CompletionCard(
+            title = "Complete your profile",
+            subtitle = "Add your workplace to see who else works there.",
+            deepLink = "floor://profile/edit",
+        ),
+    ),
+    myFloors = listOf(
+        Community(
+            id = "za", slug = "south-africa", name = "South Africa Floor",
+            description = "From Cape Town to Joburg, Durban to everywhere in between.",
+            kind = "COUNTRY", memberCount = 23461, isRestricted = false,
+            membershipState = MembershipState.JOINED,
+        ),
+    ),
+    trendingPosts = listOf(
+        Post(
+            id = "p1", authorId = "u1", authorName = "Mika R.", authorLevel = CareerLevel.TEAM_LEADER,
+            categoryId = "c1", categoryName = "The Job", communityId = "za",
+            body = "Should agents be penalised for AHT when the customer genuinely needs more time?",
+            commentCount = 118, reactionCount = 296, myReaction = null, saved = false,
+            createdAt = "2026-09-08T10:00:00Z",
+        ),
+        Post(
+            id = "p2", authorId = "u2", authorName = "Thabo N.", authorLevel = CareerLevel.SENIOR_AGENT,
+            categoryId = "c2", categoryName = "Leadership", communityId = "za",
+            body = "When does coaching become micromanagement? Where should a Team Leader draw the line?",
+            commentCount = 76, reactionCount = 184, myReaction = null, saved = false,
+            createdAt = "2026-09-07T10:00:00Z",
+        ),
+    ),
+    invitedCount = 12,
+    activeReferrals = 5,
+    creditsBalance = 12480,
+    flags = emptyMap(),
+)
 
 @Composable
 private fun Gallery() {
