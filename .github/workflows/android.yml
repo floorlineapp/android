@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,15 +34,43 @@ jobs:
           set -o pipefail
           ./gradlew assembleDebug --stacktrace 2>&1 | tee -a build.log
 
+      # Renders every screen to PNG on the JVM (Roborazzi + Robolectric) so the
+      # UI can be reviewed without a device.
+      - name: Render UI screenshots
+        id: shots
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ./gradlew :app:recordRoborazziDebug --stacktrace 2>&1 | tee -a build.log
+
       # Publicly visible error surface: compile/test failures become annotations
       # readable without signing in (log bodies are auth-gated on github.com).
       - name: Surface errors as annotations
-        if: failure()
+        if: always()
         run: |
           grep -E "^e: |error:|FAILED|FAILURE:|Caused by:|Unresolved reference" build.log \
             | head -60 | sed 's/::/-/g' | while IFS= read -r line; do
             echo "::error::${line}"
           done || true
+
+      # Commit the rendered screens back to the repo. Artifact downloads are not
+      # reachable from every environment; a commit always is.
+      - name: Publish screenshots to repo
+        if: always()
+        run: |
+          if [ -d screenshots ] && [ -n "$(ls -A screenshots 2>/dev/null)" ]; then
+            git config user.name "floor-ci"
+            git config user.email "ci@users.noreply.github.com"
+            git add -f screenshots
+            if ! git diff --cached --quiet; then
+              git commit -m "CI: update UI screenshots [skip ci]"
+              git push origin HEAD:main || echo "screenshot push skipped"
+            else
+              echo "screenshots unchanged"
+            fi
+          else
+            echo "no screenshots produced"
+          fi
 
       - name: Upload build log
         if: always()
@@ -49,7 +80,16 @@ jobs:
           path: build.log
           retention-days: 14
 
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-screenshots
+          path: screenshots/
+          retention-days: 14
+
       - name: Upload debug APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: the-floor-debug-apk

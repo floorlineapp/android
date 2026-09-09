@@ -7,6 +7,9 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    // Renders Compose screens to PNG on the JVM so the UI can be reviewed
+    // without a device. Run: ./gradlew :app:recordRoborazziDebug
+    id("io.github.takahirom.roborazzi") version "1.32.2"
 }
 
 android {
@@ -74,7 +77,14 @@ android {
     }
     testOptions {
         unitTests.isReturnDefaultValues = true
+        // Roborazzi/Robolectric need real resources (fonts, drawables) to render.
+        unitTests.isIncludeAndroidResources = true
     }
+}
+
+// Write snapshots somewhere predictable so CI can publish them for review.
+roborazzi {
+    outputDir.set(file("$rootDir/screenshots"))
 }
 
 dependencies {
@@ -127,6 +137,14 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
     testImplementation(libs.mockk)
+
+    // Screenshot rendering (JVM, no device).
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("androidx.test.ext:junit:1.2.1")
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.compose.ui.test.junit4)
+    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.32.2")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.32.2")
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.espresso.core)
