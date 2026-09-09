@@ -24,24 +24,22 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Unit tests
+      # Runs the unit tests AND records the UI screenshots in a single task
+      # invocation. Running testDebugUnitTest separately first would leave this
+      # task UP-TO-DATE and silently capture nothing.
+      - name: Unit tests + render UI screenshots
         run: |
           set -o pipefail
-          ./gradlew testDebugUnitTest --stacktrace 2>&1 | tee build.log
+          ./gradlew :app:recordRoborazziDebug --stacktrace 2>&1 | tee build.log
 
       - name: Assemble debug APK
         run: |
           set -o pipefail
           ./gradlew assembleDebug --stacktrace 2>&1 | tee -a build.log
 
-      # Renders every screen to PNG on the JVM (Roborazzi + Robolectric) so the
-      # UI can be reviewed without a device.
-      - name: Render UI screenshots
-        id: shots
-        continue-on-error: true
-        run: |
-          set -o pipefail
-          ./gradlew :app:recordRoborazziDebug --stacktrace 2>&1 | tee -a build.log
+      - name: List rendered screenshots
+        if: always()
+        run: ls -la screenshots/ 2>/dev/null || echo "no screenshots directory"
 
       # Publicly visible error surface: compile/test failures become annotations
       # readable without signing in (log bodies are auth-gated on github.com).
