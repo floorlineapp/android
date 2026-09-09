@@ -83,8 +83,14 @@ android {
 }
 
 // Write snapshots somewhere predictable so CI can publish them for review.
+// roborazzi.output.dir is what captureRoboImage() resolves relative paths against.
 roborazzi {
     outputDir.set(file("$rootDir/screenshots"))
+}
+
+tasks.withType<Test>().configureEach {
+    systemProperty("roborazzi.output.dir", "$rootDir/screenshots")
+    systemProperty("robolectric.logging", "stdout")
 }
 
 dependencies {
