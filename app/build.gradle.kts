@@ -91,6 +91,9 @@ roborazzi {
 tasks.withType<Test>().configureEach {
     systemProperty("roborazzi.output.dir", "$rootDir/screenshots")
     systemProperty("robolectric.logging", "stdout")
+    // A 3x render of a tall page is a ~27MB bitmap; the default 512MB test heap
+    // silently starves the longest, most image-heavy screens.
+    maxHeapSize = "4g"
 }
 
 dependencies {
