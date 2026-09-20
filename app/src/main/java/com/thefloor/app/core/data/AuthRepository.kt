@@ -23,6 +23,7 @@ class AuthRepository @Inject constructor(
     private val api: FloorApi,
     private val sessionStore: SessionStore,
     private val referralStore: ReferralStore,
+    private val demoStore: com.thefloor.app.core.demo.DemoStore,
 ) {
     /** Null = signed out. The nav host observes this to gate the app. */
     val session: Flow<Session?> = sessionStore.session
@@ -71,6 +72,8 @@ class AuthRepository @Inject constructor(
             safeCall { api.logout(RefreshRequestDto(session.refreshToken)) } // best-effort revoke
         }
         sessionStore.clear()
+        // Leaving the demo returns the app to the real backend.
+        demoStore.set(false)
     }
 
     suspend fun resendVerification(): AppResult<Unit> =

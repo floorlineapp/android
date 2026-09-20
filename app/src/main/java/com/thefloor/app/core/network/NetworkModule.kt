@@ -36,7 +36,10 @@ object NetworkModule {
     fun okHttp(
         authInterceptor: AuthInterceptor,
         tokenAuthenticator: TokenAuthenticator,
+        demoInterceptor: com.thefloor.app.core.demo.DemoInterceptor,
     ): OkHttpClient = OkHttpClient.Builder()
+        // First in the chain: in demo mode nothing reaches the network at all.
+        .addInterceptor(demoInterceptor)
         .addInterceptor(authInterceptor)
         .authenticator(tokenAuthenticator)
         .connectTimeout(15, TimeUnit.SECONDS)

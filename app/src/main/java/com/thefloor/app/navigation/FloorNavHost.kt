@@ -5,6 +5,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -71,9 +73,15 @@ fun FloorNavHost(
     ) {
         // ---------------- auth ----------------
         composable(Routes.WELCOME) {
+            val demoVm: com.thefloor.app.feature.auth.DemoEntryViewModel =
+                androidx.hilt.navigation.compose.hiltViewModel()
+            val demoBusy by demoVm.busy.collectAsState()
             WelcomeScreen(
                 onSignUp = { navController.navigate(Routes.signUp()) },
                 onLogIn = { navController.navigate(Routes.LOG_IN) },
+                // Session state flips to SIGNED_IN and FloorApp routes to Home.
+                onDemo = { demoVm.enter {} },
+                demoBusy = demoBusy,
             )
         }
         composable(

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -20,10 +21,32 @@ import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.FloorPrimaryButton
 import com.thefloor.app.core.designsystem.components.FloorSecondaryButton
 
+@dagger.hilt.android.lifecycle.HiltViewModel
+class DemoEntryViewModel @javax.inject.Inject constructor(
+    private val demoStore: com.thefloor.app.core.demo.DemoStore,
+    private val authRepository: com.thefloor.app.core.data.AuthRepository,
+) : androidx.lifecycle.ViewModel() {
+    val busy = kotlinx.coroutines.flow.MutableStateFlow(false)
+
+    /** Turns demo mode on, then signs in — the interceptor answers the call. */
+    fun enter(onDone: () -> Unit) {
+        if (busy.value) return
+        busy.value = true
+        androidx.lifecycle.viewModelScope.launch {
+            demoStore.set(true)
+            authRepository.logIn(com.thefloor.app.core.demo.DemoMode.EMAIL, "demo-password")
+            busy.value = false
+            onDone()
+        }
+    }
+}
+
 @Composable
 fun WelcomeScreen(
     onSignUp: () -> Unit,
     onLogIn: () -> Unit,
+    onDemo: () -> Unit = {},
+    demoBusy: Boolean = false,
 ) {
     val colors = FloorTheme.colors
     Column(
@@ -68,6 +91,14 @@ fun WelcomeScreen(
         FloorPrimaryButton(text = "Join The Floor", onClick = onSignUp, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(12.dp))
         FloorSecondaryButton(text = "I already have an account", onClick = onLogIn, modifier = Modifier.fillMaxWidth())
+        Spacer(Modifier.height(12.dp))
+        // Demo entry, as in the web prototype: explore everything with no server.
+        FloorSecondaryButton(
+            text = if (demoBusy) "Opening demo…" else "Continue with demo profile →",
+            onClick = onDemo,
+            enabled = !demoBusy,
+            modifier = Modifier.fillMaxWidth(),
+        )
         Spacer(Modifier.height(32.dp))
         Text(
             "Free to join. Free to refer.",
