@@ -30,7 +30,7 @@ jobs:
       - name: Unit tests + render UI screenshots
         run: |
           set -o pipefail
-          ./gradlew :app:recordRoborazziDebug --stacktrace 2>&1 | tee build.log
+          ./gradlew :app:recordRoborazziDebug --rerun-tasks --stacktrace 2>&1 | tee build.log
 
       - name: Assemble debug APK
         run: |
