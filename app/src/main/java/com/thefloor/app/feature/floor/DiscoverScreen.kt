@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import com.thefloor.app.core.designsystem.components.FloorHero
+import com.thefloor.app.core.designsystem.components.floorPhotoRes
 import com.thefloor.app.core.designsystem.components.floorPhotoUrl
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -295,15 +296,25 @@ fun CommunityTile(
                         ),
                     ),
             ) {
-                // Prefer the artwork the backend serves; fall back to a name match
-                // only for rows written before image_url existed.
-                (community.imageUrl ?: floorPhotoUrl(community.name))?.let { url ->
-                    coil.compose.AsyncImage(
-                        model = url,
+                // Bundled art first — instant, and works with no network. Only
+                // Floors we ship no artwork for fall through to the served URL.
+                val bundled = floorPhotoRes(community.name)
+                if (bundled != null) {
+                    androidx.compose.foundation.Image(
+                        painter = androidx.compose.ui.res.painterResource(bundled),
                         contentDescription = null,
                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                         modifier = Modifier.fillMaxWidth().height(120.dp),
                     )
+                } else {
+                    (community.imageUrl ?: floorPhotoUrl(community.name))?.let { url ->
+                        coil.compose.AsyncImage(
+                            model = url,
+                            contentDescription = null,
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                            modifier = Modifier.fillMaxWidth().height(120.dp),
+                        )
+                    }
                 }
             }
             Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {

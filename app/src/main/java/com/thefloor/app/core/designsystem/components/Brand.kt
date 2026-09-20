@@ -95,3 +95,33 @@ fun floorPhotoUrl(name: String): String? {
     val hit = floorPhotos.firstOrNull { n.contains(it.first) } ?: return null
     return "$UNSPLASH${hit.second}$PARAMS"
 }
+
+/**
+ * Cover art bundled into the APK, so Floor cards render instantly and work with
+ * no network at all. Preferred over the remote URL; the gradient remains the
+ * last resort for a Floor we have no artwork for.
+ */
+private val bundledFloorPhotos: List<Pair<String, Int>> = listOf(
+    "south africa" to R.drawable.floor_south_africa,
+    "philippines" to R.drawable.floor_philippines,
+    "colombia" to R.drawable.floor_colombia,
+    "india" to R.drawable.floor_india,
+    "mexico" to R.drawable.floor_mexico,
+    "egypt" to R.drawable.floor_egypt,
+    "poland" to R.drawable.floor_poland,
+    "brazil" to R.drawable.floor_brazil,
+    "kenya" to R.drawable.floor_kenya,
+    "united states" to R.drawable.floor_unitedstates,
+    "remote" to R.drawable.floor_remote,
+    "night shift" to R.drawable.floor_nightshift,
+    "new agent" to R.drawable.floor_newagents,
+    "team leader" to R.drawable.floor_teamleaders,
+    // Broadest match last.
+    "global" to R.drawable.floor_global,
+)
+
+/** Bundled drawable for a community name, or null when we ship no art for it. */
+fun floorPhotoRes(name: String): Int? {
+    val n = name.lowercase()
+    return bundledFloorPhotos.firstOrNull { n.contains(it.first) }?.second
+}
