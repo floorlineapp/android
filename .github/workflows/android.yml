@@ -44,12 +44,14 @@ jobs:
         run: |
           mkdir -p screenshots
           echo "::error::SHOTS test-ran=$(grep -c 'ScreenshotTest' build.log || echo 0)"
-          found=$(find . -name '*.png' -not -path './screenshots/*' -not -path './.git/*' | head -60)
+          found=$(find . -name '*.png' -not -path './screenshots/*' -not -path './.git/*' -not -path '*/build/*' | head -60)
           n=$(echo "$found" | grep -c . || echo 0)
           echo "::error::SHOTS png-found=$n"
           for f in $found; do
             echo "::error::SHOTS at $f"
-            cp -f "$f" screenshots/ 2>/dev/null || true
+            # Never clobber: roborazzi.output.dir already wrote the real render
+            # into screenshots/. This only rescues images written elsewhere.
+            cp -n "$f" screenshots/ 2>/dev/null || true
           done
           echo "::error::SHOTS in-screenshots=$(ls -1 screenshots 2>/dev/null | wc -l)"
           grep -iE "roborazzi|robolectric" build.log | tail -5 | while IFS= read -r l; do
