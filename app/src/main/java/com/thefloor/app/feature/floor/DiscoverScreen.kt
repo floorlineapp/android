@@ -295,7 +295,9 @@ fun CommunityTile(
                         ),
                     ),
             ) {
-                floorPhotoUrl(community.name)?.let { url ->
+                // Prefer the artwork the backend serves; fall back to a name match
+                // only for rows written before image_url existed.
+                (community.imageUrl ?: floorPhotoUrl(community.name))?.let { url ->
                     coil.compose.AsyncImage(
                         model = url,
                         contentDescription = null,

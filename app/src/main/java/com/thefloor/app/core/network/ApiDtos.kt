@@ -125,6 +125,7 @@ data class CommunityDto(
     val memberCount: Int = 0,
     val isRestricted: Boolean = false,
     val membershipState: String = "NOT_JOINED",
+    val imageUrl: String? = null,
 )
 
 @Serializable

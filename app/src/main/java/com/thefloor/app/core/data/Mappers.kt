@@ -53,6 +53,7 @@ fun CommunityDto.toDomain() = Community(
     isRestricted = isRestricted,
     membershipState = runCatching { MembershipState.valueOf(membershipState) }
         .getOrDefault(MembershipState.NOT_JOINED),
+    imageUrl = imageUrl,
 )
 
 fun PostDto.toDomain() = Post(

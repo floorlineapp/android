@@ -63,6 +63,8 @@ data class Community(
     val memberCount: Int,
     val isRestricted: Boolean,
     val membershipState: MembershipState,
+    /** Cover photo served by the backend; null falls back to a brand gradient. */
+    val imageUrl: String? = null,
 )
 
 data class TalkCategory(val id: String, val slug: String, val name: String)

@@ -83,6 +83,10 @@ private val floorPhotos: List<Pair<String, String>> = listOf(
     "night shift" to "photo-1544202482-5e970f02d8e7",
     "new agent" to "photo-1758518729459-235dcaadc611",
     "customer service" to "photo-1681164314348-1cab4b4eb17f",
+    "team leader" to "photo-1542744173-8e7e53415bb0",
+    "kenya" to "photo-1611348586804-61bf6c080437",
+    // Broadest match last: "The Floor — Global" and anything else global.
+    "global" to "photo-1521737604893-d14cc237f11d",
 )
 
 /** Best-effort photo for a community name; null when nothing matches. */
