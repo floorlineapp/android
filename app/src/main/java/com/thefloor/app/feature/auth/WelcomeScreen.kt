@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +33,7 @@ class DemoEntryViewModel @javax.inject.Inject constructor(
     fun enter(onDone: () -> Unit) {
         if (busy.value) return
         busy.value = true
-        androidx.lifecycle.viewModelScope.launch {
+        viewModelScope.launch {
             demoStore.set(true)
             authRepository.logIn(com.thefloor.app.core.demo.DemoMode.EMAIL, "demo-password")
             busy.value = false
