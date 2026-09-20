@@ -86,7 +86,10 @@ class ScreenshotTest {
                 Surface(color = FloorTheme.colors.ink, modifier = Modifier.fillMaxSize()) { content() }
             }
         }
-        compose.onRoot().captureRoboImage("$name.png")
+        // Absolute path: a relative one resolves against the module dir for some
+        // tests, which silently scattered captures outside the output folder.
+        val dir = System.getProperty("roborazzi.output.dir") ?: "screenshots"
+        compose.onRoot().captureRoboImage(java.io.File(dir, "$name.png").absolutePath)
     }
 
     // ---------- editorial pages ----------
