@@ -155,11 +155,17 @@ class DemoInterceptor @Inject constructor() : Interceptor {
           {"id":"x4","authorId":"u7","authorName":"Owen K.","body":"Passed my QA review with 96%. Six months ago I was at 71%.","likeCount":88,"liked":false,"createdAt":"${ago(20)}"}
         ],"nextCursor":null}"""
 
+        // The seven earning actions from the build spec, with their caps stated
+        // in the label. Invite & Grow is deliberately absent: referrals never
+        // add Floor Points.
         const val REWARDS = """{"creditsBalance":12480,"waysToEarn":[
-          {"title":"Complete your verified profile","credits":50,"deepLink":"floor://profile/edit"},
-          {"title":"Start a meaningful Talk discussion","credits":10,"deepLink":"floor://talk"},
-          {"title":"Attend a verified Floor event","credits":50,"deepLink":"floor://events"},
-          {"title":"Invite a colleague who joins","credits":100,"deepLink":"floor://invite"}
+          {"title":"Complete your verified profile — once","credits":50,"deepLink":"thefloor://profile/edit"},
+          {"title":"Start a Talk discussion — up to 2 a day","credits":10,"deepLink":"thefloor://talk"},
+          {"title":"Give an answer marked Helpful — capped daily","credits":25,"deepLink":"thefloor://talk"},
+          {"title":"Floor-verified Academy learning — per item","credits":25,"deepLink":"thefloor://academy"},
+          {"title":"Attend a verified Floor event — per event","credits":50,"deepLink":"thefloor://events"},
+          {"title":"Workplace Spotlight approved — per story","credits":75,"deepLink":"thefloor://insights"},
+          {"title":"Win an official game or competition","credits":150,"deepLink":"thefloor://rewards"}
         ],"recentTransactions":[]}"""
 
         val TRANSACTIONS = """{"items":[
@@ -189,7 +195,7 @@ class DemoInterceptor @Inject constructor() : Interceptor {
 
         fun home() = """{
           "displayName":"Naledi M.","presenceCount":2347,
-          "completionCards":[{"title":"Complete your profile","subtitle":"Add your workplace to see who else works there.","deepLink":"floor://profile/edit"}],
+          "completionCards":[{"title":"Complete your profile","subtitle":"Add your workplace to see who else works there.","deepLink":"thefloor://profile/edit"}],
           "myFloors":[
             ${community("za", "South Africa Floor", "From Cape Town to Joburg, Durban to everywhere in between.", "COUNTRY", 23461, "JOINED", "photo-1602578984228-c98a9b995f3e")},
             ${community("gl", "The Floor — Global", "The global home of the people behind every customer conversation.", "GLOBAL", 128400, "JOINED", "photo-1521737604893-d14cc237f11d")}

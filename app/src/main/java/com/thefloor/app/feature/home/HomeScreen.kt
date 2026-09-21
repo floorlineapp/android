@@ -20,7 +20,6 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.PersonAddAlt1
 import androidx.compose.material.icons.filled.School
-import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -128,7 +127,6 @@ fun HomeScreen(
     onOpenPost: (String) -> Unit,
     onOpenNotifications: () -> Unit,
     onOpenProfileEdit: () -> Unit,
-    onOpenSupport: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -145,16 +143,6 @@ fun HomeScreen(
                     }
                 },
             )
-        },
-        // Walker rides along on every main screen, as in the prototype.
-        floatingActionButton = {
-            androidx.compose.material3.FloatingActionButton(
-                onClick = onOpenSupport,
-                containerColor = FloorTheme.colors.amber,
-                contentColor = FloorTheme.colors.onAmber,
-            ) {
-                Icon(Icons.Filled.SupportAgent, contentDescription = "Walker — live support")
-            }
         },
     ) { padding ->
         when (val s = state) {

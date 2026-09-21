@@ -89,9 +89,7 @@ class RewardsViewModel @Inject constructor(
 fun RewardsScreen(
     onBack: () -> Unit,
     onOpenTransactions: () -> Unit,
-    onOpenInvite: () -> Unit,
-    onOpenProfileEdit: () -> Unit = {},
-    onOpenFloorTab: () -> Unit = {},
+    onNavigate: (String) -> Unit,
     viewModel: RewardsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -114,9 +112,7 @@ fun RewardsScreen(
                 transactions = state.transactions,
                 modifier = Modifier.padding(padding),
                 onOpenTransactions = onOpenTransactions,
-                onOpenInvite = onOpenInvite,
-                onOpenProfileEdit = onOpenProfileEdit,
-                onOpenFloorTab = onOpenFloorTab,
+                onNavigate = onNavigate,
             )
         }
     }
@@ -148,9 +144,7 @@ internal fun RewardsBody(
     transactions: List<RewardTransaction>,
     modifier: Modifier = Modifier,
     onOpenTransactions: () -> Unit = {},
-    onOpenInvite: () -> Unit = {},
-    onOpenProfileEdit: () -> Unit = {},
-    onOpenFloorTab: () -> Unit = {},
+    onNavigate: (String) -> Unit = {},
 ) {
     val earned = transactions.filter { it.deltaCredits > 0 }.sumOf { it.deltaCredits }
     val redeemed = -transactions.filter { it.deltaCredits < 0 }.sumOf { it.deltaCredits }
@@ -224,11 +218,18 @@ internal fun RewardsBody(
             // Dispatch via the deep-link parser — substring matching misroutes,
             // since every brand URI contains "floor".
             FloorCard(onClick = {
-                when (com.thefloor.app.domain.DeepLinkParser.parse(way.deepLink)) {
-                    com.thefloor.app.domain.DeepLinkParser.Target.ProfileEdit -> onOpenProfileEdit()
-                    com.thefloor.app.domain.DeepLinkParser.Target.FloorTab -> onOpenFloorTab()
-                    else -> onOpenInvite()
+                val target = com.thefloor.app.domain.DeepLinkParser.parse(way.deepLink)
+                val route = when (target) {
+                    com.thefloor.app.domain.DeepLinkParser.Target.ProfileEdit -> com.thefloor.app.navigation.Routes.PROFILE_EDIT
+                    com.thefloor.app.domain.DeepLinkParser.Target.FloorTab -> com.thefloor.app.navigation.Routes.FLOOR
+                    com.thefloor.app.domain.DeepLinkParser.Target.TalkTab -> com.thefloor.app.navigation.Routes.TALK
+                    com.thefloor.app.domain.DeepLinkParser.Target.Academy -> com.thefloor.app.navigation.Routes.ACADEMY
+                    com.thefloor.app.domain.DeepLinkParser.Target.Insights -> com.thefloor.app.navigation.Routes.INSIGHTS
+                    com.thefloor.app.domain.DeepLinkParser.Target.Events -> com.thefloor.app.navigation.Routes.EVENTS
+                    com.thefloor.app.domain.DeepLinkParser.Target.Rewards -> null
+                    else -> com.thefloor.app.navigation.Routes.INVITE_EARN
                 }
+                if (route != null) onNavigate(route)
             }) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),

@@ -48,6 +48,11 @@ import com.thefloor.app.feature.home.HomeContentList
 import com.thefloor.app.feature.profile.ProfileBody
 import com.thefloor.app.feature.pulse.PulseBody
 import com.thefloor.app.feature.pulse.PulseUiState
+import com.thefloor.app.core.walker.WalkerConversation
+import com.thefloor.app.core.walker.WalkerMessage
+import com.thefloor.app.core.walker.WalkerSender
+import com.thefloor.app.core.walker.WalkerState
+import com.thefloor.app.core.walker.WalkerStatus
 import com.thefloor.app.feature.radio.RadioBody
 import com.thefloor.app.feature.radio.RadioPlaybackState
 import com.thefloor.app.feature.rewards.RewardsBody
@@ -99,7 +104,7 @@ class ScreenshotTest {
     @Test fun marketplace() = snap("page_marketplace") { MarketplaceScreen {} }
     @Test fun resources() = snap("page_resources") { ResourcesScreen {} }
     @Test fun jobs() = snap("page_jobs") { JobsScreen {} }
-    @Test fun about() = snap("page_about") { AboutScreen {} }
+    @Test fun about() = snap("page_about") { AboutScreen(onBack = {}) }
     @Test fun wellbeing() = snap("page_wellbeing") { WellbeingScreen {} }
 
     // ---------- brand / auth ----------
@@ -111,7 +116,7 @@ class ScreenshotTest {
     @Test fun galleryLight() = snap("gallery_light", dark = false) { Gallery() }
 
     @Test fun academyLight() = snap("page_academy_light", dark = false) { AcademyScreen {} }
-    @Test fun aboutLight() = snap("page_about_light", dark = false) { AboutScreen {} }
+    @Test fun aboutLight() = snap("page_about_light", dark = false) { AboutScreen(onBack = {}) }
 
     // ---------- Home, rendered from the real screen body ----------
     @Test fun home() = snap("page_home") { HomeBody() }
@@ -126,8 +131,31 @@ class ScreenshotTest {
     @Test fun pulse() = snap("page_pulse") { PulseBody(state = fakePulse) }
     @Test fun rewards() = snap("page_rewards") { RewardsBody(summary = fakeRewards, transactions = fakeTx) }
     @Test fun rewardsLight() = snap("page_rewards_light", dark = false) { RewardsBody(summary = fakeRewards, transactions = fakeTx) }
-    @Test fun radio() = snap("page_radio") { RadioBody(playback = RadioPlaybackState.OnAir(playing = true, programName = "Night Shift")) }
+    @Test fun radio() = snap("page_radio") { RadioBody(playback = RadioPlaybackState.OnAir(playing = true, programName = "The Global Handover")) }
+    @Test fun radioRegion() = snap("page_radio_philippines") {
+        RadioBody(
+            playback = RadioPlaybackState.OnAir(playing = true, programName = "Graveyard Gold"),
+            regionKey = "philippines",
+        )
+    }
+
+    // ---------- Walker, the global support layer ----------
+    @Test fun walker() = snap("walker_chat") { WalkerConversation(state = fakeWalker, onSend = {}, onEscalate = {}) }
+    @Test fun walkerLight() = snap("walker_chat_light", dark = false) {
+        WalkerConversation(state = fakeWalker, onSend = {}, onEscalate = {})
+    }
 }
+
+private val fakeWalker = WalkerState(
+    messages = listOf(
+        WalkerMessage(0, WalkerSender.AI, "Hi — I'm Walker, support for The Floor. Ask me about your account, Floor Points, verification, a community, or anything that isn't working. If I can't sort it, I'll pass it to a person."),
+        WalkerMessage(1, WalkerSender.USER, "I finished a course in Academy last week but my points never showed up."),
+        WalkerMessage(2, WalkerSender.AI, "Every Floor Point has a source, a timestamp and a ledger entry — nothing is awarded by a click alone. Open Rewards & Games to see your full history. If a point you expected is missing, tell me which action and when, and I'll check the record."),
+        WalkerMessage(3, WalkerSender.USER, "It was the Call Center Excellence one, on Tuesday."),
+        WalkerMessage(4, WalkerSender.AGENT, "This conversation is now with the Walker team. We'll come back to you here — you'll get a notification when someone replies. Support runs across timezones, so an answer may not be instant."),
+    ),
+    status = WalkerStatus.ESCALATED,
+)
 
 /** Real Home content, fed representative data. */
 @Composable

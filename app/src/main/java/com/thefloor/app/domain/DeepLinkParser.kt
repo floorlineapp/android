@@ -21,6 +21,10 @@ object DeepLinkParser {
         data object InviteEarn : Target
         data object Rewards : Target
         data object FloorTab : Target
+        data object TalkTab : Target
+        data object Academy : Target
+        data object Insights : Target
+        data object Events : Target
         data object Home : Target
     }
 
@@ -55,6 +59,10 @@ object DeepLinkParser {
             segments.size == 2 && segments[0] == "reset" -> Target.ResetPassword(segments[1])
             segments.size == 2 && segments[0] == "verify" -> Target.VerifyEmail(segments[1])
             segments.size == 1 && segments[0] == "rewards" -> Target.Rewards
+            segments.size == 1 && segments[0] == "talk" -> Target.TalkTab
+            segments.size == 1 && segments[0] == "academy" -> Target.Academy
+            segments.size == 1 && segments[0] == "insights" -> Target.Insights
+            segments.size == 1 && segments[0] == "events" -> Target.Events
             else -> Target.Home
         }
     }

@@ -214,6 +214,14 @@ private fun navigateToTarget(
             navController.navigate(Routes.communityDetail(target.communityId)) { launchSingleTop = true }
         DeepLinkParser.Target.FloorTab ->
             navController.navigate(Routes.FLOOR) { launchSingleTop = true }
+        DeepLinkParser.Target.TalkTab ->
+            navController.navigate(Routes.TALK) { launchSingleTop = true }
+        DeepLinkParser.Target.Academy ->
+            navController.navigate(Routes.ACADEMY) { launchSingleTop = true }
+        DeepLinkParser.Target.Insights ->
+            navController.navigate(Routes.INSIGHTS) { launchSingleTop = true }
+        DeepLinkParser.Target.Events ->
+            navController.navigate(Routes.EVENTS) { launchSingleTop = true }
         is DeepLinkParser.Target.TalkPost ->
             navController.navigate(Routes.postDetail(target.postId)) { launchSingleTop = true }
         is DeepLinkParser.Target.Job -> navController.navigate(Routes.JOBS) { launchSingleTop = true }

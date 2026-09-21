@@ -11,13 +11,11 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubbleOutline
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.SportsEsports
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -149,15 +147,6 @@ fun TalkFeedScreen(
     Scaffold(
         containerColor = FloorTheme.colors.ink,
         topBar = { FloorTopBar(title = "Talk") },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onCompose,
-                containerColor = FloorTheme.colors.amber,
-                contentColor = FloorTheme.colors.onAmber,
-            ) {
-                Icon(Icons.Filled.Edit, contentDescription = "New post")
-            }
-        },
     ) { padding ->
         TalkBody(
             state = state,
@@ -202,6 +191,25 @@ internal fun TalkBody(
                                 FloorPillButton("Start a discussion", onClick = onCompose)
                             },
                         )
+                    }
+                    item {
+                        com.thefloor.app.core.designsystem.components.FloorInfoNote(
+                            accent = com.thefloor.app.core.designsystem.components.FloorAccent.TEAL,
+                        ) {
+                            Text(
+                                "Talk is where a considered opinion goes. Pulse is where a passing moment goes.",
+                                style = FloorTheme.typography.bodyStrong,
+                                color = FloorTheme.colors.textPrimary,
+                            )
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                "Starting a discussion pays +10 Floor Points, up to two a day. An answer " +
+                                    "another member marks Helpful pays +25. Pulse pays nothing \u2014 that " +
+                                    "boundary is deliberate.",
+                                style = FloorTheme.typography.body,
+                                color = FloorTheme.colors.textSecondary,
+                            )
+                        }
                     }
                     // category chips
                     item {

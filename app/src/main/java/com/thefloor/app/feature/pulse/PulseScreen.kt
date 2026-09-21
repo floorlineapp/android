@@ -17,11 +17,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,6 +33,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -94,7 +102,13 @@ class PulseViewModel @Inject constructor(
         }
     }
 
-    fun onInput(value: String) = _state.update { it.copy(input = value) }
+    /**
+     * Pulse posts are capped at 220 characters — the same ceiling the target
+     * schema enforces as a CHECK constraint on pulse_posts.body. Trimming here
+     * keeps the composer honest instead of letting the write fail server-side.
+     */
+    fun onInput(value: String) =
+        _state.update { it.copy(input = value.take(PULSE_MAX_CHARS)) }
 
     fun post() {
         val body = _state.value.input.trim()
@@ -139,7 +153,14 @@ class PulseViewModel @Inject constructor(
     }
 
     fun clearActionMessage() = _state.update { it.copy(actionMessage = null) }
+
+    companion object {
+        const val PULSE_MAX_CHARS = 220
+    }
 }
+
+/** The six reactions the composer offers, matching the prototype's emoji row. */
+private val pulseEmoji = listOf("\uD83D\uDD25", "\uD83D\uDCAF", "\uD83D\uDE02", "\uD83D\uDE4C", "\u2764\uFE0F", "\uD83D\uDCAA")
 
 @Composable
 fun PulseScreen(
@@ -204,10 +225,27 @@ internal fun PulseBody(
                         com.thefloor.app.core.designsystem.components.FloorEyebrow("Pulse · The live floor", accent = com.thefloor.app.core.designsystem.components.FloorAccent.CORAL)
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            "Quick status updates from people on shift right now.",
+                            "Short, in-the-moment posts from people on shift right now — the fast " +
+                                "counterpart to Talk.",
                             style = FloorTheme.typography.body,
                             color = FloorTheme.colors.textSecondary,
                         )
+                        Spacer(Modifier.height(12.dp))
+                        com.thefloor.app.core.designsystem.components.FloorInfoNote {
+                            Text(
+                                "Pulse earns no Floor Points \u2014 on purpose.",
+                                style = FloorTheme.typography.bodyStrong,
+                                color = FloorTheme.colors.textPrimary,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "It is deliberately outside the points system so it stays low-stakes " +
+                                    "and spontaneous. A considered opinion belongs on Talk, where it " +
+                                    "does earn.",
+                                style = FloorTheme.typography.caption,
+                                color = FloorTheme.colors.textSecondary,
+                            )
+                        }
                     }
                     if (state.pulses.isEmpty()) {
                         item {
@@ -229,28 +267,110 @@ internal fun PulseBody(
                 }
             }
 
-            // Composer
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = FloorTheme.spacing.gutter, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                FloorTextField(
-                    value = state.input,
-                    onValueChange = onInput,
-                    label = "What's happening?",
-                    modifier = Modifier.weight(1f),
+            PulseComposer(
+                input = state.input,
+                posting = state.posting,
+                onInput = onInput,
+                onPost = onPost,
+            )
+        }
+}
+
+/**
+ * The Pulse composer: 220 characters, a quick emoji row, and photo/voice
+ * attachment slots that mirror the prototype's shared mediaPending pattern.
+ */
+@Composable
+private fun PulseComposer(
+    input: String,
+    posting: Boolean,
+    onInput: (String) -> Unit,
+    onPost: () -> Unit,
+) {
+    var attachment by remember { mutableStateOf<String?>(null) }
+    val remaining = PulseViewModel.PULSE_MAX_CHARS - input.length
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(FloorTheme.colors.surface)
+            .padding(horizontal = FloorTheme.spacing.gutter, vertical = 10.dp),
+    ) {
+        if (attachment != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                com.thefloor.app.core.designsystem.components.FloorBadge(
+                    attachment!!,
+                    tone = com.thefloor.app.core.designsystem.components.BadgeTone.TEAL,
                 )
-                Spacer(Modifier.width(8.dp))
-                FloorPrimaryButton(
-                    text = "Post",
-                    onClick = onPost,
-                    loading = state.posting,
-                    enabled = state.input.isNotBlank(),
+                IconButton(onClick = { attachment = null }, modifier = Modifier.size(28.dp)) {
+                    Icon(
+                        Icons.Filled.Close,
+                        contentDescription = "Remove attachment",
+                        tint = FloorTheme.colors.textMuted,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+            }
+            Spacer(Modifier.height(6.dp))
+        }
+
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            items(pulseEmoji) { e ->
+                Text(
+                    e,
+                    style = FloorTheme.typography.bodyL,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onInput(input + e) }
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
                 )
             }
         }
+        Spacer(Modifier.height(6.dp))
+
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            FloorTextField(
+                value = input,
+                onValueChange = onInput,
+                label = "What's happening?",
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(Modifier.width(8.dp))
+            FloorPrimaryButton(
+                text = "Post",
+                onClick = onPost,
+                loading = posting,
+                enabled = input.isNotBlank(),
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = { attachment = "Photo attached" }, modifier = Modifier.size(34.dp)) {
+                Icon(
+                    Icons.Filled.CameraAlt,
+                    contentDescription = "Attach a photo",
+                    tint = FloorTheme.colors.textMuted,
+                    modifier = Modifier.size(19.dp),
+                )
+            }
+            IconButton(onClick = { attachment = "Voice note attached" }, modifier = Modifier.size(34.dp)) {
+                Icon(
+                    Icons.Filled.Mic,
+                    contentDescription = "Record a voice note",
+                    tint = FloorTheme.colors.textMuted,
+                    modifier = Modifier.size(19.dp),
+                )
+            }
+            Spacer(Modifier.weight(1f))
+            Text(
+                "$remaining",
+                style = FloorTheme.typography.mono,
+                color = if (remaining <= 20) FloorTheme.colors.coral else FloorTheme.colors.textMuted,
+            )
+        }
+    }
 }
 
 @Composable
@@ -300,6 +420,10 @@ private fun PulseCard(
             animationSpec = FloorMotion.bouncy,
             label = "heartScale",
         )
+        // One reaction per member per post, mirroring pulse_reactions' composite key.
+        val reactions = remember(pulse.id) { mutableStateMapOf<String, Int>() }
+        var mine by remember(pulse.id) { mutableStateOf<String?>(null) }
+
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(
                 onClick = {
@@ -315,12 +439,48 @@ private fun PulseCard(
                     modifier = Modifier.size(20.dp).scale(heartScale),
                 )
             }
-            Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(2.dp))
             Text(
                 pulse.likeCount.toString(),
                 style = FloorTheme.typography.caption,
                 color = FloorTheme.colors.textSecondary,
             )
+            Spacer(Modifier.width(10.dp))
+            pulseEmoji.take(4).forEach { e ->
+                val count = reactions[e] ?: 0
+                val picked = mine == e
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(
+                            if (picked) FloorTheme.colors.amberSoft else FloorTheme.colors.surfaceAlt,
+                        )
+                        .clickable {
+                            view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+                            val previous = mine
+                            if (previous != null) reactions[previous] = (reactions[previous] ?: 1) - 1
+                            if (previous == e) {
+                                mine = null
+                            } else {
+                                reactions[e] = (reactions[e] ?: 0) + 1
+                                mine = e
+                            }
+                        }
+                        .padding(horizontal = 7.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(e, style = FloorTheme.typography.caption)
+                    if (count > 0) {
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            count.toString(),
+                            style = FloorTheme.typography.monoTag,
+                            color = FloorTheme.colors.amber,
+                        )
+                    }
+                }
+                Spacer(Modifier.width(5.dp))
+            }
         }
     }
 }

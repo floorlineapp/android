@@ -145,7 +145,6 @@ fun FloorNavHost(
                 onOpenPost = { navController.navigate(Routes.postDetail(it)) },
                 onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                 onOpenProfileEdit = { navController.navigate(Routes.PROFILE_EDIT) },
-                onOpenSupport = { navController.navigate(Routes.WELLBEING) },
             )
         }
         composable(Routes.FLOOR) {
@@ -215,9 +214,7 @@ fun FloorNavHost(
             RewardsScreen(
                 onBack = { navController.popBackStack() },
                 onOpenTransactions = { navController.navigate(Routes.REWARD_TRANSACTIONS) },
-                onOpenInvite = { navController.navigate(Routes.INVITE_EARN) },
-                onOpenProfileEdit = { navController.navigate(Routes.PROFILE_EDIT) },
-                onOpenFloorTab = { navController.navigate(Routes.FLOOR) },
+                onNavigate = { route -> navController.navigate(route) },
             )
         }
         composable(Routes.REWARD_TRANSACTIONS) {
