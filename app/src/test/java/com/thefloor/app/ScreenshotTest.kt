@@ -53,6 +53,7 @@ import com.thefloor.app.core.walker.WalkerMessage
 import com.thefloor.app.core.walker.WalkerSender
 import com.thefloor.app.core.walker.WalkerState
 import com.thefloor.app.core.walker.WalkerStatus
+import com.thefloor.app.feature.more.MoreScreen
 import com.thefloor.app.feature.radio.RadioBody
 import com.thefloor.app.feature.radio.RadioPlaybackState
 import com.thefloor.app.feature.rewards.RewardsBody
@@ -138,6 +139,11 @@ class ScreenshotTest {
             regionKey = "philippines",
         )
     }
+
+    @Test fun more() = snap("page_more") { MoreScreen(onNavigate = {}) }
+    @Test fun moreLight() = snap("page_more_light", dark = false) { MoreScreen(onNavigate = {}) }
+    @Test fun insightsLight() = snap("page_insights_light", dark = false) { InsightsScreen {} }
+    @Test fun marketplaceLight() = snap("page_marketplace_light", dark = false) { MarketplaceScreen {} }
 
     // ---------- Walker, the global support layer ----------
     @Test fun walker() = snap("walker_chat") { WalkerConversation(state = fakeWalker, onSend = {}, onEscalate = {}) }
@@ -321,9 +327,13 @@ private val fakePulse = PulseUiState(
 private val fakeRewards = RewardsSummary(
     creditsBalance = 12480,
     waysToEarn = listOf(
-        WayToEarn("Complete your verified profile", 50, "floor://profile/edit"),
-        WayToEarn("Start a meaningful Talk discussion", 10, "floor://talk"),
-        WayToEarn("Attend a verified Floor event", 50, "floor://events"),
+        WayToEarn("Complete your verified profile — once", 50, "thefloor://profile/edit"),
+        WayToEarn("Start a Talk discussion — up to 2 a day", 10, "thefloor://talk"),
+        WayToEarn("Give an answer marked Helpful — capped daily", 25, "thefloor://talk"),
+        WayToEarn("Floor-verified Academy learning — per item", 25, "thefloor://academy"),
+        WayToEarn("Attend a verified Floor event — per event", 50, "thefloor://events"),
+        WayToEarn("Workplace Spotlight approved — per story", 75, "thefloor://insights"),
+        WayToEarn("Win an official game or competition", 150, "thefloor://rewards"),
     ),
     recentTransactions = emptyList(),
 )
