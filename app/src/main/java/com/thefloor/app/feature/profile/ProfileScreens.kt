@@ -96,7 +96,7 @@ class ProfileViewModel @Inject constructor(
         // reads the same number Rewards & Games shows rather than its own.
         viewModelScope.launch {
             rewardsRepository.summary()
-                .onSuccess { summary -> state.update { it.copy(floorPoints = summary.creditsBalance) } }
+                .onSuccess { summary -> state.update { it.copy(floorPoints = summary.creditsBalance.toInt()) } }
         }
     }
 
