@@ -17,6 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -29,6 +32,8 @@ import androidx.navigation.compose.rememberNavController
 import com.thefloor.app.core.data.AuthRepository
 import com.thefloor.app.core.data.ConfigRepository
 import com.thefloor.app.core.designsystem.FloorTheme
+import com.thefloor.app.core.walker.WalkerFab
+import com.thefloor.app.core.walker.WalkerSheet
 import com.thefloor.app.domain.DeepLinkParser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,12 +63,15 @@ class RootViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, SessionState.LOADING)
 
-    val radioEnabled = MutableStateFlow(false)
+    /**
+     * Feature flags are still read for the rest of the app, but Floor Radio is
+     * not one of them: the process guide makes Radio one of the four permanent
+     * bottom-nav destinations alongside Home, The Floor and Talk.
+     */
+    val flags = MutableStateFlow<Map<String, Boolean>>(emptyMap())
 
     init {
-        viewModelScope.launch {
-            radioEnabled.value = configRepository.flags()["radio"] == true
-        }
+        viewModelScope.launch { flags.value = configRepository.flags() }
     }
 }
 
@@ -90,7 +98,7 @@ fun FloorApp(
     val navController = rememberNavController()
     val rootViewModel: RootViewModel = hiltViewModel()
     val sessionState by rootViewModel.sessionState.collectAsStateWithLifecycle()
-    val radioEnabled by rootViewModel.radioEnabled.collectAsStateWithLifecycle()
+    var walkerOpen by remember { mutableStateOf(false) }
     val deepLink by pendingDeepLink.collectAsState()
 
     // Deep links: park until session state is known, then route.
@@ -126,11 +134,18 @@ fun FloorApp(
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
-    val visibleTabs = if (radioEnabled) tabs else tabs.filterNot { it.route == Routes.RADIO }
+    val visibleTabs = tabs
     val showBottomBar = currentRoute != null && visibleTabs.any { it.route == currentRoute }
+    // Walker is global chrome, not a page: it floats over every signed-in screen
+    // and is deliberately absent only from the pre-account auth flow.
+    val showWalker = sessionState == SessionState.SIGNED_IN &&
+        currentRoute != null && !authRoutesSet.contains(currentRoute)
 
     Scaffold(
         containerColor = FloorTheme.colors.ink,
+        floatingActionButton = {
+            if (showWalker) WalkerFab(onClick = { walkerOpen = true })
+        },
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar(containerColor = FloorTheme.colors.surface) {
@@ -166,6 +181,10 @@ fun FloorApp(
             sessionState = sessionState,
             modifier = Modifier.padding(padding),
         )
+    }
+
+    if (walkerOpen) {
+        WalkerSheet(onDismiss = { walkerOpen = false })
     }
 }
 

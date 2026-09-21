@@ -302,7 +302,12 @@ fun FloorNavHost(
         composable(Routes.ACADEMY) { com.thefloor.app.feature.pages.AcademyScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.MARKETPLACE) { com.thefloor.app.feature.pages.MarketplaceScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.INSIGHTS) { com.thefloor.app.feature.pages.InsightsScreen(onBack = { navController.popBackStack() }) }
-        composable(Routes.ABOUT) { com.thefloor.app.feature.pages.AboutScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.ABOUT) {
+            com.thefloor.app.feature.pages.AboutScreen(
+                onBack = { navController.popBackStack() },
+                onOpenWellbeing = { navController.navigate(Routes.WELLBEING) },
+            )
+        }
         composable(Routes.EVENTS) { com.thefloor.app.feature.pages.EventsScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.RESOURCES) { com.thefloor.app.feature.pages.ResourcesScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.WELLBEING) { com.thefloor.app.feature.pages.WellbeingScreen(onBack = { navController.popBackStack() }) }
