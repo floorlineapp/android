@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            val themeMode by themeStore.mode.collectAsStateWithLifecycle(initialValue = ThemeMode.LIGHT)
+            val themeMode by themeStore.mode.collectAsStateWithLifecycle(initialValue = ThemeMode.SYSTEM)
             val dark = themeMode.isDark()
             // Keep the system bar icons legible against whichever theme is active.
             LaunchedEffect(dark) {

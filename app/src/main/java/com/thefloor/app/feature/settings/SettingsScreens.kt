@@ -64,7 +64,7 @@ class SettingsViewModel @Inject constructor(
     val deleteState = MutableStateFlow(DeleteState())
 
     val themeMode: StateFlow<ThemeMode> = themeStore.mode
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeMode.LIGHT)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeMode.SYSTEM)
 
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch { themeStore.setMode(mode) }

@@ -60,7 +60,7 @@ fun ThemeMode.isDark(): Boolean = when (this) {
 
 @Composable
 fun FloorTheme(
-    mode: ThemeMode = ThemeMode.LIGHT,
+    mode: ThemeMode = ThemeMode.SYSTEM,
     content: @Composable () -> Unit,
 ) {
     val dark = mode.isDark()

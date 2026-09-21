@@ -12,7 +12,11 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Light is the default so the app opens bright; users can switch to Dark or follow System. */
+/**
+ * The app follows the phone by default: someone whose device is in dark mode
+ * gets dark, someone in light mode gets light, and it changes with them. Only
+ * an explicit choice in Settings overrides that.
+ */
 enum class ThemeMode { LIGHT, DARK, SYSTEM }
 
 private val Context.themeDataStore: DataStore<Preferences> by preferencesDataStore("floor_theme")
@@ -25,7 +29,7 @@ class ThemeStore @Inject constructor(
     private val keyMode = stringPreferencesKey("theme_mode")
 
     val mode: Flow<ThemeMode> = context.themeDataStore.data.map { prefs ->
-        prefs[keyMode]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() } ?: ThemeMode.LIGHT
+        prefs[keyMode]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() } ?: ThemeMode.SYSTEM
     }
 
     suspend fun setMode(mode: ThemeMode) {
