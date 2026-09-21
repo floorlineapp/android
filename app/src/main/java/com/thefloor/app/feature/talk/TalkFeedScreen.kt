@@ -179,7 +179,12 @@ internal fun TalkBody(
                 onRefresh = onRefresh,
             ) {
                 LazyColumn(
-                    contentPadding = PaddingValues(horizontal = FloorTheme.spacing.gutter, vertical = 12.dp),
+                    contentPadding = PaddingValues(
+                        start = FloorTheme.spacing.gutter,
+                        end = FloorTheme.spacing.gutter,
+                        top = 12.dp,
+                        bottom = 96.dp,
+                    ),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     item {

@@ -60,6 +60,10 @@ data class InviteMiniDto(val invited: Int = 0, val active: Int = 0)
 data class HomeDto(
     val displayName: String = "",
     val presenceCount: Int = 0,
+    val activeConversations: Int = 0,
+    val newOpportunities: Int = 0,
+    val pointsAvailableToday: Int = 0,
+    val presenceNames: List<String> = emptyList(),
     val completionCards: List<CompletionCardDto> = emptyList(),
     val myFloors: List<CommunityDto> = emptyList(),
     val trendingPosts: List<PostDto> = emptyList(),

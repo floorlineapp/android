@@ -73,6 +73,10 @@ class HomeRepository @Inject constructor(private val api: FloorApi) {
         HomeContent(
             displayName = dto.displayName,
             presenceCount = dto.presenceCount,
+            activeConversations = dto.activeConversations,
+            newOpportunities = dto.newOpportunities,
+            pointsAvailableToday = dto.pointsAvailableToday,
+            presenceNames = dto.presenceNames,
             completionCards = dto.completionCards.map { CompletionCard(it.title, it.subtitle, it.deepLink) },
             myFloors = dto.myFloors.map { it.toDomain() },
             trendingPosts = dto.trendingPosts.map { it.toDomain() },

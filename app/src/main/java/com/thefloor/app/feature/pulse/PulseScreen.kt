@@ -344,7 +344,8 @@ private fun PulseComposer(
             )
         }
         Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+            // Trailing gap: the floating Walker button lives in this corner.
+            modifier = Modifier.fillMaxWidth().padding(top = 2.dp, end = 64.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = { attachment = "Photo attached" }, modifier = Modifier.size(34.dp)) {

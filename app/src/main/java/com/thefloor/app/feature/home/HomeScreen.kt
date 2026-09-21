@@ -20,6 +20,8 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.PersonAddAlt1
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Storefront
+import androidx.compose.material.icons.filled.WorkOutline
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -216,39 +218,78 @@ internal fun HomeContentList(
             )
         }
 
-        // ---- KPI row ----
+        // ---- KPI strip: the four numbers the dashboard exists to show ----
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 FloorKpiCard(
                     icon = Icons.Filled.Group,
                     value = formatCount(content.presenceCount),
-                    label = "people online now",
+                    label = "people online",
                     accent = FloorAccent.TEAL,
                     modifier = Modifier.weight(1f),
                 )
                 FloorKpiCard(
+                    icon = Icons.Filled.Forum,
+                    value = formatCount(content.activeConversations),
+                    label = "active conversations",
+                    accent = FloorAccent.AMBER,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                FloorKpiCard(
+                    icon = Icons.Filled.WorkOutline,
+                    value = formatCount(content.newOpportunities),
+                    label = "new opportunities",
+                    accent = FloorAccent.CORAL,
+                    modifier = Modifier.weight(1f),
+                )
+                FloorKpiCard(
                     icon = Icons.Filled.CardGiftcard,
-                    value = formatCount(content.creditsBalance.toInt()),
-                    label = "Floor points",
+                    value = formatCount(content.pointsAvailableToday),
+                    label = "points available today",
                     accent = FloorAccent.AMBER,
                     modifier = Modifier.weight(1f),
                 )
             }
         }
 
-        // ---- Presence line ----
+        // ---- Presence panel: who is actually here, not just how many ----
         item {
             FloorCard(onClick = onOpenFloorTab, contentPadding = 18.dp) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     FloorLiveDot()
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        "${formatCount(content.presenceCount)} people on The Floor right now",
+                        "On The Floor right now",
                         style = FloorTheme.typography.titleSm,
                         color = FloorTheme.colors.textPrimary,
                         modifier = Modifier.weight(1f),
                     )
                     Text("Explore →", style = FloorTheme.typography.label, color = FloorTheme.colors.teal)
+                }
+                if (content.presenceNames.isNotEmpty()) {
+                    Spacer(Modifier.height(14.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        content.presenceNames.take(6).forEach { who ->
+                            com.thefloor.app.core.designsystem.components.FloorAvatar(
+                                name = who,
+                                ring = FloorAccent.TEAL,
+                                size = 34.dp,
+                            )
+                        }
+                        Spacer(Modifier.width(2.dp))
+                        Text(
+                            "+${formatCount((content.presenceCount - 6).coerceAtLeast(0))}",
+                            style = FloorTheme.typography.mono,
+                            color = FloorTheme.colors.teal,
+                        )
+                    }
                 }
             }
         }
@@ -290,6 +331,16 @@ internal fun HomeContentList(
                 FloorTile(Icons.Filled.PersonAddAlt1, "Invite & Grow", "Bring good people to The Floor.", onOpenInvite, Modifier.weight(1f), FloorAccent.TEAL)
                 FloorTile(Icons.Filled.School, "Academy", "Upskill for the role you want next.", onOpenAcademy, Modifier.weight(1f), FloorAccent.AMBER)
             }
+        }
+        item {
+            FloorTile(
+                Icons.Filled.Storefront,
+                "Marketplace",
+                "Member deals across ten categories, from headsets to cover.",
+                onOpenMarketplace,
+                Modifier.fillMaxWidth(),
+                FloorAccent.CORAL,
+            )
         }
 
         // ---- Your Floors ----
@@ -352,7 +403,8 @@ internal fun HomeContentList(
             }
         }
 
-        item { Spacer(Modifier.height(8.dp)) }
+        // Clearance for the floating Walker button.
+        item { Spacer(Modifier.height(88.dp)) }
     }
 }
 

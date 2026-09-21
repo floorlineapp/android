@@ -186,6 +186,10 @@ data class CompletionCard(val title: String, val subtitle: String, val deepLink:
 data class HomeContent(
     val displayName: String,
     val presenceCount: Int,
+    val activeConversations: Int = 0,
+    val newOpportunities: Int = 0,
+    val pointsAvailableToday: Int = 0,
+    val presenceNames: List<String> = emptyList(),
     val completionCards: List<CompletionCard>,
     val myFloors: List<Community>,
     val trendingPosts: List<Post>,

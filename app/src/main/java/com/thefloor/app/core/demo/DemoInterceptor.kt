@@ -195,6 +195,8 @@ class DemoInterceptor @Inject constructor() : Interceptor {
 
         fun home() = """{
           "displayName":"Naledi M.","presenceCount":2347,
+          "activeConversations":318,"newOpportunities":24,"pointsAvailableToday":160,
+          "presenceNames":["Thabo N.","Grace A.","Owen K.","Priya S.","Mika R.","Carmen V.","Joan D.","Lerato K."],
           "completionCards":[{"title":"Complete your profile","subtitle":"Add your workplace to see who else works there.","deepLink":"thefloor://profile/edit"}],
           "myFloors":[
             ${community("za", "South Africa Floor", "From Cape Town to Joburg, Durban to everywhere in between.", "COUNTRY", 23461, "JOINED", "photo-1602578984228-c98a9b995f3e")},

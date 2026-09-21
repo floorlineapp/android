@@ -113,7 +113,12 @@ fun InviteEarnScreen(
                 val summary = s.summary
                 LazyColumn(
                     modifier = Modifier.padding(padding),
-                    contentPadding = PaddingValues(FloorTheme.spacing.gutter),
+                    contentPadding = PaddingValues(
+                        start = FloorTheme.spacing.gutter,
+                        end = FloorTheme.spacing.gutter,
+                        top = FloorTheme.spacing.gutter,
+                        bottom = 96.dp,
+                    ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     // 1 — header
