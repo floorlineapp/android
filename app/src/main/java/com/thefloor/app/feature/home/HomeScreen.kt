@@ -37,6 +37,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.thefloor.app.core.common.AppError
+import com.thefloor.app.core.common.ShiftClock
 import com.thefloor.app.core.common.ShiftGreeting
 import com.thefloor.app.core.common.onError
 import com.thefloor.app.core.common.onSuccess
@@ -46,7 +47,6 @@ import com.thefloor.app.core.designsystem.components.FloorAccent
 import com.thefloor.app.core.designsystem.components.FloorCard
 import com.thefloor.app.core.designsystem.components.FloorErrorState
 import com.thefloor.app.core.designsystem.components.FloorEyebrow
-import com.thefloor.app.core.designsystem.components.FloorHero
 import com.thefloor.app.core.designsystem.components.FloorIconChip
 import com.thefloor.app.core.designsystem.components.FloorKpiCard
 import com.thefloor.app.core.designsystem.components.FloorLiveDot
@@ -205,16 +205,25 @@ internal fun HomeContentList(
         contentPadding = PaddingValues(horizontal = FloorTheme.spacing.gutter, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        // ---- Hero ----
+        // ---- The shift card ----
+        // This replaces the brand hero that used to sit here. The wordmark is
+        // already in the app bar and both of the hero's actions exist as tiles
+        // below, so nothing is lost — and the first thing on Home is now
+        // something that changes through the day rather than a fixed statement.
         item {
-            FloorHero(
-                eyebrow = "The Floor · Global Community",
-                title = "$greeting The global home of the people behind every customer conversation.",
-                subtitle = "Wherever you work, whatever shift you're on — you're never alone on The Floor.",
-                actions = {
-                    FloorPillButton("Find your Floor", onClick = onOpenFloorTab, leadingIcon = Icons.Filled.Groups)
-                    FloorPillButton("Floor Radio", onClick = onOpenRadio, primary = false, leadingIcon = Icons.Filled.Headphones)
-                },
+            Text(
+                greeting,
+                style = FloorTheme.typography.caption,
+                color = FloorTheme.colors.textMuted,
+            )
+        }
+        item {
+            ShiftCard(
+                content = content,
+                phase = ShiftClock.phaseFor(LocalTime.now()),
+                onOpenTalk = onOpenTalk,
+                onOpenRadio = onOpenRadio,
+                onOpenRewards = onOpenRewards,
             )
         }
 
@@ -294,19 +303,17 @@ internal fun HomeContentList(
             }
         }
 
-        // ---- Profile completion cards ----
-        items(content.completionCards, key = { it.title }) { card ->
-            FloorCard(onClick = onOpenProfileEdit, contentPadding = 18.dp) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    FloorIconChip(Icons.Filled.PersonAddAlt1, FloorAccent.AMBER)
-                    Spacer(Modifier.width(14.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(card.title, style = FloorTheme.typography.titleSm, color = FloorTheme.colors.textPrimary)
-                        Spacer(Modifier.height(3.dp))
-                        Text(card.subtitle, style = FloorTheme.typography.body, color = FloorTheme.colors.textSecondary)
-                    }
-                }
-            }
+        // ---- First steps ----
+        // Supersedes the old completion card: same nudge, but it names all three
+        // actions, shows what each pays, and retires itself once they are done.
+        item {
+            FirstStepsCard(
+                content = content,
+                profileComplete = content.completionCards.isEmpty(),
+                onOpenFloorTab = onOpenFloorTab,
+                onOpenProfileEdit = onOpenProfileEdit,
+                onOpenTalk = onOpenTalk,
+            )
         }
 
         // ---- Jump back in ----

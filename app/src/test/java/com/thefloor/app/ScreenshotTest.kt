@@ -53,6 +53,9 @@ import com.thefloor.app.core.walker.WalkerMessage
 import com.thefloor.app.core.walker.WalkerSender
 import com.thefloor.app.core.walker.WalkerState
 import com.thefloor.app.core.walker.WalkerStatus
+import com.thefloor.app.core.common.ShiftPhase
+import com.thefloor.app.feature.home.FirstStepsCard
+import com.thefloor.app.feature.home.ShiftCard
 import com.thefloor.app.feature.more.MoreScreen
 import com.thefloor.app.feature.radio.RadioBody
 import com.thefloor.app.feature.radio.RadioPlaybackState
@@ -145,6 +148,20 @@ class ScreenshotTest {
     @Test fun insightsLight() = snap("page_insights_light", dark = false) { InsightsScreen {} }
     @Test fun marketplaceLight() = snap("page_marketplace_light", dark = false) { MarketplaceScreen {} }
 
+    // ---------- the shift card, in all four states ----------
+    @Test fun shiftBefore() = snap("shift_before") { ShiftCardPreview(ShiftPhase.BEFORE) }
+    @Test fun shiftOnFloor() = snap("shift_on_floor") { ShiftCardPreview(ShiftPhase.ON_FLOOR) }
+    @Test fun shiftAfter() = snap("shift_after") { ShiftCardPreview(ShiftPhase.AFTER) }
+    @Test fun shiftNight() = snap("shift_night") { ShiftCardPreview(ShiftPhase.NIGHT) }
+    @Test fun shiftAfterLight() = snap("shift_after_light", dark = false) { ShiftCardPreview(ShiftPhase.AFTER) }
+    @Test fun firstSteps() = snap("first_steps") {
+        FirstStepsCard(
+            content = fakeHome,
+            profileComplete = false,
+            onOpenFloorTab = {}, onOpenProfileEdit = {}, onOpenTalk = {},
+        )
+    }
+
     // ---------- Walker, the global support layer ----------
     @Test fun walker() = snap("walker_chat") { WalkerConversation(state = fakeWalker, onSend = {}, onEscalate = {}) }
     @Test fun walkerLight() = snap("walker_chat_light", dark = false) {
@@ -175,6 +192,17 @@ private fun HomeBody() {
     )
 }
 
+@Composable
+private fun ShiftCardPreview(phase: ShiftPhase) {
+    androidx.compose.foundation.layout.Box(Modifier.padding(16.dp)) {
+        ShiftCard(
+            content = fakeHome,
+            phase = phase,
+            onOpenTalk = {}, onOpenRadio = {}, onOpenRewards = {},
+        )
+    }
+}
+
 private val fakeHome = HomeContent(
     displayName = "Naledi M.",
     presenceCount = 2347,
@@ -182,6 +210,10 @@ private val fakeHome = HomeContent(
     newOpportunities = 24,
     pointsAvailableToday = 160,
     presenceNames = listOf("Thabo N.", "Grace A.", "Owen K.", "Priya S.", "Mika R.", "Carmen V."),
+    postsSinceYesterday = 41,
+    mentions = 2,
+    pointsEarnedToday = 35,
+    startedDiscussion = false,
     completionCards = listOf(
         CompletionCard(
             title = "Complete your profile",

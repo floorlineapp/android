@@ -45,16 +45,18 @@ import com.thefloor.app.core.designsystem.pressScale
 /** Accent role for eyebrows / accents across the editorial kit. */
 enum class FloorAccent { AMBER, TEAL, CORAL, FAINT }
 
+/** The accent's solid colour. Public so features can tint to the same roles. */
 @Composable
-private fun FloorAccent.color(): Color = when (this) {
+fun FloorAccent.color(): Color = when (this) {
     FloorAccent.AMBER -> FloorTheme.colors.amber
     FloorAccent.TEAL -> FloorTheme.colors.teal
     FloorAccent.CORAL -> FloorTheme.colors.coral
     FloorAccent.FAINT -> FloorTheme.colors.textMuted
 }
 
+/** The accent's soft fill, for chips and washes. */
 @Composable
-private fun FloorAccent.soft(): Color = when (this) {
+fun FloorAccent.soft(): Color = when (this) {
     FloorAccent.AMBER -> FloorTheme.colors.amberSoft
     FloorAccent.TEAL -> FloorTheme.colors.tealSoft
     FloorAccent.CORAL -> FloorTheme.colors.coralSoft

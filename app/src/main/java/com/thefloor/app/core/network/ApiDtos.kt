@@ -64,6 +64,12 @@ data class HomeDto(
     val newOpportunities: Int = 0,
     val pointsAvailableToday: Int = 0,
     val presenceNames: List<String> = emptyList(),
+    // What the shift card on Home reads. Counts, not decoration — each one is
+    // a real figure the server already knows.
+    val postsSinceYesterday: Int = 0,
+    val mentions: Int = 0,
+    val pointsEarnedToday: Int = 0,
+    val startedDiscussion: Boolean = false,
     val completionCards: List<CompletionCardDto> = emptyList(),
     val myFloors: List<CommunityDto> = emptyList(),
     val trendingPosts: List<PostDto> = emptyList(),

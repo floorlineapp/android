@@ -197,10 +197,8 @@ internal fun RewardsBody(
             FloorCard(modifier = Modifier.fillMaxWidth()) {
                 FloorEyebrow("Available balance", accent = FloorAccent.FAINT)
                 Spacer(Modifier.height(6.dp))
-                Text(
-                    "%,d".format(summary.creditsBalance),
-                    style = FloorTheme.typography.displayL,
-                    color = FloorTheme.colors.amber,
+                com.thefloor.app.core.designsystem.components.FloorAnimatedNumber(
+                    value = summary.creditsBalance,
                 )
                 Text("Floor Points", style = FloorTheme.typography.caption, color = FloorTheme.colors.textSecondary)
             }

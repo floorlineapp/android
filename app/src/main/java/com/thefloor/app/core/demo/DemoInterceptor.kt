@@ -449,6 +449,13 @@ class DemoBackend @Inject constructor() {
         newOpportunities = 24,
         pointsAvailableToday = 160,
         presenceNames = listOf("Thabo N.", "Grace A.", "Owen K.", "Priya S.", "Mika R.", "Carmen V.", "Joan D.", "Lerato K."),
+        postsSinceYesterday = posts.count { within(it.createdAt, hours = 24) },
+        mentions = notifications.count { !it.read && it.type == "TALK" },
+        pointsEarnedToday = transactions
+            .filter { it.deltaCredits > 0 && within(it.createdAt, hours = 24) }
+            .sumOf { it.deltaCredits }
+            .toInt(),
+        startedDiscussion = posts.any { it.authorId == DemoMode.USER_ID },
         completionCards = if (profile.completeness >= 100) {
             emptyList()
         } else {
@@ -498,6 +505,11 @@ class DemoBackend @Inject constructor() {
     private fun now(): String = Instant.now().toString()
 
     private fun ago(hours: Long): String = Instant.now().minus(hours, ChronoUnit.HOURS).toString()
+
+    /** True when an ISO timestamp is inside the last [hours]. */
+    private fun within(iso: String, hours: Long): Boolean = runCatching {
+        Instant.parse(iso).isAfter(Instant.now().minus(hours, ChronoUnit.HOURS))
+    }.getOrDefault(false)
 
     private fun seedProfile() = ProfileDto(
         userId = DemoMode.USER_ID,

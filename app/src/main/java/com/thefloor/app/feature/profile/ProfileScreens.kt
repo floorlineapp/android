@@ -223,10 +223,8 @@ internal fun ProfileBody(
                             }
                             FloorEyebrow("Floor Points balance", accent = FloorAccent.FAINT)
                             Spacer(Modifier.height(4.dp))
-                            Text(
-                                "%,d".format(floorPoints),
-                                style = FloorTheme.typography.displayL,
-                                color = FloorTheme.colors.amber,
+                            com.thefloor.app.core.designsystem.components.FloorAnimatedNumber(
+                                value = floorPoints.toLong(),
                             )
                             Spacer(Modifier.height(16.dp))
                             if (next != null) {
