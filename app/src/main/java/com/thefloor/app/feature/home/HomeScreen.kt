@@ -263,7 +263,7 @@ internal fun HomeContentList(
                     FloorLiveDot()
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        "On The Floor right now",
+                        "${formatCount(content.presenceCount)} on The Floor right now",
                         style = FloorTheme.typography.titleSm,
                         color = FloorTheme.colors.textPrimary,
                         modifier = Modifier.weight(1f),

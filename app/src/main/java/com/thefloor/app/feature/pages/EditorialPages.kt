@@ -292,20 +292,19 @@ fun InsightsScreen(onBack: () -> Unit) {
                 )
                 Spacer(Modifier.height(10.dp))
                 FloorProgressBar(progress = (balance.toFloat() / threshold).coerceAtMost(1f))
-                Spacer(Modifier.height(6.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(
-                        "%,d / %,d Floor Points".format(balance, threshold),
-                        style = FloorTheme.typography.mono,
-                        color = FloorTheme.colors.textSecondary,
-                    )
-                    Text(
-                        if (workplaceVerified) "Workplace verified" else "Workplace not verified",
-                        style = FloorTheme.typography.monoTag,
-                        color = if (workplaceVerified) FloorTheme.colors.teal else FloorTheme.colors.coral,
-                    )
-                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "%,d / %,d Floor Points".format(balance, threshold),
+                    style = FloorTheme.typography.mono,
+                    color = FloorTheme.colors.textSecondary,
+                )
                 Spacer(Modifier.height(10.dp))
+                if (workplaceVerified) {
+                    com.thefloor.app.core.designsystem.components.FloorVerifiedBadge()
+                } else {
+                    FloorBadge("Workplace not verified", tone = BadgeTone.CORAL)
+                }
+                Spacer(Modifier.height(12.dp))
                 Text(
                     "An approved story pays +75 Floor Points back into your ledger. " +
                         "Nothing is ever self-approved — every submission is reviewed first.",

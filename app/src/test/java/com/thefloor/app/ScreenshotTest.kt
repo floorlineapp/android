@@ -178,6 +178,10 @@ private fun HomeBody() {
 private val fakeHome = HomeContent(
     displayName = "Naledi M.",
     presenceCount = 2347,
+    activeConversations = 318,
+    newOpportunities = 24,
+    pointsAvailableToday = 160,
+    presenceNames = listOf("Thabo N.", "Grace A.", "Owen K.", "Priya S.", "Mika R.", "Carmen V."),
     completionCards = listOf(
         CompletionCard(
             title = "Complete your profile",
