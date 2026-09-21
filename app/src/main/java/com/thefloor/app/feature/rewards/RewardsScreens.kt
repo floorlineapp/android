@@ -194,7 +194,7 @@ internal fun RewardsBody(
 
         // Balance + metric grid
         item {
-            FloorCard {
+            FloorCard(modifier = Modifier.fillMaxWidth()) {
                 FloorEyebrow("Available balance", accent = FloorAccent.FAINT)
                 Spacer(Modifier.height(6.dp))
                 Text(
