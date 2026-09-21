@@ -97,6 +97,7 @@ data class UpdateProfileRequestDto(
     val displayName: String? = null,
     val country: String? = null,
     val city: String? = null,
+    val ageRange: String? = null,
     val languages: List<String>? = null,
     val employer: String? = null,
     val site: String? = null,
@@ -104,6 +105,7 @@ data class UpdateProfileRequestDto(
     val role: String? = null,
     val careerLevel: String? = null,
     val experienceYears: Int? = null,
+    val channels: List<String>? = null,
     val workMode: String? = null,
     val skills: List<String>? = null,
 )

@@ -320,6 +320,7 @@ internal fun ProfileBody(
                         FloorCard(contentPadding = 18.dp) {
                             ProfileField("Country", profile.country)
                             ProfileField("City", profile.city)
+                            ProfileField("Age range", profile.ageRange)
                             ProfileField("Languages", profile.languages.joinToString(", ").ifBlank { null })
                             ProfileField("Employer / BPO", profile.employer)
                             ProfileField("Site", profile.site)
@@ -327,6 +328,7 @@ internal fun ProfileBody(
                             ProfileField("Role", profile.role)
                             ProfileField("Career level", profile.careerLevel?.label)
                             ProfileField("Experience", profile.experienceYears?.let { "$it years" })
+                            ProfileField("Channels", profile.channels.joinToString(", ").ifBlank { null })
                             ProfileField("Work mode", profile.workMode?.label)
                         }
                     }
