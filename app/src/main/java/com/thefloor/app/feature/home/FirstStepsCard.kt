@@ -1,5 +1,6 @@
 package com.thefloor.app.feature.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -116,5 +117,4 @@ private data class Step(
     val onOpen: () -> Unit,
 )
 
-private fun Modifier.clickableRow(onClick: () -> Unit): Modifier =
-    this.then(androidx.compose.foundation.clickable(onClick = onClick))
+private fun Modifier.clickableRow(onClick: () -> Unit): Modifier = clickable(onClick = onClick)
