@@ -68,23 +68,22 @@ jobs:
             echo "::error::${line}"
           done || true
 
-      # Commit the rendered screens back to the repo. Artifact downloads are not
-      # reachable from every environment; a commit always is.
-      - name: Publish screenshots to repo
+      # Commit the rendered screens AND the built APK back to the repo.
+      # Artifact downloads are not reachable from every environment; a commit
+      # always is, and the APK is what actually gets shared with people.
+      - name: Publish screenshots and APK to repo
         if: always()
         run: |
-          if [ -d screenshots ] && [ -n "$(ls -A screenshots 2>/dev/null)" ]; then
-            git config user.name "floor-ci"
-            git config user.email "ci@users.noreply.github.com"
-            git add -f screenshots
-            if ! git diff --cached --quiet; then
-              git commit -m "CI: update UI screenshots [skip ci]"
-              git push origin HEAD:main || echo "screenshot push skipped"
-            else
-              echo "screenshots unchanged"
-            fi
+          git config user.name "floor-ci"
+          git config user.email "ci@users.noreply.github.com"
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/*.apk dist/Floorline-demo.apk 2>/dev/null || true
+          git add -f screenshots dist 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "CI: update UI screenshots and demo APK [skip ci]"
+            git push origin HEAD:main || echo "publish push skipped"
           else
-            echo "no screenshots produced"
+            echo "nothing to publish"
           fi
 
       - name: Upload build log
