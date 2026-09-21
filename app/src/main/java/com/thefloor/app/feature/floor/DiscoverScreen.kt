@@ -88,7 +88,11 @@ sealed interface DiscoverUiState {
 class DiscoverViewModel @Inject constructor(
     private val communityRepository: CommunityRepository,
     private val analytics: AnalyticsTracker,
+    private val walkerBus: com.thefloor.app.core.walker.WalkerBus,
 ) : ViewModel() {
+
+    /** "Suggest a Floor" goes to Walker, not to a form nobody reads. */
+    fun suggestFloor() = walkerBus.open()
 
     private val _state = MutableStateFlow<DiscoverUiState>(DiscoverUiState.Loading)
     val state: StateFlow<DiscoverUiState> = _state.asStateFlow()
@@ -160,6 +164,7 @@ fun DiscoverScreen(
             onOpenCommunity = onOpenCommunity,
             onToggle = viewModel::toggleMembership,
             onRetry = viewModel::refresh,
+            onSuggestFloor = viewModel::suggestFloor,
         )
     }
 }
@@ -176,6 +181,7 @@ internal fun DiscoverBody(
     onOpenCommunity: (String) -> Unit = {},
     onToggle: (Community) -> Unit = {},
     onRetry: () -> Unit = {},
+    onSuggestFloor: () -> Unit = {},
 ) {
         Column(modifier = modifier) {
             when (val s = state) {
@@ -236,7 +242,31 @@ internal fun DiscoverBody(
                                 )
                             }
                         }
-                        item { Spacer(Modifier.height(8.dp)) }
+                        item {
+                            com.thefloor.app.core.designsystem.components.FloorCard(
+                                onClick = onSuggestFloor,
+                                contentPadding = 18.dp,
+                            ) {
+                                com.thefloor.app.core.designsystem.components.FloorEyebrow(
+                                    "Missing your people?",
+                                    accent = com.thefloor.app.core.designsystem.components.FloorAccent.TEAL,
+                                )
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    "Suggest a Floor",
+                                    style = FloorTheme.typography.titleSm,
+                                    color = FloorTheme.colors.textPrimary,
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    "Tell Walker which community should exist — country, company, " +
+                                        "industry or shift — and it comes straight to us.",
+                                    style = FloorTheme.typography.body,
+                                    color = FloorTheme.colors.textSecondary,
+                                )
+                            }
+                        }
+                        item { Spacer(Modifier.height(80.dp)) }
                     }
                 }
             }

@@ -90,6 +90,18 @@ data class WalkerState(
     val replying: Boolean = false,
 )
 
+/**
+ * Lets any screen raise Walker without owning it. Walker is rendered once by
+ * the app shell; a "Suggest a Floor" card or a support prompt deep inside a
+ * feature just flips this.
+ */
+@javax.inject.Singleton
+class WalkerBus @Inject constructor() {
+    val open = MutableStateFlow(false)
+    fun open() { open.value = true }
+    fun close() { open.value = false }
+}
+
 @HiltViewModel
 class WalkerViewModel @Inject constructor() : ViewModel() {
 

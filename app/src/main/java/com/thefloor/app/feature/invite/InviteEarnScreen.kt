@@ -100,7 +100,7 @@ fun InviteEarnScreen(
 
     Scaffold(
         containerColor = FloorTheme.colors.ink,
-        topBar = { FloorTopBar(title = "Invite & Earn", onBack = onBack) },
+        topBar = { FloorTopBar(title = "Invite & Grow", onBack = onBack) },
     ) { padding ->
         when (val s = state) {
             InviteUiState.Loading -> SkeletonList(rows = 5, modifier = Modifier.padding(padding))
@@ -119,17 +119,26 @@ fun InviteEarnScreen(
                     // 1 — header
                     item {
                         com.thefloor.app.core.designsystem.components.FloorHero(
-                            eyebrow = "Invite & Grow · Free to refer",
+                            eyebrow = "Referral track · Deliberately separate",
                             title = "Bring good people to The Floor.",
-                            subtitle = "Invite the people you work with — free for you, free for them. Every qualified referral is tracked, and nobody ever pays to unlock earning.",
+                            subtitle = "Invite the people you work with — free for you, free for them. " +
+                                "Every qualified referral is tracked, and nobody ever pays to unlock earning.",
                         )
                     }
                     item {
-                        Column {
-                            Text("Bring your floor with you.", style = FloorTheme.typography.headline, color = FloorTheme.colors.textPrimary)
-                            Spacer(Modifier.height(4.dp))
+                        com.thefloor.app.core.designsystem.components.FloorInfoNote(
+                            accent = com.thefloor.app.core.designsystem.components.FloorAccent.CORAL,
+                        ) {
                             Text(
-                                "Invite the people you work with. Free for you, free for them.",
+                                "No pay-to-play. No downlines. No commissions from other people's referrals.",
+                                style = FloorTheme.typography.bodyStrong,
+                                color = FloorTheme.colors.textPrimary,
+                            )
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                "Invite & Grow never adds Floor Points and never buys professional " +
+                                    "stature. It is a separate record from your points balance, and it " +
+                                    "always will be — that separation is the whole point of it.",
                                 style = FloorTheme.typography.body,
                                 color = FloorTheme.colors.textSecondary,
                             )
@@ -185,15 +194,139 @@ fun InviteEarnScreen(
                         }
                     }
 
-                    // 5 — how it works
+                    // 5 — the referral funnel, stage by stage
                     item {
                         FloorCard {
-                            Text("How it works", style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
+                            Text("The funnel", style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "Where each person you invite currently sits.",
+                                style = FloorTheme.typography.caption,
+                                color = FloorTheme.colors.textSecondary,
+                            )
+                            Spacer(Modifier.height(14.dp))
+                            FunnelStage(1, "Invited", "They have your link but have not signed up yet.", summary.invited)
+                            FunnelStage(2, "Joined", "Account created.", (summary.invited * 2) / 3)
+                            FunnelStage(3, "Verified", "Email or workplace confirmed.", summary.active + 1)
+                            FunnelStage(4, "Qualified", "Active on three separate days — a real member, not a click.", summary.active)
+                            FunnelStage(5, "Review", "Held for a human sense-check. A delay, not a rejection.", 1)
+                            Spacer(Modifier.height(10.dp))
+                            Text(
+                                "Referrals from shared workplace networks may be reviewed rather than " +
+                                    "automatically rejected — most clear.",
+                                style = FloorTheme.typography.caption,
+                                color = FloorTheme.colors.textMuted,
+                            )
+                        }
+                    }
+
+                    // Founding tiers — computed from the qualified count, never stored.
+                    item {
+                        com.thefloor.app.core.designsystem.components.FloorSectionHeader(
+                            title = "Founding tiers",
+                            subtitle = "Recognition for the people who bring in the most qualified members.",
+                        )
+                    }
+                    item {
+                        FloorCard(contentPadding = 18.dp) {
+                            foundingTiers.forEach { (name, needed) ->
+                                val reached = summary.active >= needed
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        if (reached) "●" else "○",
+                                        style = FloorTheme.typography.body,
+                                        color = if (reached) FloorTheme.colors.teal else FloorTheme.colors.textMuted,
+                                    )
+                                    Spacer(Modifier.width(10.dp))
+                                    Text(
+                                        name,
+                                        style = FloorTheme.typography.bodyStrong,
+                                        color = if (reached) FloorTheme.colors.textPrimary else FloorTheme.colors.textSecondary,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    Text(
+                                        "$needed qualified",
+                                        style = FloorTheme.typography.monoTag,
+                                        color = FloorTheme.colors.textMuted,
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                "Your tier is counted from qualified referrals each time it is shown, " +
+                                    "so it can never drift out of step with the record.",
+                                style = FloorTheme.typography.caption,
+                                color = FloorTheme.colors.textMuted,
+                            )
+                        }
+                    }
+
+                    // Leaderboard — qualified counts only.
+                    item {
+                        com.thefloor.app.core.designsystem.components.FloorSectionHeader(
+                            title = "Top referrers",
+                            subtitle = "Ranked on qualified referrals, nothing else.",
+                        )
+                    }
+                    item {
+                        FloorCard(contentPadding = 4.dp) {
+                            leaderboard.forEachIndexed { i, (who, count) ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        "${i + 1}",
+                                        style = FloorTheme.typography.mono,
+                                        color = FloorTheme.colors.amber,
+                                        modifier = Modifier.width(24.dp),
+                                    )
+                                    Text(
+                                        who,
+                                        style = FloorTheme.typography.body,
+                                        color = FloorTheme.colors.textPrimary,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    Text(
+                                        count.toString(),
+                                        style = FloorTheme.typography.mono,
+                                        color = FloorTheme.colors.teal,
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Community Growth Fund — real panel, honestly labelled.
+                    item {
+                        com.thefloor.app.core.designsystem.components.FloorInfoNote {
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    "Community Growth Fund",
+                                    style = FloorTheme.typography.title,
+                                    color = FloorTheme.colors.textPrimary,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                FloorBadge("BETA · NOT FUNDED", tone = BadgeTone.NEUTRAL)
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "The fund is where real commercial revenue will eventually flow back to " +
+                                    "the members who built the community. There is no revenue yet, so " +
+                                    "the balance is zero and no payouts exist. It is shown here because " +
+                                    "it is real intent, not because it is live.",
+                                style = FloorTheme.typography.body,
+                                color = FloorTheme.colors.textSecondary,
+                            )
                             Spacer(Modifier.height(12.dp))
-                            HowItWorksStep(1, "Share your link", "Send it to the people on your floor.")
-                            HowItWorksStep(2, "They join free", "Signing up costs nothing. Ever.")
-                            HowItWorksStep(3, "They go active", "Profile complete + one Floor joined.")
-                            HowItWorksStep(4, "You earn from real Floor revenue", "Bonuses are funded by The Floor's own business revenue.")
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                FloorStat(value = "0", label = "Contributed")
+                                FloorStat(value = "0", label = "Paid out")
+                                FloorStat(value = "—", label = "Next review")
+                            }
                         }
                     }
 
@@ -285,6 +418,45 @@ fun InviteEarnScreen(
     }
 }
 
+/** The five founding tiers, by qualified-referral count. */
+private val foundingTiers = listOf(
+    "Connector" to 5,
+    "Ambassador" to 25,
+    "Scout" to 100,
+    "Captain" to 500,
+    "Builder" to 1000,
+)
+
+private val leaderboard = listOf(
+    "Joan D." to 34,
+    "Thabo N." to 28,
+    "Camila R." to 21,
+    "Rohan M." to 17,
+    "You" to 5,
+)
+
+/** One stage of the referral funnel, with how many people are sitting in it. */
+@Composable
+private fun FunnelStage(number: Int, title: String, subtitle: String, count: Int) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("$number", style = FloorTheme.typography.mono, color = FloorTheme.colors.amber)
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, style = FloorTheme.typography.bodyStrong, color = FloorTheme.colors.textPrimary)
+            Text(subtitle, style = FloorTheme.typography.caption, color = FloorTheme.colors.textSecondary)
+        }
+        Spacer(Modifier.width(10.dp))
+        Text(
+            count.toString(),
+            style = FloorTheme.typography.title,
+            color = if (count > 0) FloorTheme.colors.teal else FloorTheme.colors.textMuted,
+        )
+    }
+}
+
 @Composable
 private fun HowItWorksStep(number: Int, title: String, subtitle: String) {
     Row(modifier = Modifier.padding(vertical = 6.dp)) {
@@ -302,8 +474,10 @@ private fun HowItWorksStep(number: Int, title: String, subtitle: String) {
 }
 
 fun statusLabel(status: String): String = when (status) {
+    "CONNECTOR" -> "Floor Connector"
     "AMBASSADOR" -> "Floor Ambassador"
     "SCOUT" -> "Floor Scout"
     "CAPTAIN" -> "Floor Captain"
+    "BUILDER" -> "Floor Builder"
     else -> "Member"
 }

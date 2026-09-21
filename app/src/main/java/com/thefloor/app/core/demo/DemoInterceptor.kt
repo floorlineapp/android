@@ -180,7 +180,7 @@ class DemoInterceptor @Inject constructor() : Interceptor {
         const val REFERRALS = """{
           "code":"FLOORDEMO","link":"https://thefloor.app/invite/FLOORDEMO",
           "invited":12,"active":5,"credits":500,"cashEarnedMinor":2500,"cashCurrency":"EUR",
-          "ambassadorStatus":"RISING",
+          "ambassadorStatus":"CONNECTOR",
           "nextMilestone":{"thresholdActive":10,"currentActive":5,"remaining":5,"progressPct":50,
             "rewards":[{"kind":"CREDITS","credits":500},{"kind":"CASH","amountMinor":5000,"currency":"EUR"}]},
           "disclosures":["Free to refer. Nobody pays to unlock earning.",

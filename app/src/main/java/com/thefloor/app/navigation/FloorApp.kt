@@ -17,9 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -51,7 +48,12 @@ enum class SessionState { LOADING, SIGNED_OUT, SIGNED_IN, SIGNED_IN_UNVERIFIED }
 class RootViewModel @Inject constructor(
     authRepository: AuthRepository,
     private val configRepository: ConfigRepository,
+    private val walkerBus: com.thefloor.app.core.walker.WalkerBus,
 ) : ViewModel() {
+
+    val walkerOpen: StateFlow<Boolean> = walkerBus.open
+    fun openWalker() = walkerBus.open()
+    fun closeWalker() = walkerBus.close()
 
     val sessionState: StateFlow<SessionState> = authRepository.session
         .map { session ->
@@ -98,7 +100,7 @@ fun FloorApp(
     val navController = rememberNavController()
     val rootViewModel: RootViewModel = hiltViewModel()
     val sessionState by rootViewModel.sessionState.collectAsStateWithLifecycle()
-    var walkerOpen by remember { mutableStateOf(false) }
+    val walkerOpen by rootViewModel.walkerOpen.collectAsStateWithLifecycle()
     val deepLink by pendingDeepLink.collectAsState()
 
     // Deep links: park until session state is known, then route.
@@ -144,7 +146,7 @@ fun FloorApp(
     Scaffold(
         containerColor = FloorTheme.colors.ink,
         floatingActionButton = {
-            if (showWalker) WalkerFab(onClick = { walkerOpen = true })
+            if (showWalker) WalkerFab(onClick = rootViewModel::openWalker)
         },
         bottomBar = {
             if (showBottomBar) {
@@ -184,7 +186,7 @@ fun FloorApp(
     }
 
     if (walkerOpen) {
-        WalkerSheet(onDismiss = { walkerOpen = false })
+        WalkerSheet(onDismiss = rootViewModel::closeWalker)
     }
 }
 

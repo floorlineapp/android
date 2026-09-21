@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -50,7 +52,11 @@ import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.core.designsystem.components.FloorVerifiedBadge
 import androidx.compose.foundation.layout.width
 import com.thefloor.app.core.model.CareerLevel
+import com.thefloor.app.core.model.RecognitionLevel
 import com.thefloor.app.core.model.UserProfile
+import com.thefloor.app.core.model.nextRecognitionLevel
+import com.thefloor.app.core.model.recognitionLevel
+import com.thefloor.app.core.model.recognitionRequirement
 import com.thefloor.app.core.model.WorkMode
 import com.thefloor.app.core.network.UpdateProfileRequestDto
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -65,11 +71,13 @@ data class ProfileUiState(
     val error: String? = null,
     val saving: Boolean = false,
     val savedMessage: String? = null,
+    val floorPoints: Int = 0,
 )
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
+    private val rewardsRepository: com.thefloor.app.core.data.RewardsRepository,
 ) : ViewModel() {
 
     val state = MutableStateFlow(ProfileUiState())
@@ -83,6 +91,12 @@ class ProfileViewModel @Inject constructor(
             userRepository.me()
                 .onSuccess { profile -> state.update { it.copy(loading = false, profile = profile, error = null) } }
                 .onError { e -> state.update { it.copy(loading = false, error = e.userMessage) } }
+        }
+        // The Recognition ladder is derived from the ledger balance, so Profile
+        // reads the same number Rewards & Games shows rather than its own.
+        viewModelScope.launch {
+            rewardsRepository.summary()
+                .onSuccess { summary -> state.update { it.copy(floorPoints = summary.creditsBalance) } }
         }
     }
 
@@ -134,6 +148,7 @@ fun ProfileScreen(
             )
             state.profile != null -> ProfileBody(
                 profile = state.profile!!,
+                floorPoints = state.floorPoints,
                 modifier = Modifier.padding(padding),
                 onEdit = onEdit,
                 onPrivacy = onPrivacy,
@@ -147,9 +162,16 @@ fun ProfileScreen(
 internal fun ProfileBody(
     profile: UserProfile,
     modifier: Modifier = Modifier,
+    floorPoints: Int = 12_480,
     onEdit: () -> Unit = {},
     onPrivacy: () -> Unit = {},
 ) {
+    val workplaceVerified = profile.emailVerified && !profile.employer.isNullOrBlank()
+    // Trusted history is an account-standing flag; until real moderation data
+    // exists it is derived from having a complete, verified profile.
+    val trustedHistory = workplaceVerified && profile.completeness >= 80
+    val level = recognitionLevel(floorPoints, workplaceVerified, trustedHistory)
+    val next = nextRecognitionLevel(level)
                 LazyColumn(
                     modifier = modifier,
                     contentPadding = PaddingValues(FloorTheme.spacing.gutter),
@@ -179,25 +201,113 @@ internal fun ProfileBody(
                         }
                     }
 
-                    // ---- Recognition & Access ----
+                    // ---- Recognition card: balance, progress, the four rungs ----
                     item {
                         FloorHero(
-                            eyebrow = "Recognition & Access",
+                            eyebrow = "Identity & recognition record",
                             eyebrowAccent = FloorAccent.TEAL,
-                            title = "Floor Voice",
-                            subtitle = "Recognition grows through a complete verified profile, helpful participation, Academy activity and a trusted history on The Floor.",
+                            title = level.label,
+                            subtitle = recognitionRequirement(level),
                         )
                     }
                     item {
-                        FloorCard {
-                            if (profile.emailVerified) {
+                        FloorCard(contentPadding = 20.dp) {
+                            if (workplaceVerified) {
                                 FloorVerifiedBadge("Workplace verified")
                                 Spacer(Modifier.height(14.dp))
                             }
-                            FloorProgressBar(
-                                progress = profile.completeness / 100f,
-                                label = "Profile ${profile.completeness}% complete · path to Workplace Ambassador",
+                            FloorEyebrow("Floor Points balance", accent = FloorAccent.FAINT)
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "%,d".format(floorPoints),
+                                style = FloorTheme.typography.displayL,
+                                color = FloorTheme.colors.amber,
                             )
+                            Spacer(Modifier.height(16.dp))
+                            if (next != null) {
+                                val span = (next.threshold - level.threshold).coerceAtLeast(1)
+                                val done = (floorPoints - level.threshold).coerceAtLeast(0)
+                                FloorProgressBar(
+                                    progress = done.toFloat() / span,
+                                    label = "%,d points to ${next.label}".format(
+                                        (next.threshold - floorPoints).coerceAtLeast(0),
+                                    ),
+                                )
+                            } else {
+                                Text(
+                                    "Top of the ladder. Nothing above this one.",
+                                    style = FloorTheme.typography.body,
+                                    color = FloorTheme.colors.teal,
+                                )
+                            }
+                            Spacer(Modifier.height(18.dp))
+                            RecognitionLevel.entries.drop(1).forEach { rung ->
+                                val reached = rung.ordinal <= level.ordinal
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp),
+                                    verticalAlignment = Alignment.Top,
+                                ) {
+                                    Text(
+                                        if (reached) "●" else "○",
+                                        style = FloorTheme.typography.body,
+                                        color = if (reached) FloorTheme.colors.teal else FloorTheme.colors.textMuted,
+                                    )
+                                    Spacer(Modifier.width(10.dp))
+                                    Column(Modifier.weight(1f)) {
+                                        Text(
+                                            rung.label,
+                                            style = FloorTheme.typography.bodyStrong,
+                                            color = if (reached) FloorTheme.colors.textPrimary else FloorTheme.colors.textSecondary,
+                                        )
+                                        Spacer(Modifier.height(2.dp))
+                                        Text(
+                                            recognitionRequirement(rung),
+                                            style = FloorTheme.typography.caption,
+                                            color = FloorTheme.colors.textMuted,
+                                        )
+                                    }
+                                    if (rung == level) {
+                                        com.thefloor.app.core.designsystem.components.FloorBadge(
+                                            "You",
+                                            tone = com.thefloor.app.core.designsystem.components.BadgeTone.TEAL,
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "Your tier is worked out from the ledger every time it is shown — it is " +
+                                    "never a stored value that can drift away from your balance.",
+                                style = FloorTheme.typography.caption,
+                                color = FloorTheme.colors.textMuted,
+                            )
+                        }
+                    }
+
+                    // ---- Profile completion: each item unlocks something ----
+                    item {
+                        FloorCard(contentPadding = 18.dp) {
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    "Profile completion",
+                                    style = FloorTheme.typography.title,
+                                    color = FloorTheme.colors.textPrimary,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                Text(
+                                    "${profile.completeness}%",
+                                    style = FloorTheme.typography.mono,
+                                    color = FloorTheme.colors.amber,
+                                )
+                            }
+                            Spacer(Modifier.height(12.dp))
+                            FloorProgressBar(progress = profile.completeness / 100f)
+                            Spacer(Modifier.height(14.dp))
+                            ChecklistRow(!profile.employer.isNullOrBlank(), "Add your employer", "Shows you who else works where you do")
+                            ChecklistRow(!profile.country.isNullOrBlank(), "Add your country", "Matches you to a country Floor")
+                            ChecklistRow(profile.languages.isNotEmpty(), "Add your languages", "Opens multilingual rooms and roles")
+                            ChecklistRow(profile.skills.isNotEmpty(), "Add your skills", "Feeds the Academy passport employers will read")
+                            ChecklistRow(workplaceVerified, "Verify your workplace", "Required for Recognised Member and Spotlight")
                         }
                     }
 
@@ -232,6 +342,35 @@ internal fun ProfileBody(
                     }
 
                     item {
+                        FloorCard {
+                            Text("Photos & videos", style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "Moments you have shared from Pulse, Talk, Live Rooms and events collect here.",
+                                style = FloorTheme.typography.body,
+                                color = FloorTheme.colors.textSecondary,
+                            )
+                            Spacer(Modifier.height(14.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                listOf(
+                                    com.thefloor.app.R.drawable.floor_south_africa,
+                                    com.thefloor.app.R.drawable.floor_nightshift,
+                                    com.thefloor.app.R.drawable.floor_teamleaders,
+                                ).forEach { art ->
+                                    androidx.compose.foundation.Image(
+                                        painter = androidx.compose.ui.res.painterResource(art),
+                                        contentDescription = null,
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .aspectRatio(1f)
+                                            .clip(androidx.compose.foundation.shape.RoundedCornerShape(10.dp)),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    item {
                         FloorCard(contentPadding = 0.dp) {
                             FloorListItem(title = "Edit profile", onClick = onEdit)
                             FloorListItem(title = "Privacy controls", subtitle = "Who sees what", onClick = onPrivacy)
@@ -239,6 +378,31 @@ internal fun ProfileBody(
                     }
                     item { Spacer(Modifier.height(8.dp)) }
                 }
+}
+
+/** One completion item, with what it unlocks rather than a bare tick. */
+@Composable
+private fun ChecklistRow(done: Boolean, title: String, unlocks: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Text(
+            if (done) "✓" else "○",
+            style = FloorTheme.typography.bodyStrong,
+            color = if (done) FloorTheme.colors.teal else FloorTheme.colors.textMuted,
+        )
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                title,
+                style = FloorTheme.typography.body,
+                color = if (done) FloorTheme.colors.textMuted else FloorTheme.colors.textPrimary,
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(unlocks, style = FloorTheme.typography.caption, color = FloorTheme.colors.textMuted)
+        }
+    }
 }
 
 /** Career-profile row: mono uppercase label above the value, prototype-style. */
