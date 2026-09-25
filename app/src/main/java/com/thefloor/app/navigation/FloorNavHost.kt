@@ -297,7 +297,13 @@ fun FloorNavHost(
         composable(Routes.PULSE) {
             PulseScreen(onBack = { navController.popBackStack() })
         }
-        composable(Routes.JOBS) { com.thefloor.app.feature.pages.JobsScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.JOBS) {
+            com.thefloor.app.feature.pages.JobsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenProfile = { navController.navigate(Routes.PROFILE) },
+                onOpenAcademy = { navController.navigate(Routes.ACADEMY) },
+            )
+        }
         composable(Routes.ACADEMY) {
             val vm: com.thefloor.app.feature.pages.AcademyViewModel = androidx.hilt.navigation.compose.hiltViewModel()
             val passport by vm.passport.collectAsStateWithLifecycle()

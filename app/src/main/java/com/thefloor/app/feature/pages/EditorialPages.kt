@@ -948,7 +948,11 @@ private val jobs = listOf(
 )
 
 @Composable
-fun JobsScreen(onBack: () -> Unit) {
+fun JobsScreen(
+    onBack: () -> Unit,
+    onOpenProfile: () -> Unit = {},
+    onOpenAcademy: () -> Unit = {},
+) {
     EditorialScaffold("Employers & Jobs", onBack) {
         item {
             FloorHero(
@@ -956,8 +960,8 @@ fun JobsScreen(onBack: () -> Unit) {
                 title = "See who is hiring. Explore where your BPO career could go next.",
                 subtitle = "A future bridge between verified Floor profiles and BPO employers.",
                 actions = {
-                    FloorPillButton("Use my verified profile", onClick = {})
-                    FloorPillButton("Build skills in Academy", onClick = {}, primary = false)
+                    FloorPillButton("Use my verified profile", onClick = onOpenProfile)
+                    FloorPillButton("Build skills in Academy", onClick = onOpenAcademy, primary = false)
                 },
             )
         }

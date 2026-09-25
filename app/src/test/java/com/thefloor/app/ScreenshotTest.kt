@@ -111,7 +111,7 @@ class ScreenshotTest {
     @Test fun events() = snap("page_events") { EventsScreen(onBack = {}) }
     @Test fun marketplace() = snap("page_marketplace") { MarketplaceScreen {} }
     @Test fun resources() = snap("page_resources") { ResourcesScreen {} }
-    @Test fun jobs() = snap("page_jobs") { JobsScreen {} }
+    @Test fun jobs() = snap("page_jobs") { JobsScreen(onBack = {}) }
     @Test fun about() = snap("page_about") { AboutScreen(onBack = {}) }
     @Test fun wellbeing() = snap("page_wellbeing") { WellbeingScreen {} }
 

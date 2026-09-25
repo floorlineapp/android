@@ -80,7 +80,11 @@ import javax.inject.Inject
 class RadioViewModel @Inject constructor(
     private val controller: RadioPlayerController,
     private val regionStore: RadioRegionStore,
+    private val walkerBus: com.thefloor.app.core.walker.WalkerBus,
 ) : ViewModel() {
+
+    /** Submitting music is a conversation, not a form. Walker takes it. */
+    fun submitMusic() = walkerBus.open()
 
     val state = controller.state
 
@@ -151,6 +155,7 @@ fun RadioScreen(viewModel: RadioViewModel = hiltViewModel()) {
             onPlay = viewModel::play,
             onStop = viewModel::stop,
             onSelectRegion = viewModel::selectRegion,
+            onSubmitMusic = viewModel::submitMusic,
         )
     }
 }
@@ -164,6 +169,7 @@ internal fun RadioBody(
     onPlay: () -> Unit = {},
     onStop: () -> Unit = {},
     onSelectRegion: (String) -> Unit = {},
+    onSubmitMusic: () -> Unit = {},
 ) {
     val region = radioRegion(regionKey)
     val playing = (playback as? RadioPlaybackState.OnAir)?.playing == true
@@ -189,7 +195,7 @@ internal fun RadioBody(
                     "chat room for the people listening with you.",
                 actions = {
                     FloorPillButton(if (playing) "Stop" else "Listen live", onClick = { if (playing) onStop() else onPlay() })
-                    FloorPillButton("Submit your music", onClick = {}, primary = false)
+                    FloorPillButton("Submit your music", onClick = onSubmitMusic, primary = false)
                 },
             )
         }
