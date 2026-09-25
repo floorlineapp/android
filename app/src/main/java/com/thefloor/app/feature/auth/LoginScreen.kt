@@ -51,7 +51,6 @@ data class LoginUiState(
 class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(LoginUiState())
     val state: StateFlow<LoginUiState> = _state.asStateFlow()
 
@@ -69,7 +68,6 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             authRepository.logIn(s.email, s.password)
                 .onSuccess {
-                    // The session store now holds the verification flag; read it once for routing.
                     val current = authRepository.session.firstOrNull()
                     _state.update { it.copy(submitting = false, loggedInVerified = current?.emailVerified ?: true) }
                 }

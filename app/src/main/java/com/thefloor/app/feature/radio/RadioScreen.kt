@@ -60,7 +60,6 @@ import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTextField
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -70,20 +69,14 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
-/**
- * Floor Radio — six regional feeds, each with its own host, now-playing show,
- * daily schedule and live chat room. The region choice is remembered per
- * device. Playback goes through [RadioPlayerController] (ExoPlayer under the
- * hood); only the origin stream is still pending.
- */
+/** Floor Radio — six regional feeds, each with its own host, now-playing show, daily schedule and live chat room. */
 @HiltViewModel
 class RadioViewModel @Inject constructor(
     private val controller: RadioPlayerController,
     private val regionStore: RadioRegionStore,
     private val walkerBus: com.thefloor.app.core.walker.WalkerBus,
 ) : ViewModel() {
-
-    /** Submitting music is a conversation, not a form. Walker takes it. */
+    /** Submitting music is a conversation, not a form. */
     fun submitMusic() = walkerBus.open()
 
     val state = controller.state
@@ -200,7 +193,6 @@ internal fun RadioBody(
             )
         }
 
-        // Region switcher — remembered on this device.
         item {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(RADIO_REGIONS) { r ->
@@ -209,7 +201,6 @@ internal fun RadioBody(
             }
         }
 
-        // On-air card with the transport control.
         item {
             val coral = FloorTheme.colors.coral
             Surface(
@@ -288,7 +279,6 @@ internal fun RadioBody(
             }
         }
 
-        // Region chat — a distinct feature from Talk's Live Rooms.
         item {
             FloorCard(onClick = { chatOpen = true }, contentPadding = 16.dp) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -312,7 +302,6 @@ internal fun RadioBody(
             }
         }
 
-        // The Global Handover — live clocks.
         item {
             FloorSectionHeader(
                 title = "The Global Handover",
@@ -346,7 +335,6 @@ internal fun RadioBody(
             }
         }
 
-        // Region schedule
         item {
             FloorSectionHeader(
                 title = "${region.label} — today's schedule",
@@ -382,7 +370,6 @@ internal fun RadioBody(
             }
         }
 
-        // Where people are listening
         item { FloorSectionHeader(title = "Listening right now", subtitle = "Across the six regional feeds.") }
         item {
             FloorCard(contentPadding = 4.dp) {

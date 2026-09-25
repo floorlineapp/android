@@ -27,7 +27,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     @Inject lateinit var referralStore: ReferralStore
     @Inject lateinit var analytics: AnalyticsTracker
     @Inject lateinit var themeStore: ThemeStore
@@ -39,9 +38,6 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // Guard against configuration changes / process restore: the launch
-        // intent must only be interpreted once, or rotation re-fires deep links
-        // and inflates app_open counts.
         if (savedInstanceState == null) {
             analytics.track(Events.APP_OPEN)
             handleIntent(intent)
@@ -50,7 +46,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             val themeMode by themeStore.mode.collectAsStateWithLifecycle(initialValue = ThemeMode.SYSTEM)
             val dark = themeMode.isDark()
-            // Keep the system bar icons legible against whichever theme is active.
             LaunchedEffect(dark) {
                 WindowCompat.getInsetsController(window, window.decorView).apply {
                     isAppearanceLightStatusBars = !dark
@@ -74,8 +69,6 @@ class MainActivity : ComponentActivity() {
     private fun handleIntent(intent: Intent?) {
         val uri = intent?.dataString ?: return
         val target = DeepLinkParser.parse(uri)
-        // Referral links must survive the signup flow even if the user wanders:
-        // persist the code the moment the link opens the app.
         if (target is DeepLinkParser.Target.Invite) {
             lifecycleScope.launch { referralStore.save(target.referralCode, "DEEP_LINK") }
             analytics.track(Events.REFERRAL_CODE_CAPTURED, mapOf("source" to "deep_link"))

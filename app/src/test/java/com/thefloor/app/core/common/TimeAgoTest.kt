@@ -5,7 +5,6 @@ import org.junit.Test
 import java.time.Instant
 
 class TimeAgoTest {
-
     private val now = Instant.parse("2026-08-10T12:00:00Z")
 
     @Test

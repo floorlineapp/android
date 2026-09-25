@@ -17,10 +17,7 @@ private val Context.sessionDataStore: DataStore<Preferences> by preferencesDataS
 
 data class Session(val userId: String, val accessToken: String, val refreshToken: String, val emailVerified: Boolean)
 
-/**
- * Session persistence. Tokens are Keystore-encrypted before hitting DataStore;
- * backup rules additionally exclude the datastore directory.
- */
+/** Session persistence. */
 @Singleton
 class SessionStore @Inject constructor(
     @ApplicationContext private val context: Context,

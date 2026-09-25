@@ -68,8 +68,6 @@ fun FloorTheme(
     val typography = FloorTypography()
     val spacing = FloorSpacing()
 
-    // Custom components read FloorTheme.colors directly; Material components inherit the
-    // brand mapping below. The light/dark base only fills roles we don't override.
     val base = if (dark) darkColorScheme() else lightColorScheme()
     val materialScheme = base.copy(
         primary = colors.amber,

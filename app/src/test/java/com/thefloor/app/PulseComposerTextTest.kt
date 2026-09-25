@@ -4,14 +4,8 @@ import com.thefloor.app.feature.pulse.PulseComposerText
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/**
- * The reported bug was that tapping an emoji "doesn't reflect in the live text
- * input while typing". Appending to the end is what caused it: mid-sentence the
- * character went somewhere the member was not looking, and the caret jumped to
- * the end of the field.
- */
+/** The reported bug was that tapping an emoji "doesn't reflect in the live text input while typing". */
 class PulseComposerTextTest {
-
     @Test
     fun `an emoji lands at the caret, not at the end`() {
         val r = PulseComposerText.insert("Long call  but we got there", 10, 10, "🔥")
@@ -22,7 +16,6 @@ class PulseComposerTextTest {
     fun `the caret ends up after what was inserted`() {
         val r = PulseComposerText.insert("ab", 1, 1, "💯")
         assertEquals("a💯b", r.text)
-        // Caret sits between the emoji and "b", ready for the next keystroke.
         assertEquals(1 + "💯".length, r.caret)
     }
 

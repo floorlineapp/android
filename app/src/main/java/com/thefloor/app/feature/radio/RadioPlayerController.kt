@@ -19,15 +19,7 @@ sealed interface RadioPlaybackState {
     data class Error(val message: String) : RadioPlaybackState
 }
 
-/**
- * Real ExoPlayer-backed live-stream controller. The stream URL comes from
- * `GET /v1/radio/now` server config (placeholder until the streaming origin
- * exists — the flag stays off in production until then).
- *
- * Known scope cut (Phase 3): playback continues across screens in-app, but
- * true background audio needs a MediaSessionService + foreground notification;
- * the integration point is this class.
- */
+/** Real ExoPlayer-backed live-stream controller. */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Singleton
 class RadioPlayerController @Inject constructor(
@@ -81,7 +73,6 @@ class RadioPlayerController @Inject constructor(
     }
 
     private companion object {
-        // Placeholder — replaced by /v1/radio/now config when the origin exists.
         const val DEFAULT_STREAM_URL = "https://stream.thefloor.example/live.m3u8"
     }
 }

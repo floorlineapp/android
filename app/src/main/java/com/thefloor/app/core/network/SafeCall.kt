@@ -9,10 +9,7 @@ import java.io.IOException
 
 private val errorJson = Json { ignoreUnknownKeys = true }
 
-/**
- * Single translation point from transport failures to domain errors.
- * Repositories wrap every API call in this.
- */
+/** Single translation point from transport failures to domain errors. */
 suspend fun <T> safeCall(block: suspend () -> T): AppResult<T> = try {
     AppResult.Success(block())
 } catch (e: HttpException) {
@@ -30,7 +27,6 @@ suspend fun <T> safeCall(block: suspend () -> T): AppResult<T> = try {
     Timber.d(e, "Network failure")
     AppResult.Error(AppError.Network())
 } catch (e: Exception) {
-    // Never log request/response bodies here — they can contain credentials.
     Timber.w(e, "Unexpected API failure: %s", e.javaClass.simpleName)
     AppResult.Error(AppError.Unknown())
 }

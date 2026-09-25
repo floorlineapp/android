@@ -4,12 +4,7 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Analytics abstraction. MVP logs locally in debug and no-ops in release;
- * the server emits the money/referral truth events itself so funnels can't
- * be spoofed. A batching HTTP or Firebase implementation slots in behind
- * this interface without touching call sites.
- */
+/** Analytics abstraction. */
 interface AnalyticsTracker {
     fun track(event: String, props: Map<String, String> = emptyMap())
 }
@@ -17,7 +12,6 @@ interface AnalyticsTracker {
 @Singleton
 class LoggingAnalyticsTracker @Inject constructor() : AnalyticsTracker {
     override fun track(event: String, props: Map<String, String>) {
-        // Only event names + coarse props — never PII.
         Timber.tag("analytics").d("%s %s", event, props)
     }
 }

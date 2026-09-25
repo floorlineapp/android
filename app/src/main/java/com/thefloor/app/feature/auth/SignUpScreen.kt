@@ -66,13 +66,11 @@ class SignUpViewModel @Inject constructor(
     private val configRepository: ConfigRepository,
     private val analytics: AnalyticsTracker,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(SignUpUiState())
     val state: StateFlow<SignUpUiState> = _state.asStateFlow()
 
     init {
         analytics.track(Events.SIGNUP_STARTED)
-        // Deep-link code (nav arg) or previously captured pending code → inviter chip.
         val navCode: String? = savedStateHandle.get<String>("code")
         viewModelScope.launch {
             val code = navCode ?: referralStore.pending()?.first

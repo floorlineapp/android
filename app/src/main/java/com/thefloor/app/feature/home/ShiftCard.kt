@@ -3,7 +3,6 @@ package com.thefloor.app.feature.home
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,18 +34,7 @@ import com.thefloor.app.core.designsystem.components.FloorEyebrow
 import com.thefloor.app.core.designsystem.components.FloorPillButton
 import com.thefloor.app.core.model.HomeContent
 
-/**
- * The shift card.
- *
- * Home used to open with the same block whatever time it was. This is the one
- * piece of the app that knows what time it is for the person holding it: what
- * they missed while they were off, what is short enough to read on a break,
- * what their shift added up to, and who else is awake at 3am.
- *
- * Every number in it is real — posts in the last day, unread mentions, points
- * actually earned today — so it changes when the app changes rather than
- * reading like copy.
- */
+/** The shift card. */
 @Composable
 fun ShiftCard(
     content: HomeContent,
@@ -95,7 +83,6 @@ fun ShiftCard(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        // The figure leads. It is the reason to look at the card.
                         val animated by animateIntAsState(targetValue = line.value, label = "shiftFigure")
                         Text(
                             if (line.plus && animated > 0) "+%,d".format(animated) else "%,d".format(animated),

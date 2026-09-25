@@ -4,7 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class MoneyTest {
-
     @Test
     fun `formats euros from minor units`() {
         assertEquals("€25", Money(2500, "EUR").format())

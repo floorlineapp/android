@@ -54,19 +54,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * Walker — the global support layer.
- *
- * Walker is deliberately NOT one of the app's pages: it is a floating button
- * present on every screen, exactly as the process guide specifies. The message
- * model carries three sender types from day one (user / ai / agent) so that
- * putting real people behind the escalation queue later is a staffing change,
- * not a rebuild.
- *
- * The copy here is honest about what is actually staffed today. Walker answers
- * as an assistant; asking for a person raises a ticket and says so, rather than
- * implying a human is already waiting.
- */
+/** Walker — the global support layer. */
 enum class WalkerSender { USER, AI, AGENT }
 
 /** Mirrors support_conversations.status in the target schema. */
@@ -86,11 +74,7 @@ data class WalkerState(
     val sending: Boolean = false,
 )
 
-/**
- * The questions people actually arrive with. Offering them is not decoration:
- * a support box with no prompts gets "it doesn't work", and a support box with
- * the right five prompts gets an answerable question.
- */
+/** The questions people actually arrive with. */
 val WALKER_TOPICS = listOf(
     "Where are my points?",
     "Am I verified?",
@@ -99,11 +83,7 @@ val WALKER_TOPICS = listOf(
     "How does Invite & Grow pay?",
 )
 
-/**
- * Lets any screen raise Walker without owning it. Walker is rendered once by
- * the app shell; a "Suggest a Floor" card or a support prompt deep inside a
- * feature just flips this.
- */
+/** Lets any screen raise Walker without owning it. */
 @javax.inject.Singleton
 class WalkerBus @Inject constructor() {
     val open = MutableStateFlow(false)
@@ -115,7 +95,6 @@ class WalkerBus @Inject constructor() {
 class WalkerViewModel @Inject constructor(
     private val support: com.thefloor.app.core.data.SupportRepository,
 ) : ViewModel() {
-
     val state = MutableStateFlow(WalkerState())
 
     init {
@@ -171,10 +150,7 @@ class WalkerViewModel @Inject constructor(
     }
 }
 
-/**
- * The floating Walker button. Rendered once, by the app shell, over every
- * screen — never routed to.
- */
+/** The floating Walker button. */
 @Composable
 fun WalkerFab(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
@@ -288,7 +264,6 @@ internal fun WalkerConversation(
             }
         }
 
-        // Prompts, while the thread is still short enough for them to help.
         if (state.messages.count { it.sender == WalkerSender.USER } < 2) {
             Spacer(Modifier.height(10.dp))
             androidx.compose.foundation.lazy.LazyRow(
@@ -361,8 +336,6 @@ private fun WalkerBubble(m: WalkerMessage) {
             horizontalAlignment = if (mine) Alignment.End else Alignment.Start,
         ) {
             if (!mine) {
-                // Same bubble either way, per spec — only an explicit status label
-                // tells a member whether they are with the assistant or the team.
                 FloorEyebrow(
                     if (m.sender == WalkerSender.AGENT) "Walker team" else "Walker",
                     accent = if (m.sender == WalkerSender.AGENT) FloorAccent.TEAL else FloorAccent.AMBER,

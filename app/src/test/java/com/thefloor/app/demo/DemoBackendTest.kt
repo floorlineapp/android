@@ -24,19 +24,8 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * The demo build is what gets handed to people, so its offline backend is held
- * to the same standard as the real one: every route a screen calls must return
- * something its DTO can actually parse.
- *
- * An earlier version matched on path substrings and ignored the HTTP method,
- * which returned a list where a single object was expected on seven different
- * flows — opening a discussion, opening a Floor, joining one, posting a
- * discussion, posting a Pulse, commenting, and the three Invite sub-screens.
- * Each of those is a case below, so the shape can never silently drift again.
- */
+/** The demo build is what gets handed to people, so its offline backend is held to the same standard as the… */
 class DemoBackendTest {
-
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
     private val backend = DemoBackend()
     private val noQuery: (String) -> String? = { null }
@@ -49,8 +38,6 @@ class DemoBackendTest {
 
     private fun balance(): Long =
         json.decodeFromString(RewardsSummaryDto.serializer(), get("rewards", "summary")).creditsBalance
-
-    // ---- the seven that were broken ------------------------------------
 
     @Test
     fun `opening a discussion returns one post, not a page`() {
@@ -147,8 +134,6 @@ class DemoBackendTest {
         assertTrue(faq.all { it.q.isNotBlank() && it.a.isNotBlank() })
     }
 
-    // ---- the points rules the guide says the server owns ----------------
-
     @Test
     fun `a discussion awards ten points, and the third one in a day awards nothing`() {
         val start = balance()
@@ -158,7 +143,6 @@ class DemoBackendTest {
         send("POST", "talk", "posts", body = """{"categoryId":"c1","body":"Second of the day."}""")
         assertEquals(start + 20, balance())
 
-        // Capped at two a day — the third is posted but pays nothing.
         send("POST", "talk", "posts", body = """{"categoryId":"c1","body":"Third of the day."}""")
         assertEquals(start + 20, balance())
     }
@@ -180,8 +164,6 @@ class DemoBackendTest {
         assertEquals(10L, after.first().deltaCredits)
     }
 
-    // ---- profile edits actually stick ----------------------------------
-
     @Test
     fun `editing the profile changes it and recomputes completeness`() {
         val before = json.decodeFromString(ProfileDto.serializer(), get("users", "me"))
@@ -191,15 +173,12 @@ class DemoBackendTest {
         )
         assertEquals("Cape Town", updated.city)
         assertEquals("Team Leader", updated.role)
-        // Untouched fields survive the merge.
         assertEquals(before.employer, updated.employer)
         assertTrue(updated.completeness in 1..100)
 
         val reread = json.decodeFromString(ProfileDto.serializer(), get("users", "me"))
         assertEquals("Cape Town", reread.city)
     }
-
-    // ---- reads the rest of the app depends on --------------------------
 
     @Test
     fun `search and the kind filter are applied, not ignored`() {

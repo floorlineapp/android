@@ -4,10 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
-/**
- * Floor brand tokens. Features never reference raw colors — always
- * FloorTheme.colors. Dark is the brand; a light theme is a token re-map away.
- */
+/** Floor brand tokens. */
 @Immutable
 data class FloorColors(
     val ink: Color = Color(0xFF0E1424),
@@ -16,7 +13,7 @@ data class FloorColors(
     val border: Color = Color(0xFF2A3350),
     val borderSoft: Color = Color(0xFF212A46),
     val amber: Color = Color(0xFFF5A623),
-    val amberSoft: Color = Color(0x24F5A623), // 14% alpha
+    val amberSoft: Color = Color(0x24F5A623),
     val teal: Color = Color(0xFF2DD9A3),
     val tealSoft: Color = Color(0x242DD9A3),
     val coral: Color = Color(0xFFFF6B5D),
@@ -39,8 +36,6 @@ fun lightFloorColors(): FloorColors = FloorColors(
     surfaceAlt = Color(0xFFEDF1F8),
     border = Color(0xFFD8DEE9),
     borderSoft = Color(0xFFE6EAF1),
-    // Deeper than the dark-mode amber so small accent text clears contrast on white,
-    // while still reading as a warm amber fill under dark on-amber text.
     amber = Color(0xFFC77800),
     amberSoft = Color(0x24C77800),
     teal = Color(0xFF10B981),

@@ -25,13 +25,10 @@ class AuthRepository @Inject constructor(
     private val referralStore: ReferralStore,
     private val demoStore: com.thefloor.app.core.demo.DemoStore,
 ) {
-    /** Null = signed out. The nav host observes this to gate the app. */
+    /** Null = signed out. */
     val session: Flow<Session?> = sessionStore.session
 
-    /**
-     * Signs up, transporting any pending referral code. The server owns
-     * attribution — a bad code never fails signup.
-     */
+    /** Signs up, transporting any pending referral code. */
     suspend fun signUp(email: String, password: String, displayName: String): AppResult<Unit> {
         val pending = referralStore.pending()
         return safeCall {
@@ -69,10 +66,9 @@ class AuthRepository @Inject constructor(
     suspend fun logOut() {
         val session = sessionStore.current()
         if (session != null) {
-            safeCall { api.logout(RefreshRequestDto(session.refreshToken)) } // best-effort revoke
+            safeCall { api.logout(RefreshRequestDto(session.refreshToken)) }
         }
         sessionStore.clear()
-        // Leaving the demo returns the app to the real backend.
         demoStore.set(false)
     }
 

@@ -5,9 +5,8 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.format.DateTimeParseException
 
-/** Compact relative timestamps for feed items. Falls back safely on bad input. */
+/** Compact relative timestamps for feed items. */
 object TimeAgo {
-
     fun format(isoTimestamp: String, now: Instant = Instant.now()): String {
         val instant = try {
             OffsetDateTime.parse(isoTimestamp).toInstant()

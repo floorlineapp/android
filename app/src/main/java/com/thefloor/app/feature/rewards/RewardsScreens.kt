@@ -37,7 +37,6 @@ import com.thefloor.app.core.designsystem.components.FloorErrorState
 import com.thefloor.app.core.designsystem.components.FloorEyebrow
 import com.thefloor.app.core.designsystem.components.FloorHero
 import com.thefloor.app.core.designsystem.components.FloorInfoNote
-import com.thefloor.app.core.designsystem.components.FloorListItem
 import com.thefloor.app.core.designsystem.components.FloorPillButton
 import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTopBar
@@ -61,7 +60,6 @@ data class RewardsUiState(
 class RewardsViewModel @Inject constructor(
     private val rewardsRepository: RewardsRepository,
 ) : ViewModel() {
-
     val state = MutableStateFlow(RewardsUiState())
 
     init {
@@ -95,7 +93,6 @@ fun RewardsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    // The ledger section needs the transaction list, not just the summary.
     androidx.compose.runtime.LaunchedEffect(Unit) { viewModel.loadTransactions() }
 
     Scaffold(
@@ -168,15 +165,12 @@ internal fun RewardsBody(
                 title = "Good things should feel good — and make sense.",
                 subtitle = "Earn Floor Points for verified participation across The Floor. Every point has a source, a timestamp and a transaction record, so you always know why your balance changed.",
                 actions = {
-                    // Two buttons, two destinations. They used to land in the
-                    // same place, which left the rules with nowhere to live.
                     FloorPillButton("How points work", onClick = onOpenPointsRules)
                     FloorPillButton("Full history", onClick = onOpenTransactions, primary = false)
                 },
             )
         }
 
-        // "Three different things — kept separate."
         item {
             FloorInfoNote(accent = FloorAccent.TEAL) {
                 Text(
@@ -197,7 +191,6 @@ internal fun RewardsBody(
             }
         }
 
-        // Balance + metric grid
         item {
             FloorCard(modifier = Modifier.fillMaxWidth()) {
                 FloorEyebrow("Available balance", accent = FloorAccent.FAINT)
@@ -215,7 +208,6 @@ internal fun RewardsBody(
             }
         }
 
-        // Ways to earn
         item {
             FloorSectionHeader(
                 title = "Ways to earn Floor Points",
@@ -223,8 +215,6 @@ internal fun RewardsBody(
             )
         }
         items(summary.waysToEarn, key = { it.title }) { way ->
-            // Dispatch via the deep-link parser — substring matching misroutes,
-            // since every brand URI contains "floor".
             FloorCard(onClick = {
                 val target = com.thefloor.app.domain.DeepLinkParser.parse(way.deepLink)
                 val route = when (target) {
@@ -251,7 +241,6 @@ internal fun RewardsBody(
             }
         }
 
-        // Ledger
         if (transactions.isNotEmpty()) {
             item {
                 FloorSectionHeader(
@@ -283,7 +272,6 @@ internal fun RewardsBody(
             }
         }
 
-        // Games & competitions
         item {
             FloorSectionHeader(
                 title = "Games & competitions",
@@ -319,7 +307,6 @@ internal fun RewardsBody(
             }
         }
 
-        // Redeem
         item {
             FloorSectionHeader(
                 title = "Redeem Floor Points",

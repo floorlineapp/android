@@ -5,7 +5,6 @@ import org.junit.Test
 import java.time.LocalTime
 
 class ShiftGreetingTest {
-
     @Test
     fun `morning shift 5am to noon`() {
         assertEquals("Good morning shift.", ShiftGreeting.greetingFor(LocalTime.of(5, 0)))

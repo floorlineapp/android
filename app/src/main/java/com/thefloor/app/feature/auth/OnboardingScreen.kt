@@ -3,7 +3,6 @@ package com.thefloor.app.feature.auth
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,15 +47,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * Steps 3–6 of the six-step sign-up: About You, BPO Profile, Experience and
- * Your Floor. Account (1) and Verify (2) happen before this screen.
- *
- * Sign-up is not a separate data model — every field collected here writes
- * straight to the profile, and it is written on each Continue rather than
- * batched at the end, so closing the app on step 5 does not lose steps 3 and 4.
- * Every step stays skippable; skipped ones resurface as Home completion cards.
- */
+/** Steps 3–6 of the six-step sign-up: About You, BPO Profile, Experience and Your Floor. */
 private const val TOTAL_STEPS = 6
 private const val FIRST_STEP_HERE = 3
 
@@ -67,23 +58,19 @@ val INDUSTRIES = listOf("Telecom", "Retail", "Banking", "Travel", "Healthcare", 
 data class OnboardingUiState(
     /** 3..6, matching the step numbers the member sees. */
     val step: Int = FIRST_STEP_HERE,
-    // Step 3 — About you
     val country: String = "",
     val city: String = "",
     val ageRange: String? = null,
     val languages: String = "",
-    // Step 4 — BPO profile
     val employer: String = "",
     val site: String = "",
     val industry: String? = null,
     val role: String = "",
-    // Step 5 — Experience
     val careerLevel: CareerLevel? = null,
     val experienceYears: String = "",
     val channels: Set<String> = emptySet(),
     val workMode: WorkMode? = null,
     val skills: String = "",
-    // Step 6 — Your Floor
     val suggested: List<Community> = emptyList(),
     val joined: Set<String> = emptySet(),
     val finished: Boolean = false,
@@ -94,7 +81,6 @@ class OnboardingViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val communityRepository: CommunityRepository,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(OnboardingUiState())
     val state: StateFlow<OnboardingUiState> = _state.asStateFlow()
 
@@ -115,7 +101,7 @@ class OnboardingViewModel @Inject constructor(
         it.copy(channels = if (c in it.channels) it.channels - c else it.channels + c)
     }
 
-    /** Writes this step's fields, then advances. Skipping writes nothing. */
+    /** Writes this step's fields, then advances. */
     fun next(skip: Boolean) {
         val s = _state.value
         if (!skip) {
@@ -161,7 +147,6 @@ class OnboardingViewModel @Inject constructor(
                 communityRepository.leave(id)
                 _state.update { it.copy(joined = it.joined - id) }
             } else {
-                // One tap, no approval step — joining a Floor is an insert, not a request.
                 communityRepository.join(id).onSuccess {
                     _state.update { it.copy(joined = it.joined + id) }
                 }

@@ -53,7 +53,6 @@ class SettingsViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val themeStore: ThemeStore,
 ) : ViewModel() {
-
     data class DeleteState(
         val password: String = "",
         val submitting: Boolean = false,
@@ -86,8 +85,6 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             userRepository.deleteAccount(password)
                 .onSuccess {
-                    // Do NOT log out yet — the grace-period explanation must be
-                    // readable first; acknowledgeDeletion() completes the logout.
                     deleteState.update { it.copy(submitting = false, done = true) }
                 }
                 .onError { e -> deleteState.update { it.copy(submitting = false, error = e.userMessage) } }

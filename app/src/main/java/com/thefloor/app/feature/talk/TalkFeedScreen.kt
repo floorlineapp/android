@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.SportsEsports
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -69,7 +68,6 @@ data class TalkFeedUiState(
 class TalkFeedViewModel @Inject constructor(
     private val talkRepository: TalkRepository,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(TalkFeedUiState())
     val state: StateFlow<TalkFeedUiState> = _state.asStateFlow()
 
@@ -216,7 +214,6 @@ internal fun TalkBody(
                             )
                         }
                     }
-                    // category chips
                     item {
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             item {
@@ -252,7 +249,6 @@ internal fun TalkBody(
                         }
                     }
 
-                    // ---- Live Rooms ----
                     item {
                         Spacer(Modifier.height(6.dp))
                         FloorSectionHeader(

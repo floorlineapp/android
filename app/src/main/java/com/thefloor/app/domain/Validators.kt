@@ -1,11 +1,7 @@
 package com.thefloor.app.domain
 
-/**
- * Client-side validation for immediate feedback. The server re-validates
- * everything — these exist for UX, not for trust.
- */
+/** Client-side validation for immediate feedback. */
 object Validators {
-
     fun email(value: String): String? = when {
         value.isBlank() -> "Enter your email"
         !Regex("^[A-Za-z0-9+_.\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}$").matches(value.trim()) ->

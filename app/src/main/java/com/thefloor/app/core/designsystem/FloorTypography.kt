@@ -12,15 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.thefloor.app.R
 
-/**
- * Brand type ramp — the single biggest driver of the prototype look.
- * Display = Archivo, body = IBM Plex Sans, data/eyebrows = IBM Plex Mono.
- *
- * Archivo and IBM Plex Sans ship as variable fonts (wght axis); we bind the
- * exact weights the design uses through FontVariation. IBM Plex Mono ships as
- * static Medium/SemiBold faces. Variable-font weight binding requires API 26+,
- * which matches the app's minSdk.
- */
+/** Brand type ramp — the single biggest driver of the prototype look. */
 private fun wght(weight: Int) = FontVariation.Settings(FontVariation.weight(weight))
 
 private val DisplayFamily: FontFamily = FontFamily(
@@ -45,7 +37,6 @@ private val MonoFamily: FontFamily = FontFamily(
 
 @Immutable
 data class FloorTypography(
-    // Archivo display — big editorial headlines.
     val displayL: TextStyle = TextStyle(
         fontFamily = DisplayFamily, fontWeight = FontWeight.ExtraBold,
         fontSize = 30.sp, lineHeight = 35.sp, letterSpacing = (-0.4).sp,
@@ -62,7 +53,6 @@ data class FloorTypography(
         fontFamily = DisplayFamily, fontWeight = FontWeight.SemiBold,
         fontSize = 15.sp, lineHeight = 20.sp,
     ),
-    // IBM Plex Sans body.
     val bodyL: TextStyle = TextStyle(
         fontFamily = BodyFamily, fontWeight = FontWeight.Normal,
         fontSize = 15.sp, lineHeight = 23.sp,
@@ -83,7 +73,6 @@ data class FloorTypography(
         fontFamily = BodyFamily, fontWeight = FontWeight.Normal,
         fontSize = 12.sp, lineHeight = 16.sp,
     ),
-    // IBM Plex Mono — eyebrows, tags, numeric data.
     val eyebrow: TextStyle = TextStyle(
         fontFamily = MonoFamily, fontWeight = FontWeight.Medium,
         fontSize = 10.5f.sp, lineHeight = 14.sp, letterSpacing = 1.4.sp,

@@ -64,7 +64,6 @@ class InviteEarnViewModel @Inject constructor(
     private val referralRepository: ReferralRepository,
     private val analytics: AnalyticsTracker,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow<InviteUiState>(InviteUiState.Loading)
     val state: StateFlow<InviteUiState> = _state.asStateFlow()
 
@@ -121,7 +120,6 @@ fun InviteEarnScreen(
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    // 1 — header
                     item {
                         com.thefloor.app.core.designsystem.components.FloorHero(
                             eyebrow = "Referral track · Deliberately separate",
@@ -150,7 +148,6 @@ fun InviteEarnScreen(
                         }
                     }
 
-                    // 2 — earnings summary (all server values)
                     item {
                         FloorCard {
                             Row(
@@ -165,7 +162,6 @@ fun InviteEarnScreen(
                         }
                     }
 
-                    // 3+4 — link + share
                     item {
                         FloorCard {
                             Text("Your personal link", style = FloorTheme.typography.label, color = FloorTheme.colors.textSecondary)
@@ -184,7 +180,6 @@ fun InviteEarnScreen(
                                 FloorPrimaryButton(
                                     text = "Share",
                                     onClick = {
-                                        // Native Android share sheet — no hard-coded app dependencies.
                                         val message = context.getString(R.string.invite_share_message, summary.link)
                                         val intent = Intent(Intent.ACTION_SEND).apply {
                                             type = "text/plain"
@@ -199,7 +194,6 @@ fun InviteEarnScreen(
                         }
                     }
 
-                    // 5 — the referral funnel, stage by stage
                     item {
                         FloorCard {
                             Text("The funnel", style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
@@ -225,7 +219,6 @@ fun InviteEarnScreen(
                         }
                     }
 
-                    // Founding tiers — computed from the qualified count, never stored.
                     item {
                         com.thefloor.app.core.designsystem.components.FloorSectionHeader(
                             title = "Founding tiers",
@@ -269,7 +262,6 @@ fun InviteEarnScreen(
                         }
                     }
 
-                    // Leaderboard — qualified counts only.
                     item {
                         com.thefloor.app.core.designsystem.components.FloorSectionHeader(
                             title = "Top referrers",
@@ -305,7 +297,6 @@ fun InviteEarnScreen(
                         }
                     }
 
-                    // Community Growth Fund — real panel, honestly labelled.
                     item {
                         com.thefloor.app.core.designsystem.components.FloorInfoNote {
                             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -335,7 +326,6 @@ fun InviteEarnScreen(
                         }
                     }
 
-                    // 6 — next milestone
                     summary.nextMilestone?.let { next ->
                         item {
                             FloorCard {
@@ -374,7 +364,6 @@ fun InviteEarnScreen(
                         }
                     }
 
-                    // 8 — status
                     item {
                         FloorCard {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -395,7 +384,6 @@ fun InviteEarnScreen(
                         }
                     }
 
-                    // 7, 9, 10 — deeper sections
                     item {
                         FloorCard(contentPadding = 0.dp) {
                             FloorListItem(title = "All milestones", onClick = onOpenMilestones)
@@ -404,7 +392,6 @@ fun InviteEarnScreen(
                         }
                     }
 
-                    // Legal strip — server-driven disclosures.
                     item {
                         Column {
                             summary.disclosures.forEach { line ->
@@ -462,21 +449,6 @@ private fun FunnelStage(number: Int, title: String, subtitle: String, count: Int
     }
 }
 
-@Composable
-private fun HowItWorksStep(number: Int, title: String, subtitle: String) {
-    Row(modifier = Modifier.padding(vertical = 6.dp)) {
-        Text(
-            "$number",
-            style = FloorTheme.typography.mono,
-            color = FloorTheme.colors.amber,
-        )
-        Spacer(Modifier.width(12.dp))
-        Column {
-            Text(title, style = FloorTheme.typography.label, color = FloorTheme.colors.textPrimary)
-            Text(subtitle, style = FloorTheme.typography.caption, color = FloorTheme.colors.textSecondary)
-        }
-    }
-}
 
 fun statusLabel(status: String): String = when (status) {
     "CONNECTOR" -> "Floor Connector"

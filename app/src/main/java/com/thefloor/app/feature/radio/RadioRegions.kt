@@ -1,10 +1,6 @@
 package com.thefloor.app.feature.radio
 
-/**
- * The six fixed Floor Radio regions. Seed data, not user-generated — this list
- * is the client mirror of the radio_regions table in the build spec, and the
- * order here is the order the region switcher shows.
- */
+/** The six fixed Floor Radio regions. */
 data class RadioShow(val time: String, val name: String, val desc: String)
 
 data class RadioRegion(

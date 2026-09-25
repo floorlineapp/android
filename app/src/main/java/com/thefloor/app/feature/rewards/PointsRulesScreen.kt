@@ -1,7 +1,6 @@
 package com.thefloor.app.feature.rewards
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,14 +26,7 @@ import com.thefloor.app.core.designsystem.components.FloorInfoNote
 import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 
-/**
- * How points work.
- *
- * This and "Full history" used to open the same transaction list, which left
- * the rules — the part that makes the economy trustworthy — with nowhere to
- * live. The ledger answers *what* you earned; this answers *why*, and what the
- * currency is and is not.
- */
+/** How points work. */
 private data class EarnRule(val title: String, val points: Int, val cap: String, val source: String)
 
 private val earnRules = listOf(

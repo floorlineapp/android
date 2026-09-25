@@ -11,7 +11,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class AppModule {
-
     @Binds
     @Singleton
     abstract fun analyticsTracker(impl: LoggingAnalyticsTracker): AnalyticsTracker

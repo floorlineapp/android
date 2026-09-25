@@ -64,7 +64,6 @@ class NotificationsViewModel @Inject constructor(
     private val repository: NotificationRepository,
     private val analytics: AnalyticsTracker,
 ) : ViewModel() {
-
     val state = MutableStateFlow(NotificationsUiState())
 
     init {

@@ -80,16 +80,11 @@ import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/**
- * Renders each screen to a PNG on the JVM so the UI can actually be reviewed.
- * The viewport is deliberately tall so most of each scrolling page lands in one
- * frame. Snapshots are written to /screenshots and published by CI.
- */
+/** Renders each screen to a PNG on the JVM so the UI can actually be reviewed. */
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], qualifiers = "w411dp-h1900dp-xxhdpi")
 class ScreenshotTest {
-
     @get:Rule
     val compose = createComposeRule()
 
@@ -99,13 +94,10 @@ class ScreenshotTest {
                 Surface(color = FloorTheme.colors.ink, modifier = Modifier.fillMaxSize()) { content() }
             }
         }
-        // Absolute path: a relative one resolves against the module dir for some
-        // tests, which silently scattered captures outside the output folder.
         val dir = System.getProperty("roborazzi.output.dir") ?: "screenshots"
         compose.onRoot().captureRoboImage(java.io.File(dir, "$name.png").absolutePath)
     }
 
-    // ---------- editorial pages ----------
     @Test fun insights() = snap("page_insights") {
         InsightsScreen(onBack = {}, mySubmissions = fakeSubmissions)
     }
@@ -117,22 +109,18 @@ class ScreenshotTest {
     @Test fun about() = snap("page_about") { AboutScreen(onBack = {}) }
     @Test fun wellbeing() = snap("page_wellbeing") { WellbeingScreen {} }
 
-    // ---------- brand / auth ----------
     @Test fun welcome() = snap("page_welcome") { WelcomeScreen({}, {}) }
     @Test fun welcomeLight() = snap("page_welcome_light", dark = false) { WelcomeScreen({}, {}) }
 
-    // ---------- design-system gallery, both themes ----------
     @Test fun galleryDark() = snap("gallery_dark") { Gallery() }
     @Test fun galleryLight() = snap("gallery_light", dark = false) { Gallery() }
 
     @Test fun academyLight() = snap("page_academy_light", dark = false) { AcademyScreen(onBack = {}) }
     @Test fun aboutLight() = snap("page_about_light", dark = false) { AboutScreen(onBack = {}) }
 
-    // ---------- Home, rendered from the real screen body ----------
     @Test fun home() = snap("page_home") { HomeBody() }
     @Test fun homeLight() = snap("page_home_light", dark = false) { HomeBody() }
 
-    // ---------- the rest of the real screens ----------
     @Test fun talk() = snap("page_talk") { TalkBody(state = fakeTalk) }
     @Test fun talkLight() = snap("page_talk_light", dark = false) { TalkBody(state = fakeTalk) }
     @Test fun floor() = snap("page_floor") { DiscoverBody(state = fakeDiscover, query = "", selectedKind = null) }
@@ -154,7 +142,6 @@ class ScreenshotTest {
     @Test fun insightsLight() = snap("page_insights_light", dark = false) { InsightsScreen(onBack = {}) }
     @Test fun marketplaceLight() = snap("page_marketplace_light", dark = false) { MarketplaceScreen {} }
 
-    // ---------- the shift card, in all four states ----------
     @Test fun shiftBefore() = snap("shift_before") { ShiftCardPreview(ShiftPhase.BEFORE) }
     @Test fun shiftOnFloor() = snap("shift_on_floor") { ShiftCardPreview(ShiftPhase.ON_FLOOR) }
     @Test fun shiftAfter() = snap("shift_after") { ShiftCardPreview(ShiftPhase.AFTER) }
@@ -168,10 +155,8 @@ class ScreenshotTest {
         )
     }
 
-    // ---------- screens that were missing until Milano's pass ----------
     @Test fun spotlightRules() = snap("page_spotlight_rules") { SpotlightRulesScreen {} }
     @Test fun spotlightSubmit() = snap("page_spotlight_submit") {
-        // No Hilt graph under Robolectric: render the screen without its view model.
         SubmitSpotlightScreen(
             onBack = {},
             employer = "Meridian Contact Solutions",
@@ -183,7 +168,6 @@ class ScreenshotTest {
     @Test fun pointsRulesLight() = snap("page_points_rules_light", dark = false) { PointsRulesScreen(onBack = {}) }
     @Test fun radioPass() = snap("page_radio_pass") { RadioPassScreen {} }
 
-    // ---------- Walker, the global support layer ----------
     @Test fun walker() = snap("walker_chat") { WalkerConversation(state = fakeWalker, onSend = {}, onEscalate = {}) }
     @Test fun walkerLight() = snap("walker_chat_light", dark = false) {
         WalkerConversation(state = fakeWalker, onSend = {}, onEscalate = {})
@@ -314,8 +298,6 @@ private fun Gallery() {
         )
     }
 }
-
-// ---------------------------------------------------------------- fixtures
 
 private val fakeTalk = TalkFeedUiState(
     loading = false,

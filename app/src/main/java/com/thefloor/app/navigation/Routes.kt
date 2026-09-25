@@ -1,11 +1,7 @@
 package com.thefloor.app.navigation
 
-/**
- * All navigation routes. String-based patterns with helpers — one place to
- * change, no magic strings in feature code.
- */
+/** All navigation routes. */
 object Routes {
-    // Auth graph
     const val WELCOME = "welcome"
     const val SIGN_UP = "signup?code={code}"
     fun signUp(code: String? = null) = if (code != null) "signup?code=$code" else "signup"
@@ -17,7 +13,6 @@ object Routes {
     fun resetPassword(token: String) = "reset_password/$token"
     const val ONBOARDING = "onboarding"
 
-    // Main tabs
     const val HOME = "home"
     const val FLOOR = "floor"
     const val TALK = "talk"
@@ -25,7 +20,6 @@ object Routes {
     const val MORE = "more"
     const val PULSE = "pulse"
 
-    // Detail destinations
     const val COMMUNITY_DETAIL = "floor/{communityId}"
     fun communityDetail(id: String) = "floor/$id"
     const val POST_DETAIL = "talk/{postId}"
@@ -53,7 +47,6 @@ object Routes {
     const val SETTINGS = "settings"
     const val DELETE_ACCOUNT = "settings/delete_account"
 
-    // Editorial content pages
     const val JOBS = "jobs"
     const val ACADEMY = "academy"
     const val MARKETPLACE = "marketplace"

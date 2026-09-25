@@ -20,11 +20,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.thefloor.app.core.designsystem.FloorTheme
 
-/**
- * Same field, but over [androidx.compose.ui.text.input.TextFieldValue] so the
- * caller controls the caret. Inserting an emoji at the cursor needs this; with
- * a plain String the selection is lost on every external edit.
- */
+/** Same field, but over [androidx.compose.ui.text.input.TextFieldValue] so the caller controls the caret. */
 @Composable
 fun FloorTextField(
     value: androidx.compose.ui.text.input.TextFieldValue,
@@ -83,7 +79,6 @@ fun FloorTextField(
     minLines: Int = 1,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
 ) {
-    // Password fields get a show/hide eye so people can sense-check what they typed.
     var revealed by remember { mutableStateOf(false) }
     val hidden = isPassword && !revealed
     OutlinedTextField(

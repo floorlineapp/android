@@ -1,12 +1,7 @@
 package com.thefloor.app.domain
 
-/**
- * Single source of truth for deep-link → destination mapping.
- * Handles https://thefloor.example/... and thefloor://... uniformly.
- * Pure and unit-tested; unknown links resolve to Home, never crash.
- */
+/** Single source of truth for deep-link → destination mapping. */
 object DeepLinkParser {
-
     sealed interface Target {
         data class Invite(val referralCode: String) : Target
         data class Floor(val communityId: String) : Target
@@ -52,8 +47,6 @@ object DeepLinkParser {
             segments.size == 2 && segments[0] == "job" -> Target.Job(segments[1])
             segments.size == 2 && segments[0] == "course" -> Target.Course(segments[1])
             segments.size == 2 && segments[0] == "marketplace" -> Target.Deal(segments[1])
-            // Own-profile editor (backend-emitted thefloor://profile/edit) — must
-            // not be mistaken for a member profile with id "edit".
             segments.size == 2 && segments[0] == "profile" && segments[1] == "edit" -> Target.ProfileEdit
             segments.size == 2 && segments[0] == "profile" -> Target.Profile(segments[1])
             segments.size == 2 && segments[0] == "reset" -> Target.ResetPassword(segments[1])

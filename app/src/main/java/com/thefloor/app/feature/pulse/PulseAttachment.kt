@@ -5,15 +5,9 @@ import android.media.MediaRecorder
 import android.os.Build
 import java.io.File
 
-/**
- * Something actually attached to a Pulse.
- *
- * The composer used to set a fixed "Photo uploaded" / "Voice note added" string
- * the moment either button was pressed, whether or not anything had been picked
- * or recorded. This type only ever exists because a real file does.
- */
+/** Something actually attached to a Pulse. */
 sealed interface PulseAttachment {
-    /** What the composer chip shows. Derived from the file, never hardcoded. */
+    /** What the composer chip shows. */
     val label: String
 
     /** Sent as pulse_posts.media_type. */
@@ -33,14 +27,8 @@ sealed interface PulseAttachment {
     }
 }
 
-/**
- * A thin wrapper over MediaRecorder that never claims success it did not have.
- * Every call is guarded: if the microphone is busy, the permission was refused
- * or the encoder refuses the format, [stop] returns null and the composer says
- * so rather than showing a confirmation for a file that does not exist.
- */
+/** A thin wrapper over MediaRecorder that never claims success it did not have. */
 class VoiceRecorder(private val context: Context) {
-
     private var recorder: MediaRecorder? = null
     private var target: File? = null
     private var startedAt: Long = 0

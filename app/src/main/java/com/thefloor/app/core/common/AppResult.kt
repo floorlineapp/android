@@ -1,6 +1,6 @@
 package com.thefloor.app.core.common
 
-/** Result of any repository operation. Errors carry user-presentable messages. */
+/** Result of any repository operation. */
 sealed interface AppResult<out T> {
     data class Success<T>(val data: T) : AppResult<T>
     data class Error(val error: AppError) : AppResult<Nothing>

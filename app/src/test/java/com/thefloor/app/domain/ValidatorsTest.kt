@@ -7,7 +7,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ValidatorsTest {
-
     @Test
     fun `email validation`() {
         assertNull(Validators.email("alex@example.com"))
@@ -26,11 +25,11 @@ class ValidatorsTest {
     @Test
     fun `referral code format mirrors server rules`() {
         assertTrue(Validators.referralCodeFormat("ABCDEFGH"))
-        assertTrue(Validators.referralCodeFormat("abcdefgh")) // normalized to uppercase
-        assertTrue(Validators.referralCodeFormat(" ABCDEFGH ")) // trimmed
-        assertFalse(Validators.referralCodeFormat("ABC")) // too short
-        assertFalse(Validators.referralCodeFormat("ABCDEFG0")) // 0 not in alphabet
-        assertFalse(Validators.referralCodeFormat("ABCDEFGI")) // I not in alphabet
+        assertTrue(Validators.referralCodeFormat("abcdefgh"))
+        assertTrue(Validators.referralCodeFormat(" ABCDEFGH "))
+        assertFalse(Validators.referralCodeFormat("ABC"))
+        assertFalse(Validators.referralCodeFormat("ABCDEFG0"))
+        assertFalse(Validators.referralCodeFormat("ABCDEFGI"))
     }
 
     @Test

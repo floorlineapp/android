@@ -25,11 +25,7 @@ class ThemeToggleViewModel @Inject constructor(
     }
 }
 
-/**
- * Sun / moon switch, mirroring the prototype's top-bar control. The current
- * state is read straight from the resolved palette, so it stays correct even
- * when the theme is following the system.
- */
+/** Sun / moon switch, mirroring the prototype's top-bar control. */
 @Composable
 fun ThemeToggleAction(viewModel: ThemeToggleViewModel = hiltViewModel()) {
     val isLight = FloorTheme.colors.isLight

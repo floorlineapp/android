@@ -18,11 +18,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Singleton
 
-/**
- * Offline read cache. NEVER authoritative — every row is a snapshot with
- * fetchedAt, and balances/referral numbers always re-render from the API
- * when connectivity returns.
- */
+/** Offline read cache. */
 
 @Entity(tableName = "cached_communities")
 data class CachedCommunityEntity(
@@ -117,12 +113,11 @@ abstract class FloorDatabase : RoomDatabase() {
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-
     @Provides
     @Singleton
     fun database(@ApplicationContext context: Context): FloorDatabase =
         Room.databaseBuilder(context, FloorDatabase::class.java, "floor.db")
-            .fallbackToDestructiveMigration() // cache-only DB: destructive is correct
+            .fallbackToDestructiveMigration()
             .build()
 
     @Provides fun communityDao(db: FloorDatabase): CommunityDao = db.communityDao()

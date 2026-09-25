@@ -95,7 +95,6 @@ class PostDetailViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val sessionStore: com.thefloor.app.core.datastore.SessionStore,
 ) : ViewModel() {
-
     private val postId: String = savedStateHandle.get<String>("postId").orEmpty()
 
     private val _state = MutableStateFlow(PostDetailUiState())
@@ -254,7 +253,6 @@ fun PostDetailScreen(
     var reportSheetOpen by remember { mutableStateOf(false) }
     var tagMenuOpen by remember { mutableStateOf(false) }
 
-    // Pop the screen once the post is deleted.
     androidx.compose.runtime.LaunchedEffect(state.postDeleted) {
         if (state.postDeleted) onBack()
     }
@@ -274,7 +272,6 @@ fun PostDetailScreen(
                             text = { Text(if (state.post?.saved == true) "Unsave" else "Save") },
                             onClick = { menuOpen = false; viewModel.toggleSave() },
                         )
-                        // Delete only for your own post (server also enforces this).
                         if (state.post != null && state.post!!.authorId == state.myUserId) {
                             DropdownMenuItem(
                                 text = { Text("Delete post", color = FloorTheme.colors.coral) },
@@ -353,7 +350,6 @@ fun PostDetailScreen(
                                             avatarSize = 28.dp,
                                             modifier = Modifier.weight(1f),
                                         )
-                                        // Delete your own comment (server also enforces ownership).
                                         if (comment.authorId == state.myUserId) {
                                             Text(
                                                 "Delete",
@@ -372,14 +368,12 @@ fun PostDetailScreen(
                             }
                         }
                     }
-                    // Composer
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = FloorTheme.spacing.gutter, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        // Tag a thread participant (@mention).
                         androidx.compose.foundation.layout.Box {
                             IconButton(
                                 onClick = { tagMenuOpen = true },

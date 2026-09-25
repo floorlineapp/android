@@ -1,9 +1,6 @@
 package com.thefloor.app.core.model
 
-/**
- * Domain models — immutable, UI-agnostic, mapped from network DTOs in repositories.
- * Money is always minor units + currency; the client only formats, never computes.
- */
+/** Domain models — immutable, UI-agnostic, mapped from network DTOs in repositories. */
 
 data class Money(val amountMinor: Long, val currency: String) {
     fun format(): String {
@@ -114,10 +111,8 @@ data class Comment(
     val createdAt: String,
 )
 
-// ---------- Invite & Earn ----------
-
 data class MilestoneReward(
-    val kind: String,           // CREDITS | CASH | STATUS
+    val kind: String,
     val credits: Int?,
     val cash: Money?,
     val statusGrant: String?,
@@ -135,7 +130,7 @@ data class NextMilestone(
 data class MilestoneTier(
     val thresholdActive: Int,
     val rewards: List<MilestoneReward>,
-    val state: String,          // LOCKED | UNLOCKED | PAID
+    val state: String,
 )
 
 data class ReferralSummary(
@@ -158,8 +153,6 @@ data class ReferralHistoryItem(
 
 data class FaqItem(val question: String, val answer: String)
 
-// ---------- Rewards ----------
-
 data class WayToEarn(val title: String, val credits: Long, val deepLink: String)
 
 data class RewardTransaction(
@@ -175,8 +168,6 @@ data class RewardsSummary(
     val recentTransactions: List<RewardTransaction>,
 )
 
-// ---------- Notifications ----------
-
 data class AppNotification(
     val id: String,
     val type: String,
@@ -186,8 +177,6 @@ data class AppNotification(
     val read: Boolean,
     val createdAt: String,
 )
-
-// ---------- Home ----------
 
 data class CompletionCard(val title: String, val subtitle: String, val deepLink: String)
 

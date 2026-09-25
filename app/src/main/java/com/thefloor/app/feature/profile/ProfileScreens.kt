@@ -81,7 +81,6 @@ class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val rewardsRepository: com.thefloor.app.core.data.RewardsRepository,
 ) : ViewModel() {
-
     val state = MutableStateFlow(ProfileUiState())
 
     init {
@@ -94,8 +93,6 @@ class ProfileViewModel @Inject constructor(
                 .onSuccess { profile -> state.update { it.copy(loading = false, profile = profile, error = null) } }
                 .onError { e -> state.update { it.copy(loading = false, error = e.userMessage) } }
         }
-        // The Recognition ladder is derived from the ledger balance, so Profile
-        // reads the same number Rewards & Games shows rather than its own.
         viewModelScope.launch {
             rewardsRepository.summary()
                 .onSuccess { summary -> state.update { it.copy(floorPoints = summary.creditsBalance.toInt()) } }
@@ -135,8 +132,6 @@ fun ProfileScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    // Refresh whenever the screen resumes — returning from the editor must
-    // show the just-saved data, not the stale pre-edit snapshot.
     androidx.lifecycle.compose.LifecycleResumeEffect(Unit) {
         viewModel.refresh()
         onPauseOrDispose { }
@@ -173,8 +168,6 @@ internal fun ProfileBody(
     onPrivacy: () -> Unit = {},
 ) {
     val workplaceVerified = profile.emailVerified && !profile.employer.isNullOrBlank()
-    // Trusted history is an account-standing flag; until real moderation data
-    // exists it is derived from having a complete, verified profile.
     val trustedHistory = workplaceVerified && profile.completeness >= 80
     val level = recognitionLevel(floorPoints, workplaceVerified, trustedHistory)
     val next = nextRecognitionLevel(level)
@@ -188,7 +181,6 @@ internal fun ProfileBody(
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    // ---- Identity header ----
                     item {
                         FloorCard(contentPadding = 20.dp) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -212,7 +204,6 @@ internal fun ProfileBody(
                         }
                     }
 
-                    // ---- Recognition card: balance, progress, the four rungs ----
                     item {
                         FloorHero(
                             eyebrow = "Identity & recognition record",
@@ -293,7 +284,6 @@ internal fun ProfileBody(
                         }
                     }
 
-                    // ---- Profile completion: each item unlocks something ----
                     item {
                         FloorCard(contentPadding = 18.dp) {
                             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -320,7 +310,6 @@ internal fun ProfileBody(
                         }
                     }
 
-                    // ---- Career profile ----
                     item {
                         Spacer(Modifier.height(4.dp))
                         Text("Career profile", style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
@@ -450,12 +439,9 @@ fun EditProfileScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val profile = state.profile
 
-    // A save used to leave the member sitting in the editor, looking at fields
-    // that had just been reset from the server response — it read as if the
-    // screen had bounced back into edit mode. Saving now returns to the profile.
     androidx.compose.runtime.LaunchedEffect(state.justSaved) {
         if (state.justSaved) {
-            kotlinx.coroutines.delay(450) // let the "Saved" confirmation register
+            kotlinx.coroutines.delay(450)
             viewModel.consumeJustSaved()
             onBack()
         }
@@ -664,7 +650,6 @@ fun PublicProfileScreen(
 class PublicProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
 ) : ViewModel() {
-
     val state = MutableStateFlow(ProfileUiState())
 
     fun load(userId: String) {

@@ -48,29 +48,11 @@ import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Answers every API call locally when [DemoMode] is on, so the app is fully
- * explorable with no backend.
- *
- * This is a small in-memory server, not a table of canned strings: it keeps
- * state and honours the HTTP method, so posting a discussion, commenting,
- * joining a Floor, reacting, editing a profile and redeeming all behave the way
- * they will against the real API — the new row comes back and the feed it
- * belongs to shows it on the next read.
- *
- * Responses are built from the real DTO types, so a shape change in the API
- * contract breaks this at compile time rather than at runtime in someone's
- * hands.
- *
- * The points rules live here rather than in the app, exactly as the process
- * guide requires of the real backend: the client never writes the ledger, it
- * only reads it back. The daily cap on Talk discussions is enforced here too.
- */
+/** Answers every API call locally when [DemoMode] is on, so the app is fully explorable with no backend. */
 @Singleton
 class DemoInterceptor @Inject constructor(
     private val backend: DemoBackend,
 ) : Interceptor {
-
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         if (!DemoMode.enabled) return chain.proceed(request)
@@ -97,18 +79,12 @@ class DemoInterceptor @Inject constructor(
     }
 }
 
-/**
- * The demo's mutable world. Singleton so it survives navigation; reset only by
- * a process restart, which is the right lifetime for a build people pass
- * around — an evening of poking at it keeps everything they did.
- */
+/** The demo's mutable world. */
 @Singleton
 class DemoBackend @Inject constructor() {
-
     private val json = Json { encodeDefaults = true; explicitNulls = false }
     private val lock = Any()
 
-    // ---- state ----------------------------------------------------------
     private var profile = seedProfile()
     private val communities = seedCommunities().toMutableList()
     private val posts = seedPosts().toMutableList()
@@ -130,15 +106,12 @@ class DemoBackend @Inject constructor() {
 
     private val balance: Long get() = transactions.sumOf { it.deltaCredits }
 
-    // ---- routing --------------------------------------------------------
-
     fun handle(method: String, seg: List<String>, query: (String) -> String?, body: String): String =
         synchronized(lock) { route(method, seg, query, body) }
 
     private fun route(method: String, seg: List<String>, query: (String) -> String?, body: String): String {
         val ok = json.encodeToString(OkDto.serializer(), OkDto(true))
         return when {
-            // ---- auth ----
             seg.startsWith("auth", "login") || seg.startsWith("auth", "signup") ->
                 json.encodeToString(
                     AuthResponseDto.serializer(),
@@ -147,13 +120,10 @@ class DemoBackend @Inject constructor() {
             seg.startsWith("auth", "refresh") -> json.encodeToString(TokenPairDto.serializer(), tokens())
             seg.firstOrNull() == "auth" -> ok
 
-            // ---- config ----
             seg == listOf("config") -> json.encodeToString(PublicConfigDto.serializer(), config())
 
-            // ---- home ----
             seg == listOf("home") -> json.encodeToString(HomeDto.serializer(), home())
 
-            // ---- profile ----
             seg == listOf("users", "me") -> json.encodeToString(ProfileDto.serializer(), profile)
             seg.startsWith("users", "me") && method != "GET" -> {
                 when (seg.getOrNull(2)) {
@@ -165,10 +135,7 @@ class DemoBackend @Inject constructor() {
             seg.size == 2 && seg[0] == "users" -> json.encodeToString(ProfileDto.serializer(), profile)
             seg.size == 3 && seg[0] == "users" && seg[2] == "block" -> ok
 
-            // ---- communities ----
             seg == listOf("communities") || seg == listOf("communities", "suggested") -> {
-                // Search and the kind chips are server-side against the real API,
-                // so the demo filters here too rather than quietly ignoring them.
                 val term = query("query")?.trim()?.lowercase().orEmpty()
                 val kind = query("kind")
                 val filtered = communities.filter { c ->
@@ -185,7 +152,6 @@ class DemoBackend @Inject constructor() {
                     communities.firstOrNull { it.id == seg[1] } ?: communities.first(),
                 )
 
-            // ---- talk ----
             seg == listOf("talk", "categories") ->
                 json.encodeToString(CategoriesDto.serializer(), CategoriesDto(CATEGORIES))
             seg == listOf("talk", "posts") && method == "POST" ->
@@ -222,7 +188,6 @@ class DemoBackend @Inject constructor() {
                 comments.values.forEach { list -> list.removeAll { it.id == seg[2] } }; ok
             }
 
-            // ---- pulse ----
             seg == listOf("pulse") && method == "POST" ->
                 json.encodeToString(PulseDto.serializer(), createPulse(body))
             seg == listOf("pulse") ->
@@ -234,7 +199,6 @@ class DemoBackend @Inject constructor() {
                 pulses.removeAll { it.id == seg[1] }; ok
             }
 
-            // ---- rewards ----
             seg == listOf("rewards", "summary") ->
                 json.encodeToString(
                     RewardsSummaryDto.serializer(),
@@ -243,7 +207,6 @@ class DemoBackend @Inject constructor() {
             seg == listOf("rewards", "transactions") ->
                 json.encodeToString(RewardTransactionsDto.serializer(), RewardTransactionsDto(transactions))
 
-            // ---- referrals ----
             seg == listOf("referrals", "summary") ->
                 json.encodeToString(ReferralSummaryDto.serializer(), referrals())
             seg == listOf("referrals", "milestones") ->
@@ -254,19 +217,16 @@ class DemoBackend @Inject constructor() {
                 json.encodeToString(kotlinx.serialization.builtins.ListSerializer(FaqItemDto.serializer()), FAQ)
             seg.firstOrNull() == "referrals" -> ok
 
-            // ---- workplace spotlight ----
             seg == listOf("spotlight", "submissions") && method == "POST" ->
                 json.encodeToString(SpotlightSubmissionDto.serializer(), createSubmission(body))
             seg == listOf("spotlight", "submissions") ->
                 json.encodeToString(SpotlightListDto.serializer(), SpotlightListDto(spotlight))
 
-            // ---- walker ----
             seg == listOf("support", "conversation") ->
                 json.encodeToString(SupportConversationDto.serializer(), conversation())
             seg == listOf("support", "messages") ->
                 json.encodeToString(SupportConversationDto.serializer(), handleSupport(body))
 
-            // ---- notifications ----
             seg == listOf("notifications", "preferences") && method != "GET" -> {
                 runCatching { prefs = json.decodeFromString(PrefsDto.serializer(), body) }
                 json.encodeToString(PrefsDto.serializer(), prefs)
@@ -292,8 +252,6 @@ class DemoBackend @Inject constructor() {
     private fun List<String>.startsWith(vararg parts: String): Boolean =
         size >= parts.size && parts.withIndex().all { (i, p) -> this[i] == p }
 
-    // ---- writes ---------------------------------------------------------
-
     private fun createPost(body: String): PostDto {
         val req = runCatching {
             json.decodeFromString(com.thefloor.app.core.network.CreatePostRequestDto.serializer(), body)
@@ -315,7 +273,6 @@ class DemoBackend @Inject constructor() {
             createdAt = now(),
         )
         posts.add(0, post)
-        // +10 per discussion, at most twice a day — the cap is the server's job.
         if (discussionsToday < 2) {
             discussionsToday++
             award(10, "Discussion posted in ${post.categoryName}")
@@ -360,7 +317,6 @@ class DemoBackend @Inject constructor() {
             createdAt = now(),
         )
         pulses.add(0, pulse)
-        // Deliberately no award() here. Pulse never touches the ledger.
         return pulse
     }
 
@@ -405,11 +361,7 @@ class DemoBackend @Inject constructor() {
         for (i in notifications.indices) notifications[i] = notifications[i].copy(read = true)
     }
 
-    /**
-     * A submission is a record, not a screen state. It lands in the queue as
-     * pending and stays there — approval is a human decision, so nothing here
-     * pretends to make one.
-     */
+    /** A submission is a record, not a screen state. */
     private fun createSubmission(body: String): SpotlightSubmissionDto {
         val req = runCatching {
             json.decodeFromString(com.thefloor.app.core.network.CreateSpotlightRequestDto.serializer(), body)
@@ -449,11 +401,7 @@ class DemoBackend @Inject constructor() {
         messages = supportMessages,
     )
 
-    /**
-     * Walker's first line. Deterministic on purpose: it answers from what the
-     * app actually knows rather than guessing, and when it cannot, it says so
-     * and opens a ticket with a reference the member can quote.
-     */
+    /** Walker's first line. */
     private fun handleSupport(body: String): SupportConversationDto {
         val req = runCatching {
             json.decodeFromString(com.thefloor.app.core.network.SupportSendRequestDto.serializer(), body)
@@ -591,12 +539,7 @@ class DemoBackend @Inject constructor() {
         profile = profile.copy(completeness = completeness(profile))
     }
 
-    /**
-     * Visibility is a merge, not a replace: the screen sends the one field the
-     * member just changed, and the other six have to survive it. Dropping this
-     * was why every privacy chip looked dead — the request went out, the same
-     * unchanged profile came back, and the selection never moved.
-     */
+    /** Visibility is a merge, not a replace: the screen sends the one field the member just changed, and the… */
     private fun applyPrivacyUpdate(body: String) {
         val request = runCatching {
             json.decodeFromString(com.thefloor.app.core.network.PrivacyRequestDto.serializer(), body)
@@ -611,8 +554,6 @@ class DemoBackend @Inject constructor() {
             listOf(p.languages, p.skills, p.channels).count { it.isNotEmpty() }
         return (filled * 100 / 12).coerceIn(0, 100)
     }
-
-    // ---- reads ----------------------------------------------------------
 
     private fun tokens() = TokenPairDto("demo.access.token", "demo.refresh.token", 86_400)
 
@@ -689,8 +630,6 @@ class DemoBackend @Inject constructor() {
             "Founding tiers are recognition. The Community Growth Fund is not funded yet.",
         ),
     )
-
-    // ---- seed data ------------------------------------------------------
 
     private fun now(): String = Instant.now().toString()
 
@@ -795,8 +734,6 @@ class DemoBackend @Inject constructor() {
         ),
     )
 
-    // Named arguments throughout: PulseDto carries optional media in the middle
-    // of its parameter list, and positional calls silently shift when it grows.
     private fun seedPulses() = listOf(
         PulseDto(
             id = "x1", authorId = "u2", authorName = "Thabo N.",

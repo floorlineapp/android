@@ -14,10 +14,7 @@ import javax.inject.Singleton
 
 private val Context.radioDataStore: DataStore<Preferences> by preferencesDataStore("floor_radio")
 
-/**
- * Which Floor Radio region this device listens to. Persisted per device, as the
- * build spec requires — it is a listening preference, not account data.
- */
+/** Which Floor Radio region this device listens to. */
 @Singleton
 class RadioRegionStore @Inject constructor(
     @ApplicationContext private val context: Context,

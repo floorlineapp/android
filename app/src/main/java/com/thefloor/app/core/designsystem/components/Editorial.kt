@@ -45,7 +45,7 @@ import com.thefloor.app.core.designsystem.pressScale
 /** Accent role for eyebrows / accents across the editorial kit. */
 enum class FloorAccent { AMBER, TEAL, CORAL, FAINT }
 
-/** The accent's solid colour. Public so features can tint to the same roles. */
+/** The accent's solid colour. */
 @Composable
 fun FloorAccent.color(): Color = when (this) {
     FloorAccent.AMBER -> FloorTheme.colors.amber
@@ -123,11 +123,7 @@ fun FloorPillButton(
     }
 }
 
-/**
- * Editorial hero: amber + teal radial wash over the surface, soft border, 18dp
- * radius. Eyebrow / title / subtitle then any [actions] (usually pill buttons,
- * laid out left-to-right with 10dp gaps).
- */
+/** Editorial hero: amber + teal radial wash over the surface, soft border, 18dp radius. */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun FloorHero(
@@ -164,8 +160,6 @@ fun FloorHero(
                         ),
                     )
                 }
-                // Tightened from 26dp. Fifteen pages open with one of these,
-                // so every dp here is a dp of content pushed below the fold.
                 .padding(horizontal = 20.dp, vertical = 20.dp),
         ) {
             if (eyebrow != null) {
@@ -179,8 +173,6 @@ fun FloorHero(
             }
             if (actions != null) {
                 Spacer(Modifier.height(16.dp))
-                // Wraps: a hero with four actions overflowed a single Row and
-                // left a tall empty band where the buttons should have been.
                 androidx.compose.foundation.layout.FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),

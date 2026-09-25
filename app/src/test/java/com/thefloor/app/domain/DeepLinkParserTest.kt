@@ -5,7 +5,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class DeepLinkParserTest {
-
     @Test
     fun `invite https link parses and uppercases code`() {
         assertEquals(

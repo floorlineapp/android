@@ -31,13 +31,7 @@ import com.thefloor.app.core.designsystem.components.FloorListItem
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.navigation.Routes
 
-/**
- * Everything that is not one of the four permanent destinations, grouped by the
- * job it does — Belong & Recognition, Grow & Learn, Earn & Build — exactly as
- * the page-flow schematic groups the twelve non-nav sections.
- *
- * Walker is not listed here: it floats over every screen instead.
- */
+/** Everything that is not one of the four permanent destinations, grouped by the job it does — Belong &… */
 @Composable
 private fun GroupHeader(text: String, accent: FloorAccent) {
     Spacer(Modifier.height(18.dp))

@@ -13,7 +13,6 @@ import retrofit2.Response
 import java.io.IOException
 
 class SafeCallTest {
-
     @Test
     fun `success passes data through`() = runTest {
         val result = safeCall { "ok" }

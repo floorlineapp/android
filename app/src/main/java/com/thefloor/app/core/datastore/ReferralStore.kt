@@ -14,11 +14,7 @@ import javax.inject.Singleton
 
 private val Context.referralDataStore: DataStore<Preferences> by preferencesDataStore("floor_referral")
 
-/**
- * Holds the pending referral code between click/install and signup.
- * This is a TRANSPORT cache only — attribution truth lives on the server,
- * which also matches click records independently of this value.
- */
+/** Holds the pending referral code between click/install and signup. */
 @Singleton
 class ReferralStore @Inject constructor(
     @ApplicationContext private val context: Context,

@@ -10,7 +10,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -90,7 +89,6 @@ class DiscoverViewModel @Inject constructor(
     private val analytics: AnalyticsTracker,
     private val walkerBus: com.thefloor.app.core.walker.WalkerBus,
 ) : ViewModel() {
-
     /** "Suggest a Floor" goes to Walker, not to a form nobody reads. */
     fun suggestFloor() = walkerBus.open()
 
@@ -314,8 +312,6 @@ fun CommunityTile(
         border = androidx.compose.foundation.BorderStroke(1.dp, FloorTheme.colors.border),
     ) {
         Column {
-            // Community photo, matching the web prototype. The brand gradient sits
-            // underneath so the card still reads while loading, or offline.
             androidx.compose.foundation.layout.Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -326,8 +322,6 @@ fun CommunityTile(
                         ),
                     ),
             ) {
-                // Bundled art first — instant, and works with no network. Only
-                // Floors we ship no artwork for fall through to the served URL.
                 val bundled = floorPhotoRes(community.name)
                 if (bundled != null) {
                     androidx.compose.foundation.Image(

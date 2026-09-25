@@ -64,10 +64,6 @@ import com.thefloor.app.core.common.onSuccess
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
-/* ------------------------------------------------------------------ *
- *  Shared building blocks for the editorial (content) pages.
- * ------------------------------------------------------------------ */
-
 @Composable
 private fun EditorialScaffold(
     title: String,
@@ -84,7 +80,6 @@ private fun EditorialScaffold(
                 start = FloorTheme.spacing.gutter,
                 end = FloorTheme.spacing.gutter,
                 top = 12.dp,
-                // Clearance for the floating Walker button.
                 bottom = 96.dp,
             ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -144,10 +139,7 @@ private fun FeatureCard(
     }
 }
 
-/**
- * Card fronted by real artwork — the partner/course imagery carried over from
- * the web prototype so these pages read the same as the HTML.
- */
+/** Card fronted by real artwork — the partner/course imagery carried over from the web prototype so these… */
 @Composable
 private fun PhotoCard(
     @androidx.annotation.DrawableRes image: Int,
@@ -156,8 +148,6 @@ private fun PhotoCard(
     badge: String? = null,
 ) {
     FloorCard(contentPadding = 0.dp) {
-        // Fit, not Crop: these cards carry brand marks along the top edge that a
-        // centre-crop slices off. 3:2 matches the source artwork.
         androidx.compose.foundation.Image(
             painter = androidx.compose.ui.res.painterResource(image),
             contentDescription = null,
@@ -188,11 +178,7 @@ private fun ProseCard(title: String, body: String) {
     }
 }
 
-/**
- * "Where this can go" panel. Everything inside is explicitly future-tense —
- * these are the roadmap slots the product is built to accept, not features
- * that exist today.
- */
+/** "Where this can go" panel. */
 @Composable
 private fun RoadmapPanel(title: String, lines: List<String>) {
     FloorInfoNote(accent = FloorAccent.CORAL) {
@@ -226,10 +212,6 @@ private fun PlaceholderNote(text: String) {
     }
 }
 
-/* ------------------------------------------------------------------ *
- *  Workplace Spotlight — verified showcase, gated at Floor Voice
- * ------------------------------------------------------------------ */
-
 private val spotlightCategories = listOf(
     "Awards & Recognition",
     "People & Culture",
@@ -260,7 +242,6 @@ private val spotlightStories = listOf(
 class SpotlightViewModel @javax.inject.Inject constructor(
     private val spotlight: com.thefloor.app.core.data.SpotlightRepository,
 ) : androidx.lifecycle.ViewModel() {
-
     val mine = kotlinx.coroutines.flow.MutableStateFlow<List<com.thefloor.app.core.network.SpotlightSubmissionDto>>(emptyList())
 
     init { refresh() }
@@ -282,7 +263,6 @@ fun InsightsScreen(
     onOpenAcademy: () -> Unit = {},
 ) {
     var category by remember { mutableStateOf(spotlightCategories.first()) }
-    // Demo member: 12,480 points and a verified workplace — past the Floor Voice gate.
     val balance = 12_480
     val threshold = 10_000
     val workplaceVerified = true
@@ -305,7 +285,6 @@ fun InsightsScreen(
             )
         }
 
-        // The recognition gate, stated plainly rather than hidden behind a disabled button.
         item {
             FloorInfoNote(accent = if (eligible) FloorAccent.TEAL else FloorAccent.AMBER) {
                 FloorEyebrow(
@@ -472,10 +451,6 @@ fun InsightsScreen(
     }
 }
 
-/* ------------------------------------------------------------------ *
- *  Academy — Skills Passport, tracked learning, verification
- * ------------------------------------------------------------------ */
-
 private val academyTabs = listOf("Skills Passport", "My Learning", "Verification")
 
 private val competencyAreas = listOf(
@@ -502,7 +477,6 @@ class AcademyViewModel @javax.inject.Inject constructor(
     private val userRepository: com.thefloor.app.core.data.UserRepository,
     private val rewardsRepository: com.thefloor.app.core.data.RewardsRepository,
 ) : androidx.lifecycle.ViewModel() {
-
     data class Passport(
         val role: String = "—",
         val tenure: String = "—",
@@ -529,8 +503,6 @@ class AcademyViewModel @javax.inject.Inject constructor(
                     role = profile.role ?: profile.careerLevel?.label ?: "—",
                     tenure = profile.experienceYears?.let { "${'$'}it yr" } ?: "—",
                     tier = level.label,
-                    // Learning Points are their own ledger; Academy shows the
-                    // subset of the record that came from verified learning.
                     learningPoints = 340,
                     completed = 9,
                     verified = 4,
@@ -560,7 +532,6 @@ fun AcademyScreen(
             )
         }
 
-        // Passport header — role, tenure, tier, learning points, items completed.
         item {
             FloorCard(contentPadding = 18.dp) {
                 FloorEyebrow("My Academy Passport", accent = FloorAccent.TEAL)
@@ -697,10 +668,6 @@ private fun PassportStat(label: String, value: String) {
     }
 }
 
-/* ------------------------------------------------------------------ *
- *  Events
- * ------------------------------------------------------------------ */
-
 private data class EventItem(
     val kicker: String,
     val title: String,
@@ -785,10 +752,6 @@ fun EventsScreen(onBack: () -> Unit, onOpenRadioPass: () -> Unit = {}) {
         }
     }
 }
-
-/* ------------------------------------------------------------------ *
- *  Marketplace — 10 categories, Lifestyle splits into 9 more
- * ------------------------------------------------------------------ */
 
 private val marketplaceCategories = listOf(
     "Electronics", "Food", "Travel", "Clothing", "Education",
@@ -906,10 +869,6 @@ fun MarketplaceScreen(onBack: () -> Unit) {
     }
 }
 
-/* ------------------------------------------------------------------ *
- *  Resources — free instant toolbox, deliberately untracked
- * ------------------------------------------------------------------ */
-
 @Composable
 fun ResourcesScreen(onBack: () -> Unit) {
     EditorialScaffold("Resources", onBack) {
@@ -967,18 +926,9 @@ fun ResourcesScreen(onBack: () -> Unit) {
     }
 }
 
-/* ------------------------------------------------------------------ *
- *  Employers & Jobs — illustration now, partnership later
- * ------------------------------------------------------------------ */
-
 private data class Employer(val name: String, val market: String, val focus: String)
 
-/**
- * Eleven illustration profiles. These are deliberately invented names, not real
- * companies: the process guide flags using real, named employers as UI
- * placeholders as a legal question to settle before public launch, so the app
- * ships with names that cannot be mistaken for a partnership claim.
- */
+/** Eleven illustration profiles. */
 private val employers = listOf(
     Employer("Meridian Contact Solutions", "South Africa · Johannesburg", "Voice · financial services"),
     Employer("Northbank Support Group", "Philippines · Manila", "Omnichannel · retail"),
@@ -1079,10 +1029,6 @@ fun JobsScreen(
     }
 }
 
-/* ------------------------------------------------------------------ *
- *  About The Floor
- * ------------------------------------------------------------------ */
-
 private val brandFamily = listOf(
     "The Floor" to "The community itself — find your people, wherever you work.",
     "The Floor Radio" to "Six regional live feeds and the shows that run across them.",
@@ -1163,10 +1109,6 @@ fun AboutScreen(onBack: () -> Unit, onOpenWellbeing: () -> Unit = {}) {
         }
     }
 }
-
-/* ------------------------------------------------------------------ *
- *  Wellbeing — the one hidden page, and it exists to explain Walker
- * ------------------------------------------------------------------ */
 
 @Composable
 fun WellbeingScreen(onBack: () -> Unit) {

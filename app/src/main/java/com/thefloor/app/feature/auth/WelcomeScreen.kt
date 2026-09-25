@@ -53,7 +53,6 @@ fun WelcomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            // The single sanctioned gradient in the app: the brand hero moment.
             .background(
                 Brush.verticalGradient(listOf(colors.ink, colors.surface, colors.ink))
             )
@@ -93,7 +92,6 @@ fun WelcomeScreen(
         Spacer(Modifier.height(12.dp))
         FloorSecondaryButton(text = "I already have an account", onClick = onLogIn, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(12.dp))
-        // Demo entry, as in the web prototype: explore everything with no server.
         FloorSecondaryButton(
             text = if (demoBusy) "Opening demo…" else "Continue with demo profile →",
             onClick = onDemo,

@@ -1,14 +1,6 @@
 package com.thefloor.app.core.model
 
-/**
- * The Recognition ladder.
- *
- * Deliberately computed from the points balance and the member's verification
- * record rather than stored as a column: a stored tier can drift out of step
- * with the ledger, and the ledger is the only thing that is authoritative.
- * Profile and Workplace Spotlight must read this one function, never work the
- * maths out two different ways.
- */
+/** The Recognition ladder. */
 enum class RecognitionLevel(val label: String, val threshold: Int) {
     MEMBER("Member", 0),
     CONTRIBUTOR("Contributor", 1_000),
@@ -17,11 +9,7 @@ enum class RecognitionLevel(val label: String, val threshold: Int) {
     WORKPLACE_AMBASSADOR("Workplace Ambassador", 15_000),
 }
 
-/**
- * Points alone are not enough above Contributor: Recognised Member also needs a
- * verified workplace, and Workplace Ambassador additionally needs a trusted
- * history — an account past a minimum age with no upheld moderation reports.
- */
+/** Points alone are not enough above Contributor: Recognised Member also needs a verified workplace, and… */
 fun recognitionLevel(
     floorPoints: Int,
     workplaceVerified: Boolean,

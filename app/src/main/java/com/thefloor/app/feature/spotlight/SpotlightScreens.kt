@@ -49,21 +49,9 @@ import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTextField
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 
-/* ------------------------------------------------------------------ *
- *  Rules of Engagement — how Spotlight operates
- * ------------------------------------------------------------------ */
-
 private data class Rule(val n: Int, val title: String, val body: String)
 
-/**
- * This is the "how it works" explainer, not the submission standards.
- *
- * The button used to open the eight-point standards list, which answers a
- * different question — what makes a story acceptable, rather than how the
- * feature runs, who can use it, what happens after you press submit and what
- * it pays. Those standards now live on the submission screen, where they are
- * read at the moment they apply.
- */
+/** This is the "how it works" explainer, not the submission standards. */
 private val rulesOfEngagement = listOf(
     Rule(
         1,
@@ -189,10 +177,6 @@ fun SpotlightRulesScreen(onBack: () -> Unit) {
     }
 }
 
-/* ------------------------------------------------------------------ *
- *  Submit a Spotlight — the composer
- * ------------------------------------------------------------------ */
-
 private val submissionStandards = listOf(
     "You must be verified — your identity and current workplace, and the story must relate to that workplace.",
     "Access is earned, never bought — Floor Voice or higher, subject to good standing.",
@@ -217,7 +201,6 @@ private val spotlightCategories = listOf(
 class SubmitSpotlightViewModel @javax.inject.Inject constructor(
     private val spotlight: com.thefloor.app.core.data.SpotlightRepository,
 ) : androidx.lifecycle.ViewModel() {
-
     val sending = kotlinx.coroutines.flow.MutableStateFlow(false)
     val submitted = kotlinx.coroutines.flow.MutableStateFlow(false)
     val error = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)

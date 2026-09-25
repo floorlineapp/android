@@ -21,7 +21,7 @@ import com.thefloor.app.core.network.ProfileDto
 import com.thefloor.app.core.network.PulseDto
 import com.thefloor.app.core.network.ReferralSummaryDto
 
-/** DTO → domain. Enums parse defensively: unknown server values degrade, never crash. */
+/** DTO → domain. */
 
 fun ProfileDto.toDomain() = UserProfile(
     userId = userId,

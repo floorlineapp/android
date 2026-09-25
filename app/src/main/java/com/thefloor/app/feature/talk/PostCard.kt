@@ -17,7 +17,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.BadgeTone
-import com.thefloor.app.core.designsystem.components.FloorAccent
 import com.thefloor.app.core.designsystem.components.FloorAuthorLine
 import com.thefloor.app.core.designsystem.components.FloorBadge
 import com.thefloor.app.core.designsystem.components.FloorCard

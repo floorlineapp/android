@@ -11,13 +11,9 @@ import javax.crypto.spec.GCMParameterSpec
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * AES-256-GCM via Android Keystore. Used to encrypt session tokens at rest —
- * tokens never touch disk in plaintext, and the key never leaves hardware.
- */
+/** AES-256-GCM via Android Keystore. */
 @Singleton
 class CryptoManager @Inject constructor() {
-
     private val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
 
     private fun key(): SecretKey {

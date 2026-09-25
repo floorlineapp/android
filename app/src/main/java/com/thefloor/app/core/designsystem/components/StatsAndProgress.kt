@@ -38,7 +38,7 @@ fun FloorStat(
     }
 }
 
-/** Brand progress bar: soft track, amber fill. [progress] in 0f..1f. */
+/** Brand progress bar: soft track, amber fill. */
 @Composable
 fun FloorProgressBar(
     progress: Float,

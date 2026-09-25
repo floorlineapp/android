@@ -14,12 +14,7 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * First-launch referral attribution via the Play Install Referrer API.
- * The Play redirect carries `referrer=utm_source%3Dfloor%26floor_ref%3D{CODE}`;
- * we extract floor_ref and stash it for signup. The server independently
- * validates against click records — this value is transport, not truth.
- */
+/** First-launch referral attribution via the Play Install Referrer API. */
 @Singleton
 class InstallReferrerHandler @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -27,7 +22,7 @@ class InstallReferrerHandler @Inject constructor(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    /** Idempotent; call once from Application.onCreate. Never blocks or crashes launch. */
+    /** Idempotent; call once from Application.onCreate. */
     fun captureOnce() {
         val prefs = context.getSharedPreferences("floor_install_referrer", Context.MODE_PRIVATE)
         if (prefs.getBoolean("captured", false)) return
@@ -38,7 +33,7 @@ class InstallReferrerHandler @Inject constructor(
                 try {
                     when (responseCode) {
                         InstallReferrerClient.InstallReferrerResponse.OK -> {
-                            val referrer = client.installReferrer.installReferrer // e.g. utm_source=floor&floor_ref=ABC123
+                            val referrer = client.installReferrer.installReferrer
                             val code = referrer
                                 .split('&')
                                 .map { it.split('=', limit = 2) }
@@ -50,14 +45,10 @@ class InstallReferrerHandler @Inject constructor(
                             }
                             prefs.edit().putBoolean("captured", true).apply()
                         }
-                        // Definitive terminal states — no point retrying.
                         InstallReferrerClient.InstallReferrerResponse.FEATURE_NOT_SUPPORTED,
                         InstallReferrerClient.InstallReferrerResponse.PERMISSION_ERROR,
                         InstallReferrerClient.InstallReferrerResponse.DEVELOPER_ERROR ->
                             prefs.edit().putBoolean("captured", true).apply()
-                        // Transient (SERVICE_UNAVAILABLE / DISCONNECTED): leave the
-                        // flag unset so the next launch retries — a one-off flaky
-                        // connection must not forfeit the referral forever.
                         else -> Timber.i("Install referrer transient failure (%d) — will retry next launch", responseCode)
                     }
                 } catch (e: Exception) {

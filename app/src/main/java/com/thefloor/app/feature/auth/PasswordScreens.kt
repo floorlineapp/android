@@ -44,7 +44,6 @@ data class PasswordUiState(
 class PasswordViewModel @Inject constructor(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
-
     val forgotState = MutableStateFlow(PasswordUiState())
     val resetState = MutableStateFlow(PasswordUiState())
 
@@ -60,7 +59,6 @@ class PasswordViewModel @Inject constructor(
         forgotState.update { it.copy(submitting = true) }
         viewModelScope.launch {
             authRepository.forgotPassword(email)
-            // Always confirm — never reveal whether an account exists.
             forgotState.update {
                 it.copy(submitting = false, done = true, message = "If that address has an account, a reset link is on its way.")
             }

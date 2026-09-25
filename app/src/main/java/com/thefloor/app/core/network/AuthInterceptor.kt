@@ -12,7 +12,6 @@ import javax.inject.Singleton
 class AuthInterceptor @Inject constructor(
     private val sessionStore: SessionStore,
 ) : Interceptor {
-
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val path = request.url.encodedPath

@@ -18,7 +18,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
     @Provides
     @Named("baseUrl")
     fun baseUrl(): String = BuildConfig.API_BASE_URL
@@ -38,7 +37,6 @@ object NetworkModule {
         tokenAuthenticator: TokenAuthenticator,
         demoInterceptor: com.thefloor.app.core.demo.DemoInterceptor,
     ): OkHttpClient = OkHttpClient.Builder()
-        // First in the chain: in demo mode nothing reaches the network at all.
         .addInterceptor(demoInterceptor)
         .addInterceptor(authInterceptor)
         .authenticator(tokenAuthenticator)
@@ -46,7 +44,6 @@ object NetworkModule {
         .readTimeout(30, TimeUnit.SECONDS)
         .apply {
             if (BuildConfig.DEBUG) {
-                // BASIC only — never log bodies, they can contain credentials.
                 addInterceptor(HttpLoggingInterceptor().apply {
                     level = HttpLoggingInterceptor.Level.BASIC
                 })

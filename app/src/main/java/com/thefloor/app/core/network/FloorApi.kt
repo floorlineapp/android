@@ -11,15 +11,12 @@ import retrofit2.http.Query
 
 /** The complete v1 client surface. */
 interface FloorApi {
-
-    // ---- public ----
     @GET("v1/config")
     suspend fun config(): PublicConfigDto
 
     @GET("v1/referrals/resolve/{code}")
     suspend fun resolveReferralCode(@Path("code") code: String): ResolveDto
 
-    // ---- auth ----
     @POST("v1/auth/signup")
     suspend fun signup(@Body body: SignupRequestDto): AuthResponseDto
 
@@ -44,7 +41,6 @@ interface FloorApi {
     @POST("v1/auth/password/reset")
     suspend fun resetPassword(@Body body: ResetRequestDto): OkDto
 
-    // ---- home / profile ----
     @GET("v1/home")
     suspend fun home(): HomeDto
 
@@ -69,7 +65,6 @@ interface FloorApi {
     @retrofit2.http.HTTP(method = "DELETE", path = "v1/users/me", hasBody = true)
     suspend fun deleteAccount(@Body body: DeleteAccountRequestDto): OkDto
 
-    // ---- communities ----
     @GET("v1/communities")
     suspend fun communities(
         @Query("query") query: String? = null,
@@ -88,7 +83,6 @@ interface FloorApi {
     @DELETE("v1/communities/{id}/join")
     suspend fun leaveCommunity(@Path("id") id: String): MembershipDto
 
-    // ---- talk ----
     @GET("v1/talk/categories")
     suspend fun talkCategories(): CategoriesDto
 
@@ -118,7 +112,6 @@ interface FloorApi {
     @DELETE("v1/talk/comments/{id}")
     suspend fun deleteComment(@Path("id") commentId: String)
 
-    // ---- pulse ----
     @GET("v1/pulse")
     suspend fun pulseFeed(
         @Query("cursor") cursor: String? = null,
@@ -152,7 +145,6 @@ interface FloorApi {
     @POST("v1/reports")
     suspend fun report(@Body body: ReportRequestDto): OkDto
 
-    // ---- referrals ----
     @GET("v1/referrals/summary")
     suspend fun referralSummary(): ReferralSummaryDto
 
@@ -168,28 +160,24 @@ interface FloorApi {
     @POST("v1/referrals/link/share-event")
     suspend fun shareEvent(@Body body: ShareEventDto)
 
-    // ---- rewards ----
     @GET("v1/rewards/summary")
     suspend fun rewardsSummary(): RewardsSummaryDto
 
     @GET("v1/rewards/transactions")
     suspend fun rewardTransactions(): RewardTransactionsDto
 
-    // ---- workplace spotlight ----
     @GET("v1/spotlight/submissions")
     suspend fun spotlightSubmissions(): SpotlightListDto
 
     @POST("v1/spotlight/submissions")
     suspend fun createSpotlightSubmission(@Body body: CreateSpotlightRequestDto): SpotlightSubmissionDto
 
-    // ---- walker / support ----
     @GET("v1/support/conversation")
     suspend fun supportConversation(): SupportConversationDto
 
     @POST("v1/support/messages")
     suspend fun sendSupportMessage(@Body body: SupportSendRequestDto): SupportConversationDto
 
-    // ---- notifications ----
     @GET("v1/notifications")
     suspend fun notifications(): NotificationsDto
 

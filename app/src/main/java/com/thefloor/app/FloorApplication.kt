@@ -8,7 +8,6 @@ import javax.inject.Inject
 
 @HiltAndroidApp
 class FloorApplication : Application() {
-
     @Inject lateinit var installReferrerHandler: InstallReferrerHandler
 
     @Inject lateinit var demoStore: com.thefloor.app.core.demo.DemoStore
@@ -18,9 +17,7 @@ class FloorApplication : Application() {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
-        // Demo mode must be known before the first API call leaves the app.
         demoStore.restoreBlocking()
-        // Referral attribution capture — async, once per install, never blocks launch.
         installReferrerHandler.captureOnce()
     }
 }

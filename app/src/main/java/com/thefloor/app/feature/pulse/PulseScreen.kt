@@ -87,7 +87,6 @@ class PulseViewModel @Inject constructor(
     private val pulseRepository: PulseRepository,
     private val sessionStore: SessionStore,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(PulseUiState())
     val state: StateFlow<PulseUiState> = _state.asStateFlow()
 
@@ -104,11 +103,7 @@ class PulseViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Pulse posts are capped at 220 characters — the same ceiling the target
-     * schema enforces as a CHECK constraint on pulse_posts.body. Trimming here
-     * keeps the composer honest instead of letting the write fail server-side.
-     */
+    /** Pulse posts are capped at 220 characters — the same ceiling the target schema enforces as a CHECK… */
     fun onInput(value: androidx.compose.ui.text.input.TextFieldValue) = _state.update {
         if (value.text.length <= PULSE_MAX_CHARS) {
             it.copy(input = value)
@@ -123,14 +118,7 @@ class PulseViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Emoji go in at the caret and the caret follows them.
-     *
-     * Appending to the end of a plain String looked right in an empty field and
-     * wrong the moment anyone was mid-sentence — the character landed somewhere
-     * they were not looking, and the selection jumped. Splicing at the current
-     * selection is the only version that behaves while typing.
-     */
+    /** Emoji go in at the caret and the caret follows them. */
     fun insertEmoji(emoji: String) = _state.update { s ->
         val result = PulseComposerText.insert(
             text = s.input.text,
@@ -155,8 +143,6 @@ class PulseViewModel @Inject constructor(
     fun post() {
         val snapshot = _state.value
         val body = snapshot.input.text.trim()
-        // An attachment on its own is a post worth making — a photo of the floor
-        // says plenty without a caption.
         if ((body.isEmpty() && snapshot.attachment == null) || snapshot.posting) return
         _state.update { it.copy(posting = true) }
         viewModelScope.launch {
@@ -180,7 +166,6 @@ class PulseViewModel @Inject constructor(
     }
 
     fun toggleLike(pulse: Pulse) {
-        // Optimistic — the server call reconciles on failure.
         val nowLiked = !pulse.liked
         _state.update { s ->
             s.copy(pulses = s.pulses.map {
@@ -342,14 +327,7 @@ internal fun PulseBody(
         }
 }
 
-/**
- * The Pulse composer.
- *
- * 220 characters, an emoji row that inserts at the caret, and attachment
- * buttons that open the real photo picker and the real microphone. Nothing here
- * reports success it did not have: if the picker is dismissed or the recorder
- * refuses, no chip appears and the member is told why.
- */
+/** The Pulse composer. */
 @Composable
 private fun PulseComposer(
     input: androidx.compose.ui.text.input.TextFieldValue,
@@ -364,8 +342,6 @@ private fun PulseComposer(
     val context = androidx.compose.ui.platform.LocalContext.current
     val remaining = PulseViewModel.PULSE_MAX_CHARS - input.text.length
 
-    // Android's own photo picker: no storage permission, and it hands back a
-    // uri only when something was actually chosen.
     val pickPhoto = androidx.activity.compose.rememberLauncherForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia(),
     ) { uri ->
@@ -391,7 +367,6 @@ private fun PulseComposer(
         }
     }
 
-    // Tick while recording so the chip shows real elapsed time.
     androidx.compose.runtime.LaunchedEffect(recording) {
         while (recording) {
             kotlinx.coroutines.delay(1000)
@@ -399,7 +374,6 @@ private fun PulseComposer(
         }
     }
 
-    // Never leave the microphone open if the screen goes away mid-recording.
     androidx.compose.runtime.DisposableEffect(Unit) {
         onDispose { recorder.cancel() }
     }
@@ -518,7 +492,6 @@ private fun PulseComposer(
             )
         }
         Row(
-            // Trailing gap: the floating Walker button lives in this corner.
             modifier = Modifier.fillMaxWidth().padding(top = 2.dp, end = 64.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -644,7 +617,6 @@ private fun PulseCard(
             animationSpec = FloorMotion.bouncy,
             label = "heartScale",
         )
-        // One reaction per member per post, mirroring pulse_reactions' composite key.
         val reactions = remember(pulse.id) { mutableStateMapOf<String, Int>() }
         var mine by remember(pulse.id) { mutableStateOf<String?>(null) }
 
@@ -706,23 +678,5 @@ private fun PulseCard(
                 Spacer(Modifier.width(5.dp))
             }
         }
-    }
-}
-
-@Composable
-private fun PulseAvatar(name: String) {
-    Box(
-        modifier = Modifier
-            .size(36.dp)
-            .clip(CircleShape)
-            .background(FloorTheme.colors.amber),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            name.trim().firstOrNull()?.uppercase() ?: "?",
-            style = FloorTheme.typography.label,
-            color = FloorTheme.colors.onAmber,
-            textAlign = TextAlign.Center,
-        )
     }
 }

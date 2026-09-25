@@ -52,14 +52,10 @@ class VerifyEmailViewModel @Inject constructor(
     savedStateHandle: androidx.lifecycle.SavedStateHandle,
     private val authRepository: AuthRepository,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(VerifyUiState())
     val state: StateFlow<VerifyUiState> = _state.asStateFlow()
 
     init {
-        // Deep-linked verify token (from the emailed link, routed here by the
-        // nav host) — consume it server-side. The confirm endpoint is public,
-        // so this works even before login.
         savedStateHandle.get<String>("token")?.let { token ->
             viewModelScope.launch {
                 authRepository.confirmVerification(token)
@@ -70,13 +66,10 @@ class VerifyEmailViewModel @Inject constructor(
         viewModelScope.launch {
             val session = authRepository.session.firstOrNull()
             _state.update { it.copy(signedIn = session != null) }
-            // Auto-verified (beta) sessions are already verified — advance instantly.
             if (session?.emailVerified == true) {
                 _state.update { it.copy(verified = true) }
                 return@launch
             }
-            // Poll only with a session — signed-out polling would just spray
-            // 401s at /users/me every five seconds.
             if (session != null) {
                 while (!_state.value.verified) {
                     checkStatus()
@@ -100,7 +93,6 @@ class VerifyEmailViewModel @Inject constructor(
     fun resend() {
         if (_state.value.resendCooldownSeconds > 0) return
         viewModelScope.launch {
-            // Surface failures honestly — never claim "sent" when it wasn't.
             authRepository.resendVerification()
                 .onSuccess {
                     _state.update { it.copy(resendCooldownSeconds = 60, info = "Verification email sent.", error = null) }
@@ -121,8 +113,6 @@ fun VerifyEmailScreen(
     viewModel: VerifyEmailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    // Onboarding requires a session — signed-out verification success shows
-    // a log-in prompt instead of dead-ending into authenticated screens.
     LaunchedEffect(state.verified, state.signedIn) {
         if (state.verified && state.signedIn) onVerified()
     }

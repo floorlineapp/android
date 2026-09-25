@@ -14,7 +14,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.thefloor.app.core.designsystem.components.FloorEmptyState
 import com.thefloor.app.feature.auth.ForgotPasswordScreen
 import com.thefloor.app.feature.auth.LoginScreen
 import com.thefloor.app.feature.auth.OnboardingScreen
@@ -51,14 +50,10 @@ fun FloorNavHost(
     sessionState: SessionState,
     modifier: Modifier = Modifier,
 ) {
-    // Static start destination: a dynamic one rebuilds the graph on every
-    // session transition and races in-flight auth navigation (QA finding H1).
-    // FloorApp's session effect routes WELCOME→HOME for restored sessions.
     NavHost(
         navController = navController,
         startDestination = Routes.WELCOME,
         modifier = modifier,
-        // Native push/pop feel: content slides and cross-fades between screens.
         enterTransition = {
             fadeIn(tween(220)) + slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(220))
         },
@@ -72,7 +67,6 @@ fun FloorNavHost(
             fadeOut(tween(180)) + slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(180))
         },
     ) {
-        // ---------------- auth ----------------
         composable(Routes.WELCOME) {
             val demoVm: com.thefloor.app.feature.auth.DemoEntryViewModel =
                 androidx.hilt.navigation.compose.hiltViewModel()
@@ -80,7 +74,6 @@ fun FloorNavHost(
             WelcomeScreen(
                 onSignUp = { navController.navigate(Routes.signUp()) },
                 onLogIn = { navController.navigate(Routes.LOG_IN) },
-                // Session state flips to SIGNED_IN and FloorApp routes to Home.
                 onDemo = { demoVm.enter {} },
                 demoBusy = demoBusy,
             )
@@ -132,7 +125,6 @@ fun FloorNavHost(
             )
         }
 
-        // ---------------- main tabs ----------------
         composable(Routes.HOME) {
             HomeScreen(
                 onOpenInvite = { navController.navigate(Routes.INVITE_EARN) },
@@ -166,7 +158,6 @@ fun FloorNavHost(
             )
         }
 
-        // ---------------- details ----------------
         composable(
             Routes.COMMUNITY_DETAIL,
             arguments = listOf(navArgument("communityId") { type = NavType.StringType }),
@@ -191,7 +182,6 @@ fun FloorNavHost(
             ComposePostScreen(onDone = { navController.popBackStack() })
         }
 
-        // ---------------- invite & earn ----------------
         composable(Routes.INVITE_EARN) {
             InviteEarnScreen(
                 onBack = { navController.popBackStack() },
@@ -210,7 +200,6 @@ fun FloorNavHost(
             InviteFaqScreen(onBack = { navController.popBackStack() })
         }
 
-        // ---------------- rewards / notifications ----------------
         composable(Routes.REWARDS) {
             RewardsScreen(
                 onBack = { navController.popBackStack() },
@@ -258,7 +247,6 @@ fun FloorNavHost(
             NotificationPrefsScreen(onBack = { navController.popBackStack() })
         }
 
-        // ---------------- profile / settings ----------------
         composable(Routes.PROFILE) {
             ProfileScreen(
                 onBack = { navController.popBackStack() },
@@ -293,7 +281,6 @@ fun FloorNavHost(
             DeleteAccountScreen(onBack = { navController.popBackStack() })
         }
 
-        // ---------------- phase-2 stubs (flag-gated; deep links never dead-end) ----------------
         composable(Routes.PULSE) {
             PulseScreen(onBack = { navController.popBackStack() })
         }

@@ -10,10 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 
-/**
- * Shared motion tokens. Expressive but calm — springs, not linear tweens, so
- * everything feels physical and native rather than mechanical.
- */
+/** Shared motion tokens. */
 object FloorMotion {
     val bouncy = spring<Float>(
         dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -25,11 +22,7 @@ object FloorMotion {
     )
 }
 
-/**
- * Scales an element down while it's pressed and springs it back on release —
- * the tactile "this is a real control" feel every polished app has. Pass the
- * same [interactionSource] to the element's clickable/Button so it reacts.
- */
+/** Scales an element down while it's pressed and springs it back on release — the tactile "this is a real… */
 @Composable
 fun Modifier.pressScale(
     interactionSource: MutableInteractionSource,

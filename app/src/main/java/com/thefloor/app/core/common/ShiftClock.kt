@@ -5,43 +5,30 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
-/**
- * The app is built for people who work in shifts, so Home is built around the
- * shift rather than around sections.
- *
- * Four phases, derived from local time. Pure functions — unit-tested, and no
- * Android dependency, so the phase can be computed anywhere.
- */
+/** The app is built for people who work in shifts, so Home is built around the shift rather than around sections. */
 enum class ShiftPhase {
-    /** Winding up to clock on. What happened while they were off. */
+    /** Winding up to clock on. */
     BEFORE,
 
-    /** On the floor. Short things, readable in a break. */
+    /** On the floor. */
     ON_FLOOR,
 
-    /** Clocked off. What their shift added up to. */
+    /** Clocked off. */
     AFTER,
 
-    /** The graveyard. A different tone, and a different offer. */
+    /** The graveyard. */
     NIGHT,
 }
 
 object ShiftClock {
-
     fun phaseFor(time: LocalTime): ShiftPhase = when (time.hour) {
         in 4..8 -> ShiftPhase.BEFORE
         in 9..16 -> ShiftPhase.ON_FLOOR
         in 17..21 -> ShiftPhase.AFTER
-        else -> ShiftPhase.NIGHT // 22:00–03:59
+        else -> ShiftPhase.NIGHT
     }
 
-    /**
-     * The global handover the product is named for: the next hub to clock off.
-     *
-     * Each hub ends its main shift at 17:00 local. We return whichever is
-     * closest to that moment without having passed it, so the line on Home
-     * ("Manila hands over in 40 minutes") is always true rather than decorative.
-     */
+    /** The global handover the product is named for: the next hub to clock off. */
     data class Handover(val city: String, val minutes: Long)
 
     private val hubs = listOf(

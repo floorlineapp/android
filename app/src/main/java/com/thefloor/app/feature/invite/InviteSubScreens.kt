@@ -54,7 +54,6 @@ data class InviteSubState<T>(
 class InviteSubViewModel @Inject constructor(
     private val referralRepository: ReferralRepository,
 ) : ViewModel() {
-
     val milestones = MutableStateFlow(InviteSubState<List<MilestoneTier>>())
     val history = MutableStateFlow(InviteSubState<List<ReferralHistoryItem>>())
     val faq = MutableStateFlow(InviteSubState<List<FaqItem>>())
@@ -192,7 +191,6 @@ fun InviteHistoryScreen(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Column {
-                                // Privacy: referred members are shown as anonymous entries.
                                 Text("Referral", style = FloorTheme.typography.label, color = FloorTheme.colors.textPrimary)
                                 Text(
                                     TimeAgo.format(item.createdAt).let { if (it == "now") "just now" else "$it ago" },

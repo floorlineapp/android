@@ -50,7 +50,6 @@ class RootViewModel @Inject constructor(
     private val configRepository: ConfigRepository,
     private val walkerBus: com.thefloor.app.core.walker.WalkerBus,
 ) : ViewModel() {
-
     val walkerOpen: StateFlow<Boolean> = walkerBus.open
     fun openWalker() = walkerBus.open()
     fun closeWalker() = walkerBus.close()
@@ -65,11 +64,7 @@ class RootViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, SessionState.LOADING)
 
-    /**
-     * Feature flags are still read for the rest of the app, but Floor Radio is
-     * not one of them: the process guide makes Radio one of the four permanent
-     * bottom-nav destinations alongside Home, The Floor and Talk.
-     */
+    /** Feature flags are still read for the rest of the app, but Floor Radio is not one of them: the process… */
     val flags = MutableStateFlow<Map<String, Boolean>>(emptyMap())
 
     init {
@@ -103,7 +98,6 @@ fun FloorApp(
     val walkerOpen by rootViewModel.walkerOpen.collectAsStateWithLifecycle()
     val deepLink by pendingDeepLink.collectAsState()
 
-    // Deep links: park until session state is known, then route.
     LaunchedEffect(deepLink, sessionState) {
         val target = deepLink ?: return@LaunchedEffect
         if (sessionState == SessionState.LOADING) return@LaunchedEffect
@@ -111,7 +105,6 @@ fun FloorApp(
         onDeepLinkConsumed()
     }
 
-    // Session transitions: restored session skips Welcome; logout clears the stack.
     LaunchedEffect(sessionState) {
         val route = navController.currentBackStackEntry?.destination?.route
         when {
@@ -119,8 +112,6 @@ fun FloorApp(
                 navController.navigate(Routes.HOME) {
                     popUpTo(Routes.WELCOME) { inclusive = true }
                 }
-            // Restored-but-unverified sessions must pass the verify gate,
-            // never land on Home.
             sessionState == SessionState.SIGNED_IN_UNVERIFIED && route == Routes.WELCOME ->
                 navController.navigate(Routes.verifyEmail()) {
                     popUpTo(Routes.WELCOME) { inclusive = true }
@@ -138,8 +129,6 @@ fun FloorApp(
     val currentRoute = backStackEntry?.destination?.route
     val visibleTabs = tabs
     val showBottomBar = currentRoute != null && visibleTabs.any { it.route == currentRoute }
-    // Walker is global chrome, not a page: it floats over every signed-in screen
-    // and is deliberately absent only from the pre-account auth flow.
     val showWalker = sessionState == SessionState.SIGNED_IN &&
         currentRoute != null && !authRoutesSet.contains(currentRoute)
 
@@ -156,8 +145,6 @@ fun FloorApp(
                             selected = currentRoute == tab.route,
                             onClick = {
                                 navController.navigate(tab.route) {
-                                    // WELCOME (the graph start) is popped inclusively
-                                    // once signed in — anchor tab stacks on HOME.
                                     popUpTo(Routes.HOME) { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
@@ -202,10 +189,8 @@ private fun navigateToTarget(
             is DeepLinkParser.Target.ResetPassword ->
                 navController.navigate(Routes.resetPassword(target.token)) { launchSingleTop = true }
             is DeepLinkParser.Target.VerifyEmail ->
-                // Confirm endpoint is public — the token can be consumed pre-login.
-                // No launchSingleTop: a fresh entry carries the fresh token.
                 navController.navigate(Routes.verifyEmail(target.token))
-            else -> Unit // Auth flow first; other targets are dropped by design.
+            else -> Unit
         }
         return
     }
@@ -234,10 +219,8 @@ private fun navigateToTarget(
         is DeepLinkParser.Target.Profile ->
             navController.navigate(Routes.publicProfile(target.userId)) { launchSingleTop = true }
         DeepLinkParser.Target.Rewards -> navController.navigate(Routes.REWARDS) { launchSingleTop = true }
-        // Verify links carry a token that must be consumed server-side —
-        // route to the Verify screen in every session state.
         is DeepLinkParser.Target.VerifyEmail ->
-            navController.navigate(Routes.verifyEmail(target.token)) // fresh entry, fresh token
+            navController.navigate(Routes.verifyEmail(target.token))
         is DeepLinkParser.Target.ResetPassword,
         DeepLinkParser.Target.Home -> navController.navigate(Routes.HOME) { launchSingleTop = true }
     }

@@ -32,17 +32,7 @@ import com.thefloor.app.core.designsystem.components.FloorPrimaryButton
 import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 
-/**
- * The Radio Pass upgrade screen.
- *
- * "Unlock Radio Pass" used to go nowhere. It now lands here.
- *
- * Deliberately not a checkout: there is no payment provider connected, no price
- * agreed and no terms written, so the screen says that in plain words and
- * offers to tell the member when it opens rather than collecting anything. A
- * fake payment step would be the worst possible thing to put in front of a
- * workforce that gets targeted by subscription scams.
- */
+/** The Radio Pass upgrade screen. */
 private data class PassPerk(val title: String, val detail: String, val included: Boolean)
 
 private val perks = listOf(

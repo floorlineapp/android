@@ -29,11 +29,7 @@ fun FloorLogoMark(modifier: Modifier = Modifier, size: Dp = 24.dp) {
     )
 }
 
-/**
- * Full brand lockup: the F mark followed by THE FLOOR. Used in the Home app bar
- * and on the welcome screen. The wordmark colour follows the theme so it stays
- * readable in light mode.
- */
+/** Full brand lockup: the F mark followed by THE FLOOR. */
 @Composable
 fun FloorWordmark(
     modifier: Modifier = Modifier,
@@ -59,11 +55,7 @@ fun FloorWordmark(
     }
 }
 
-/**
- * Community photography, matched to the web prototype's own imagery so the
- * native Floor page reads the same. Loaded at runtime; the card shows a brand
- * gradient until the image arrives (and if it never does).
- */
+/** Community photography, matched to the web prototype's own imagery so the native Floor page reads the same. */
 private const val UNSPLASH = "https://images.unsplash.com/"
 private const val PARAMS = "?w=800&q=70&auto=format&fit=crop"
 
@@ -85,7 +77,6 @@ private val floorPhotos: List<Pair<String, String>> = listOf(
     "customer service" to "photo-1681164314348-1cab4b4eb17f",
     "team leader" to "photo-1542744173-8e7e53415bb0",
     "kenya" to "photo-1611348586804-61bf6c080437",
-    // Broadest match last: "The Floor — Global" and anything else global.
     "global" to "photo-1521737604893-d14cc237f11d",
 )
 
@@ -96,11 +87,7 @@ fun floorPhotoUrl(name: String): String? {
     return "$UNSPLASH${hit.second}$PARAMS"
 }
 
-/**
- * Cover art bundled into the APK, so Floor cards render instantly and work with
- * no network at all. Preferred over the remote URL; the gradient remains the
- * last resort for a Floor we have no artwork for.
- */
+/** Cover art bundled into the APK, so Floor cards render instantly and work with no network at all. */
 private val bundledFloorPhotos: List<Pair<String, Int>> = listOf(
     "south africa" to R.drawable.floor_south_africa,
     "philippines" to R.drawable.floor_philippines,
@@ -116,7 +103,6 @@ private val bundledFloorPhotos: List<Pair<String, Int>> = listOf(
     "night shift" to R.drawable.floor_nightshift,
     "new agent" to R.drawable.floor_newagents,
     "team leader" to R.drawable.floor_teamleaders,
-    // Broadest match last.
     "global" to R.drawable.floor_global,
 )
 

@@ -15,15 +15,7 @@ import javax.inject.Singleton
 
 private val Context.demoDataStore: DataStore<Preferences> by preferencesDataStore("floor_demo")
 
-/**
- * Demo mode lets the app run with no server at all: [DemoInterceptor] answers
- * every API call from canned data. It exists so the build can be handed to
- * someone and explored end-to-end without a backend.
- *
- * The flag is read on a hot path (an OkHttp interceptor, off the main thread),
- * so it is mirrored into a plain @Volatile field and the DataStore is only the
- * durable copy.
- */
+/** Demo mode lets the app run with no server at all: [DemoInterceptor] answers every API call from canned data. */
 @Singleton
 class DemoStore @Inject constructor(
     @ApplicationContext private val context: Context,

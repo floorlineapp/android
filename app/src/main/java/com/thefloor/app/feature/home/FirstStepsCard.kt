@@ -1,7 +1,6 @@
 package com.thefloor.app.feature.home
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,17 +22,7 @@ import com.thefloor.app.core.designsystem.components.FloorEyebrow
 import com.thefloor.app.core.designsystem.components.FloorProgressBar
 import com.thefloor.app.core.model.HomeContent
 
-/**
- * First steps.
- *
- * A new member used to land on Home and look at other people's numbers. This
- * gives them three things to do that pay, in the order that makes the app make
- * sense — belong, then be known, then be heard — and it disappears for good
- * once all three are done, rather than nagging forever.
- *
- * The point values are the real ones from the ledger, so the first session ends
- * with a balance the member earned rather than a tour they sat through.
- */
+/** First steps. */
 @Composable
 fun FirstStepsCard(
     content: HomeContent,

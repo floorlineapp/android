@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
@@ -28,7 +27,6 @@ import com.thefloor.app.core.data.CommunityRepository
 import com.thefloor.app.core.data.TalkRepository
 import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.FloorCard
-import com.thefloor.app.core.designsystem.components.FloorEmptyState
 import com.thefloor.app.core.designsystem.components.FloorErrorState
 import com.thefloor.app.core.designsystem.components.FloorLoading
 import com.thefloor.app.core.designsystem.components.FloorPrimaryButton
@@ -57,7 +55,6 @@ class CommunityDetailViewModel @Inject constructor(
     private val communityRepository: CommunityRepository,
     private val talkRepository: TalkRepository,
 ) : ViewModel() {
-
     private val communityId: String = savedStateHandle.get<String>("communityId").orEmpty()
 
     private val _state = MutableStateFlow<CommunityDetailUiState>(CommunityDetailUiState.Loading)

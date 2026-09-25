@@ -12,16 +12,12 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * The app follows the phone by default: someone whose device is in dark mode
- * gets dark, someone in light mode gets light, and it changes with them. Only
- * an explicit choice in Settings overrides that.
- */
+/** The app follows the phone by default: someone whose device is in dark mode gets dark, someone in light… */
 enum class ThemeMode { LIGHT, DARK, SYSTEM }
 
 private val Context.themeDataStore: DataStore<Preferences> by preferencesDataStore("floor_theme")
 
-/** Persists the user's appearance choice. Unrelated to session, so it lives in its own store. */
+/** Persists the user's appearance choice. */
 @Singleton
 class ThemeStore @Inject constructor(
     @ApplicationContext private val context: Context,

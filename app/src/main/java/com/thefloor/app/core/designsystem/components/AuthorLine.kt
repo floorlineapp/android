@@ -1,6 +1,5 @@
 package com.thefloor.app.core.designsystem.components
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,20 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.thefloor.app.core.common.countryFlag
 import com.thefloor.app.core.designsystem.FloorTheme
 
-/**
- * Who wrote this, and what they have earned.
- *
- * The Recognition ladder used to be visible only on your own profile, which
- * makes it a private score — and a private score motivates nobody. Every
- * authored thing in the app now carries the same identity line: avatar, flag,
- * name, tier, and the job title underneath. That is what turns Floor Points
- * from a number you check into something other people can see you have.
- *
- * The tier tone is deliberate: amber for the top rung so Workplace Ambassadors
- * read differently at a glance, teal for the earned middle, muted for everyone
- * still on their way up. Nothing here shames a new member — an unranked person
- * simply shows no badge.
- */
+/** Who wrote this, and what they have earned. */
 @Composable
 fun FloorAuthorLine(
     name: String,
@@ -57,9 +43,6 @@ fun FloorAuthorLine(
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 )
             }
-            // Tier sits on its own line rather than competing with the name for
-            // width. Putting it beside the name meant either a wrapped badge or
-            // a truncated person — and a truncated name is the worse of the two.
             val showTier = !tier.isNullOrBlank() && tier != "Member"
             if (showTier || !subtitle.isNullOrBlank()) {
                 Spacer(Modifier.height(3.dp))

@@ -79,7 +79,6 @@ sealed interface HomeUiState {
 class HomeViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
@@ -205,11 +204,6 @@ internal fun HomeContentList(
         contentPadding = PaddingValues(horizontal = FloorTheme.spacing.gutter, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        // ---- The shift card ----
-        // This replaces the brand hero that used to sit here. The wordmark is
-        // already in the app bar and both of the hero's actions exist as tiles
-        // below, so nothing is lost — and the first thing on Home is now
-        // something that changes through the day rather than a fixed statement.
         item {
             Text(
                 greeting,
@@ -227,7 +221,6 @@ internal fun HomeContentList(
             )
         }
 
-        // ---- KPI strip: the four numbers the dashboard exists to show ----
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 FloorKpiCard(
@@ -265,7 +258,6 @@ internal fun HomeContentList(
             }
         }
 
-        // ---- Presence panel: who is actually here, not just how many ----
         item {
             FloorCard(onClick = onOpenFloorTab, contentPadding = 18.dp) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -303,9 +295,6 @@ internal fun HomeContentList(
             }
         }
 
-        // ---- First steps ----
-        // Supersedes the old completion card: same nudge, but it names all three
-        // actions, shows what each pays, and retires itself once they are done.
         item {
             FirstStepsCard(
                 content = content,
@@ -316,7 +305,6 @@ internal fun HomeContentList(
             )
         }
 
-        // ---- Jump back in ----
         item {
             Spacer(Modifier.height(4.dp))
             FloorSectionHeader(title = "Jump back in", subtitle = "Your shift. Your Floor.")
@@ -350,7 +338,6 @@ internal fun HomeContentList(
             )
         }
 
-        // ---- Your Floors ----
         if (content.myFloors.isNotEmpty()) {
             item {
                 Spacer(Modifier.height(4.dp))
@@ -373,7 +360,6 @@ internal fun HomeContentList(
             }
         }
 
-        // ---- Trending on Talk ----
         if (content.trendingPosts.isNotEmpty()) {
             item {
                 Spacer(Modifier.height(4.dp))
@@ -384,7 +370,6 @@ internal fun HomeContentList(
             }
         }
 
-        // ---- On Air ----
         item {
             Spacer(Modifier.height(4.dp))
             FloorSectionHeader(title = "On Air now", linkText = "Open Radio", onLink = onOpenRadio)
@@ -410,7 +395,6 @@ internal fun HomeContentList(
             }
         }
 
-        // Clearance for the floating Walker button.
         item { Spacer(Modifier.height(88.dp)) }
     }
 }

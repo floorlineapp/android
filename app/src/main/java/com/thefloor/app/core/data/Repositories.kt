@@ -47,7 +47,6 @@ import javax.inject.Singleton
 
 @Singleton
 class UserRepository @Inject constructor(private val api: FloorApi) {
-
     suspend fun me(): AppResult<UserProfile> = safeCall { api.me() }.map { it.toDomain() }
 
     suspend fun updateProfile(update: UpdateProfileRequestDto): AppResult<UserProfile> =
@@ -69,7 +68,6 @@ class UserRepository @Inject constructor(private val api: FloorApi) {
 /** Workplace Spotlight submissions — the record behind the submit screen. */
 @Singleton
 class SpotlightRepository @Inject constructor(private val api: FloorApi) {
-
     suspend fun submissions(): AppResult<List<com.thefloor.app.core.network.SpotlightSubmissionDto>> =
         safeCall { api.spotlightSubmissions() }.map { it.items }
 
@@ -95,7 +93,6 @@ class SpotlightRepository @Inject constructor(private val api: FloorApi) {
 /** Walker's conversation record. */
 @Singleton
 class SupportRepository @Inject constructor(private val api: FloorApi) {
-
     suspend fun conversation(): AppResult<com.thefloor.app.core.network.SupportConversationDto> =
         safeCall { api.supportConversation() }
 
@@ -111,7 +108,6 @@ class SupportRepository @Inject constructor(private val api: FloorApi) {
 
 @Singleton
 class HomeRepository @Inject constructor(private val api: FloorApi) {
-
     suspend fun load(): AppResult<HomeContent> = safeCall { api.home() }.map { dto ->
         HomeContent(
             displayName = dto.displayName,
@@ -187,8 +183,6 @@ class TalkRepository @Inject constructor(
 ) {
     val cachedFeed: Flow<List<Post>> = dao.observeFeed().map { list ->
         list.map {
-            // Named: Post gained authorTier/authorCountry in the middle of its
-            // parameter list, and positional calls shift silently when it grows.
             Post(
                 id = it.id,
                 authorId = it.authorId,
@@ -285,7 +279,6 @@ class TalkRepository @Inject constructor(
 
 @Singleton
 class ReferralRepository @Inject constructor(private val api: FloorApi) {
-
     suspend fun summary(): AppResult<ReferralSummary> =
         safeCall { api.referralSummary() }.map { it.toDomain() }
 
@@ -308,7 +301,6 @@ class ReferralRepository @Inject constructor(private val api: FloorApi) {
 
 @Singleton
 class RewardsRepository @Inject constructor(private val api: FloorApi) {
-
     suspend fun summary(): AppResult<RewardsSummary> =
         safeCall { api.rewardsSummary() }.map { dto ->
             RewardsSummary(
@@ -363,7 +355,6 @@ class NotificationRepository @Inject constructor(
 
 @Singleton
 class ConfigRepository @Inject constructor(private val api: FloorApi) {
-
     private val flagsMutex = Mutex()
     @Volatile private var cachedFlags: Map<String, Boolean> = emptyMap()
 
@@ -383,7 +374,6 @@ class ConfigRepository @Inject constructor(private val api: FloorApi) {
 
 @Singleton
 class PulseRepository @Inject constructor(private val api: FloorApi) {
-
     suspend fun feed(cursor: String? = null): AppResult<Pair<List<Pulse>, String?>> =
         safeCall { api.pulseFeed(cursor) }.map { page -> page.items.map { it.toDomain() } to page.nextCursor }
 

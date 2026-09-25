@@ -54,7 +54,6 @@ class ComposePostViewModel @Inject constructor(
     private val talkRepository: TalkRepository,
     private val analytics: AnalyticsTracker,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(ComposeUiState())
     val state: StateFlow<ComposeUiState> = _state.asStateFlow()
 

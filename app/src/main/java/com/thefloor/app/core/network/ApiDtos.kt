@@ -2,12 +2,11 @@ package com.thefloor.app.core.network
 
 import kotlinx.serialization.Serializable
 
-/** Wire DTOs — mirror the Floor API. Mapped to domain models in repositories. */
+/** Wire DTOs — mirror the Floor API. */
 
 @Serializable
 data class ApiErrorDto(val code: String = "UNKNOWN", val message: String = "Something went wrong", val field: String? = null)
 
-// ---- auth ----
 @Serializable
 data class SignupRequestDto(
     val email: String,
@@ -41,7 +40,6 @@ data class ResetRequestDto(val token: String, val newPassword: String)
 @Serializable
 data class OkDto(val ok: Boolean = true)
 
-// ---- config / home ----
 @Serializable
 data class PublicConfigDto(
     val flags: Map<String, Boolean> = emptyMap(),
@@ -64,8 +62,6 @@ data class HomeDto(
     val newOpportunities: Int = 0,
     val pointsAvailableToday: Int = 0,
     val presenceNames: List<String> = emptyList(),
-    // What the shift card on Home reads. Counts, not decoration — each one is
-    // a real figure the server already knows.
     val postsSinceYesterday: Int = 0,
     val mentions: Int = 0,
     val pointsEarnedToday: Int = 0,
@@ -78,7 +74,6 @@ data class HomeDto(
     val flags: Map<String, Boolean> = emptyMap(),
 )
 
-// ---- profile ----
 @Serializable
 data class ProfileDto(
     val userId: String,
@@ -126,7 +121,6 @@ data class PrivacyRequestDto(val visibility: Map<String, String>)
 @Serializable
 data class DeleteAccountRequestDto(val password: String)
 
-// ---- communities ----
 @Serializable
 data class CommunityDto(
     val id: String,
@@ -146,7 +140,6 @@ data class CommunityListDto(val items: List<CommunityDto> = emptyList())
 @Serializable
 data class MembershipDto(val membershipState: String, val memberCount: Int)
 
-// ---- talk ----
 @Serializable
 data class CategoryDto(val id: String, val slug: String, val name: String)
 
@@ -159,8 +152,6 @@ data class PostDto(
     val authorId: String = "",
     val authorName: String = "",
     val authorLevel: String? = null,
-    // Recognition tier and country travel with every authored thing, so status
-    // is visible where the work happens rather than only on your own profile.
     val authorTier: String? = null,
     val authorCountry: String? = null,
     val categoryId: String = "",
@@ -202,7 +193,6 @@ data class CreateCommentRequestDto(
     val mentionUserIds: List<String> = emptyList(),
 )
 
-// ---- pulse ----
 @Serializable
 data class PulseDto(
     val id: String,
@@ -239,7 +229,6 @@ data class ReportRequestDto(
     val detail: String? = null,
 )
 
-// ---- referrals ----
 @Serializable
 data class MilestoneRewardDto(
     val kind: String,
@@ -295,7 +284,6 @@ data class ShareEventDto(val channel: String)
 @Serializable
 data class FaqItemDto(val q: String = "", val a: String = "")
 
-// ---- rewards ----
 @Serializable
 data class WayToEarnDto(val title: String, val credits: Long, val deepLink: String)
 
@@ -312,7 +300,6 @@ data class RewardsSummaryDto(
 @Serializable
 data class RewardTransactionsDto(val items: List<RewardTransactionDto> = emptyList())
 
-// ---- workplace spotlight ----
 @Serializable
 data class SpotlightSubmissionDto(
     val id: String,
@@ -341,7 +328,6 @@ data class CreateSpotlightRequestDto(
     val mediaUrl: String? = null,
 )
 
-// ---- walker / support ----
 @Serializable
 data class SupportMessageDto(
     val id: String,
@@ -363,7 +349,6 @@ data class SupportConversationDto(
 @Serializable
 data class SupportSendRequestDto(val body: String, val escalate: Boolean = false)
 
-// ---- notifications ----
 @Serializable
 data class NotificationDto(
     val id: String,
