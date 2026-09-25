@@ -187,11 +187,22 @@ class TalkRepository @Inject constructor(
 ) {
     val cachedFeed: Flow<List<Post>> = dao.observeFeed().map { list ->
         list.map {
+            // Named: Post gained authorTier/authorCountry in the middle of its
+            // parameter list, and positional calls shift silently when it grows.
             Post(
-                it.id, it.authorId, it.authorName,
-                it.authorLevel?.let { l -> runCatching { CareerLevel.valueOf(l) }.getOrNull() },
-                it.categoryId, it.categoryName, it.communityId, it.body,
-                it.commentCount, it.reactionCount, it.myReaction, it.saved, it.createdAt,
+                id = it.id,
+                authorId = it.authorId,
+                authorName = it.authorName,
+                authorLevel = it.authorLevel?.let { l -> runCatching { CareerLevel.valueOf(l) }.getOrNull() },
+                categoryId = it.categoryId,
+                categoryName = it.categoryName,
+                communityId = it.communityId,
+                body = it.body,
+                commentCount = it.commentCount,
+                reactionCount = it.reactionCount,
+                myReaction = it.myReaction,
+                saved = it.saved,
+                createdAt = it.createdAt,
             )
         }
     }

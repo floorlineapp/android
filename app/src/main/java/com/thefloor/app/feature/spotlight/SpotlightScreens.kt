@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.thefloor.app.core.common.onError
 import com.thefloor.app.core.common.onSuccess
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -224,7 +225,7 @@ class SubmitSpotlightViewModel @javax.inject.Inject constructor(
     fun submit(category: String, title: String, story: String, proofText: String, mediaUrl: String?) {
         if (sending.value) return
         sending.value = true
-        androidx.lifecycle.viewModelScope.launch {
+        viewModelScope.launch {
             spotlight.submit(category, title, story, proofText, mediaUrl)
                 .onSuccess { submitted.value = true; sending.value = false }
                 .onError { e -> error.value = e.userMessage; sending.value = false }
