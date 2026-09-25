@@ -148,7 +148,10 @@ class DemoBackend @Inject constructor() {
             // ---- profile ----
             seg == listOf("users", "me") -> json.encodeToString(ProfileDto.serializer(), profile)
             seg.startsWith("users", "me") && method != "GET" -> {
-                if (seg.getOrNull(2) == "profile") applyProfileUpdate(body)
+                when (seg.getOrNull(2)) {
+                    "profile" -> applyProfileUpdate(body)
+                    "privacy" -> applyPrivacyUpdate(body)
+                }
                 json.encodeToString(ProfileDto.serializer(), profile)
             }
             seg.size == 2 && seg[0] == "users" -> json.encodeToString(ProfileDto.serializer(), profile)
@@ -324,6 +327,8 @@ class DemoBackend @Inject constructor() {
             authorId = DemoMode.USER_ID,
             authorName = profile.displayName,
             body = req?.body.orEmpty().take(220),
+            mediaUrl = req?.mediaUrl,
+            mediaType = req?.mediaType,
             likeCount = 0,
             liked = false,
             createdAt = now(),
@@ -412,6 +417,19 @@ class DemoBackend @Inject constructor() {
             skills = u.skills ?: profile.skills,
         )
         profile = profile.copy(completeness = completeness(profile))
+    }
+
+    /**
+     * Visibility is a merge, not a replace: the screen sends the one field the
+     * member just changed, and the other six have to survive it. Dropping this
+     * was why every privacy chip looked dead — the request went out, the same
+     * unchanged profile came back, and the selection never moved.
+     */
+    private fun applyPrivacyUpdate(body: String) {
+        val request = runCatching {
+            json.decodeFromString(com.thefloor.app.core.network.PrivacyRequestDto.serializer(), body)
+        }.getOrNull() ?: return
+        profile = profile.copy(visibility = profile.visibility + request.visibility)
     }
 
     private fun completeness(p: ProfileDto): Int {

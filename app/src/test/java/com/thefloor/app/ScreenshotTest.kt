@@ -57,6 +57,10 @@ import com.thefloor.app.core.common.ShiftPhase
 import com.thefloor.app.feature.home.FirstStepsCard
 import com.thefloor.app.feature.home.ShiftCard
 import com.thefloor.app.feature.more.MoreScreen
+import com.thefloor.app.feature.radio.RadioPassScreen
+import com.thefloor.app.feature.rewards.PointsRulesScreen
+import com.thefloor.app.feature.spotlight.SpotlightRulesScreen
+import com.thefloor.app.feature.spotlight.SubmitSpotlightScreen
 import com.thefloor.app.feature.radio.RadioBody
 import com.thefloor.app.feature.radio.RadioPlaybackState
 import com.thefloor.app.feature.rewards.RewardsBody
@@ -102,9 +106,9 @@ class ScreenshotTest {
     }
 
     // ---------- editorial pages ----------
-    @Test fun insights() = snap("page_insights") { InsightsScreen {} }
-    @Test fun academy() = snap("page_academy") { AcademyScreen {} }
-    @Test fun events() = snap("page_events") { EventsScreen {} }
+    @Test fun insights() = snap("page_insights") { InsightsScreen(onBack = {}) }
+    @Test fun academy() = snap("page_academy") { AcademyScreen(onBack = {}) }
+    @Test fun events() = snap("page_events") { EventsScreen(onBack = {}) }
     @Test fun marketplace() = snap("page_marketplace") { MarketplaceScreen {} }
     @Test fun resources() = snap("page_resources") { ResourcesScreen {} }
     @Test fun jobs() = snap("page_jobs") { JobsScreen {} }
@@ -119,7 +123,7 @@ class ScreenshotTest {
     @Test fun galleryDark() = snap("gallery_dark") { Gallery() }
     @Test fun galleryLight() = snap("gallery_light", dark = false) { Gallery() }
 
-    @Test fun academyLight() = snap("page_academy_light", dark = false) { AcademyScreen {} }
+    @Test fun academyLight() = snap("page_academy_light", dark = false) { AcademyScreen(onBack = {}) }
     @Test fun aboutLight() = snap("page_about_light", dark = false) { AboutScreen(onBack = {}) }
 
     // ---------- Home, rendered from the real screen body ----------
@@ -145,7 +149,7 @@ class ScreenshotTest {
 
     @Test fun more() = snap("page_more") { MoreScreen(onNavigate = {}) }
     @Test fun moreLight() = snap("page_more_light", dark = false) { MoreScreen(onNavigate = {}) }
-    @Test fun insightsLight() = snap("page_insights_light", dark = false) { InsightsScreen {} }
+    @Test fun insightsLight() = snap("page_insights_light", dark = false) { InsightsScreen(onBack = {}) }
     @Test fun marketplaceLight() = snap("page_marketplace_light", dark = false) { MarketplaceScreen {} }
 
     // ---------- the shift card, in all four states ----------
@@ -161,6 +165,15 @@ class ScreenshotTest {
             onOpenFloorTab = {}, onOpenProfileEdit = {}, onOpenTalk = {},
         )
     }
+
+    // ---------- screens that were missing until Milano's pass ----------
+    @Test fun spotlightRules() = snap("page_spotlight_rules") { SpotlightRulesScreen {} }
+    @Test fun spotlightSubmit() = snap("page_spotlight_submit") {
+        SubmitSpotlightScreen(onBack = {}, employer = "Meridian Contact Solutions", country = "South Africa")
+    }
+    @Test fun pointsRules() = snap("page_points_rules") { PointsRulesScreen(onBack = {}) }
+    @Test fun pointsRulesLight() = snap("page_points_rules_light", dark = false) { PointsRulesScreen(onBack = {}) }
+    @Test fun radioPass() = snap("page_radio_pass") { RadioPassScreen {} }
 
     // ---------- Walker, the global support layer ----------
     @Test fun walker() = snap("walker_chat") { WalkerConversation(state = fakeWalker, onSend = {}, onEscalate = {}) }

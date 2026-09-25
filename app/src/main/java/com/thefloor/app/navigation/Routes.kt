@@ -39,6 +39,7 @@ object Routes {
 
     const val REWARDS = "rewards"
     const val REWARD_TRANSACTIONS = "rewards/transactions"
+    const val POINTS_RULES = "rewards/how-points-work"
 
     const val NOTIFICATIONS = "notifications"
     const val NOTIFICATION_PREFS = "notifications/preferences"
@@ -57,6 +58,9 @@ object Routes {
     const val ACADEMY = "academy"
     const val MARKETPLACE = "marketplace"
     const val INSIGHTS = "insights"
+    const val SPOTLIGHT_RULES = "insights/rules"
+    const val SPOTLIGHT_SUBMIT = "insights/submit"
+    const val RADIO_PASS = "radio/pass"
     const val ABOUT = "about"
     const val EVENTS = "events"
     const val RESOURCES = "resources"

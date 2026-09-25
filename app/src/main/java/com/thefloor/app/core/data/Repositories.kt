@@ -315,8 +315,15 @@ class PulseRepository @Inject constructor(private val api: FloorApi) {
     suspend fun feed(cursor: String? = null): AppResult<Pair<List<Pulse>, String?>> =
         safeCall { api.pulseFeed(cursor) }.map { page -> page.items.map { it.toDomain() } to page.nextCursor }
 
-    suspend fun create(body: String): AppResult<Pulse> =
-        safeCall { api.createPulse(com.thefloor.app.core.network.CreatePulseRequestDto(body)) }.map { it.toDomain() }
+    suspend fun create(
+        body: String,
+        mediaUrl: String? = null,
+        mediaType: String? = null,
+    ): AppResult<Pulse> = safeCall {
+        api.createPulse(
+            com.thefloor.app.core.network.CreatePulseRequestDto(body, mediaUrl, mediaType),
+        )
+    }.map { it.toDomain() }
 
     suspend fun delete(id: String): AppResult<Unit> = safeCall { api.deletePulse(id) }.map { }
 

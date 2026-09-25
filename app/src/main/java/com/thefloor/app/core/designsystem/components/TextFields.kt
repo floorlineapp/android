@@ -20,6 +20,55 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.thefloor.app.core.designsystem.FloorTheme
 
+/**
+ * Same field, but over [androidx.compose.ui.text.input.TextFieldValue] so the
+ * caller controls the caret. Inserting an emoji at the cursor needs this; with
+ * a plain String the selection is lost on every external edit.
+ */
+@Composable
+fun FloorTextField(
+    value: androidx.compose.ui.text.input.TextFieldValue,
+    onValueChange: (androidx.compose.ui.text.input.TextFieldValue) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    supporting: String? = null,
+    singleLine: Boolean = true,
+    enabled: Boolean = true,
+    minLines: Int = 1,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier.fillMaxWidth(),
+        label = { Text(label, style = FloorTheme.typography.label) },
+        enabled = enabled,
+        singleLine = singleLine,
+        minLines = minLines,
+        keyboardOptions = keyboardOptions,
+        supportingText = supporting?.let {
+            { Text(it, style = FloorTheme.typography.caption, color = FloorTheme.colors.textMuted) }
+        },
+        textStyle = FloorTheme.typography.body,
+        colors = floorFieldColors(),
+    )
+}
+
+@Composable
+private fun floorFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedContainerColor = FloorTheme.colors.surfaceAlt,
+    unfocusedContainerColor = FloorTheme.colors.surfaceAlt,
+    errorContainerColor = FloorTheme.colors.surfaceAlt,
+    focusedBorderColor = FloorTheme.colors.amber,
+    unfocusedBorderColor = FloorTheme.colors.borderSoft,
+    errorBorderColor = FloorTheme.colors.coral,
+    focusedTextColor = FloorTheme.colors.textPrimary,
+    unfocusedTextColor = FloorTheme.colors.textPrimary,
+    focusedLabelColor = FloorTheme.colors.amber,
+    unfocusedLabelColor = FloorTheme.colors.textMuted,
+    cursorColor = FloorTheme.colors.amber,
+)
+
 @Composable
 fun FloorTextField(
     value: String,

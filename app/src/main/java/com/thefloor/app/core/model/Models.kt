@@ -92,6 +92,8 @@ data class Pulse(
     val authorId: String,
     val authorName: String,
     val body: String,
+    val mediaUrl: String? = null,
+    val mediaType: String? = null,
     val likeCount: Int,
     val liked: Boolean,
     val createdAt: String,

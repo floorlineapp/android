@@ -60,6 +60,8 @@ import com.thefloor.app.core.designsystem.components.FloorPillButton
 import com.thefloor.app.core.designsystem.components.FloorProgressBar
 import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTopBar
+import com.thefloor.app.core.common.onSuccess
+import kotlinx.coroutines.launch
 
 /* ------------------------------------------------------------------ *
  *  Shared building blocks for the editorial (content) pages.
@@ -254,7 +256,13 @@ private val spotlightStories = listOf(
 )
 
 @Composable
-fun InsightsScreen(onBack: () -> Unit) {
+fun InsightsScreen(
+    onBack: () -> Unit,
+    onOpenRules: () -> Unit = {},
+    onOpenSubmit: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
+    onOpenAcademy: () -> Unit = {},
+) {
     var category by remember { mutableStateOf(spotlightCategories.first()) }
     // Demo member: 12,480 points and a verified workplace — past the Floor Voice gate.
     val balance = 12_480
@@ -271,8 +279,10 @@ fun InsightsScreen(onBack: () -> Unit) {
                     "submitted only by members who have earned enough stature to represent " +
                     "their workplace, and reviewed before anything is published.",
                 actions = {
-                    FloorPillButton("Submit a Spotlight", onClick = {}, enabled = eligible)
-                    FloorPillButton("Rules of engagement", onClick = {}, primary = false)
+                    FloorPillButton("Submit a Spotlight", onClick = onOpenSubmit, enabled = eligible)
+                    FloorPillButton("Rules of engagement", onClick = onOpenRules, primary = false)
+                    FloorPillButton("See my recognition level", onClick = onOpenProfile, primary = false)
+                    FloorPillButton("Open Academy", onClick = onOpenAcademy, primary = false)
                 },
             )
         }
@@ -311,6 +321,51 @@ fun InsightsScreen(onBack: () -> Unit) {
                     style = FloorTheme.typography.body,
                     color = FloorTheme.colors.textSecondary,
                 )
+            }
+        }
+
+        item {
+            FloorSectionHeader(
+                title = "Your access",
+                subtitle = "The same ladder your profile shows — one system, read from two places.",
+            )
+        }
+        item {
+            FloorCard(contentPadding = 16.dp) {
+                listOf(
+                    "Contributor" to 1_000,
+                    "Recognised Member" to 5_000,
+                    "Floor Voice" to 10_000,
+                    "Workplace Ambassador" to 15_000,
+                ).forEach { (name, needed) ->
+                    val reached = balance >= needed
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            if (reached) "●" else "○",
+                            style = FloorTheme.typography.body,
+                            color = if (reached) FloorTheme.colors.teal else FloorTheme.colors.textMuted,
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            name,
+                            style = FloorTheme.typography.bodyStrong,
+                            color = if (reached) FloorTheme.colors.textPrimary else FloorTheme.colors.textSecondary,
+                            modifier = Modifier.weight(1f),
+                        )
+                        if (name == "Floor Voice") {
+                            FloorBadge("Unlocks Spotlight", tone = BadgeTone.AMBER)
+                        } else {
+                            Text(
+                                "%,d".format(needed),
+                                style = FloorTheme.typography.monoTag,
+                                color = FloorTheme.colors.textMuted,
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -385,8 +440,57 @@ private val academyCourses = listOf(
     Course("Data Analysis for Everyone", "Read your own numbers — AHT, CSAT, shrinkage and beyond.", "Workforce & operations", R.drawable.img_data_analysis_for_everyone, 25),
 )
 
+@dagger.hilt.android.lifecycle.HiltViewModel
+class AcademyViewModel @javax.inject.Inject constructor(
+    private val userRepository: com.thefloor.app.core.data.UserRepository,
+    private val rewardsRepository: com.thefloor.app.core.data.RewardsRepository,
+) : androidx.lifecycle.ViewModel() {
+
+    data class Passport(
+        val role: String = "—",
+        val tenure: String = "—",
+        val tier: String = "Member",
+        val learningPoints: Int = 0,
+        val completed: Int = 0,
+        val verified: Int = 0,
+    )
+
+    val passport = kotlinx.coroutines.flow.MutableStateFlow(Passport())
+
+    init {
+        androidx.lifecycle.viewModelScope.launch {
+            var points = 0
+            rewardsRepository.summary().onSuccess { points = it.creditsBalance.toInt() }
+            userRepository.me().onSuccess { profile ->
+                val workplaceVerified = profile.emailVerified && !profile.employer.isNullOrBlank()
+                val level = com.thefloor.app.core.model.recognitionLevel(
+                    floorPoints = points,
+                    workplaceVerified = workplaceVerified,
+                    trustedHistory = workplaceVerified && profile.completeness >= 80,
+                )
+                passport.value = Passport(
+                    role = profile.role ?: profile.careerLevel?.label ?: "—",
+                    tenure = profile.experienceYears?.let { "${'$'}it yr" } ?: "—",
+                    tier = level.label,
+                    // Learning Points are their own ledger; Academy shows the
+                    // subset of the record that came from verified learning.
+                    learningPoints = 340,
+                    completed = 9,
+                    verified = 4,
+                )
+            }
+        }
+    }
+}
+
 @Composable
-fun AcademyScreen(onBack: () -> Unit) {
+fun AcademyScreen(
+    onBack: () -> Unit,
+    passport: AcademyViewModel.Passport = AcademyViewModel.Passport(
+        role = "Senior Agent", tenure = "4 yr", tier = "Floor Voice",
+        learningPoints = 340, completed = 9, verified = 4,
+    ),
+) {
     var tab by remember { mutableStateOf(academyTabs.first()) }
 
     EditorialScaffold("Academy", onBack) {
@@ -405,15 +509,15 @@ fun AcademyScreen(onBack: () -> Unit) {
                 FloorEyebrow("My Academy Passport", accent = FloorAccent.TEAL)
                 Spacer(Modifier.height(12.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    PassportStat("Role", "Senior Agent")
-                    PassportStat("Tenure", "3y 2m")
-                    PassportStat("Tier", "Floor Voice")
+                    PassportStat("Role", passport.role)
+                    PassportStat("Tenure", passport.tenure)
+                    PassportStat("Tier", passport.tier)
                 }
                 Spacer(Modifier.height(16.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    PassportStat("Learning Points", "340")
-                    PassportStat("Completed", "9 items")
-                    PassportStat("Verified", "4 items")
+                    PassportStat("Learning Points", passport.learningPoints.toString())
+                    PassportStat("Completed", "${passport.completed} items")
+                    PassportStat("Verified", "${passport.verified} items")
                 }
                 Spacer(Modifier.height(14.dp))
                 Text(
@@ -557,7 +661,7 @@ private val events = listOf(
 )
 
 @Composable
-fun EventsScreen(onBack: () -> Unit) {
+fun EventsScreen(onBack: () -> Unit, onOpenRadioPass: () -> Unit = {}) {
     EditorialScaffold("Events", onBack) {
         item {
             FloorHero(
@@ -566,7 +670,11 @@ fun EventsScreen(onBack: () -> Unit) {
                 subtitle = "External webinars and conferences sit alongside The Floor's own radio " +
                     "sessions and meetups, in one calendar.",
                 actions = {
-                    FloorPillButton("Unlock Radio Pass", onClick = {}, leadingIcon = Icons.Filled.Headphones)
+                    FloorPillButton(
+                        "Unlock Radio Pass",
+                        onClick = onOpenRadioPass,
+                        leadingIcon = Icons.Filled.Headphones,
+                    )
                 },
             )
         }

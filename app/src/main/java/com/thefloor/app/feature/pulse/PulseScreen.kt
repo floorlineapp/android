@@ -73,7 +73,9 @@ import javax.inject.Inject
 data class PulseUiState(
     val loading: Boolean = true,
     val pulses: List<Pulse> = emptyList(),
-    val input: String = "",
+    val input: androidx.compose.ui.text.input.TextFieldValue =
+        androidx.compose.ui.text.input.TextFieldValue(""),
+    val attachment: PulseAttachment? = null,
     val posting: Boolean = false,
     val error: String? = null,
     val actionMessage: String? = null,
@@ -107,17 +109,71 @@ class PulseViewModel @Inject constructor(
      * schema enforces as a CHECK constraint on pulse_posts.body. Trimming here
      * keeps the composer honest instead of letting the write fail server-side.
      */
-    fun onInput(value: String) =
-        _state.update { it.copy(input = value.take(PULSE_MAX_CHARS)) }
+    fun onInput(value: androidx.compose.ui.text.input.TextFieldValue) = _state.update {
+        if (value.text.length <= PULSE_MAX_CHARS) {
+            it.copy(input = value)
+        } else {
+            val clipped = value.text.take(PULSE_MAX_CHARS)
+            it.copy(
+                input = androidx.compose.ui.text.input.TextFieldValue(
+                    clipped,
+                    androidx.compose.ui.text.TextRange(clipped.length),
+                ),
+            )
+        }
+    }
+
+    /**
+     * Emoji go in at the caret and the caret follows them.
+     *
+     * Appending to the end of a plain String looked right in an empty field and
+     * wrong the moment anyone was mid-sentence — the character landed somewhere
+     * they were not looking, and the selection jumped. Splicing at the current
+     * selection is the only version that behaves while typing.
+     */
+    fun insertEmoji(emoji: String) = _state.update { s ->
+        val result = PulseComposerText.insert(
+            text = s.input.text,
+            selectionStart = s.input.selection.start,
+            selectionEnd = s.input.selection.end,
+            insert = emoji,
+        )
+        s.copy(
+            input = androidx.compose.ui.text.input.TextFieldValue(
+                result.text,
+                androidx.compose.ui.text.TextRange(result.caret),
+            ),
+        )
+    }
+
+    fun setAttachment(attachment: PulseAttachment?) =
+        _state.update { it.copy(attachment = attachment) }
+
+    fun reportAttachmentFailure(message: String) =
+        _state.update { it.copy(actionMessage = message) }
 
     fun post() {
-        val body = _state.value.input.trim()
-        if (body.isEmpty() || _state.value.posting) return
+        val snapshot = _state.value
+        val body = snapshot.input.text.trim()
+        // An attachment on its own is a post worth making — a photo of the floor
+        // says plenty without a caption.
+        if ((body.isEmpty() && snapshot.attachment == null) || snapshot.posting) return
         _state.update { it.copy(posting = true) }
         viewModelScope.launch {
-            pulseRepository.create(body)
+            pulseRepository.create(
+                body = body,
+                mediaUrl = snapshot.attachment?.url,
+                mediaType = snapshot.attachment?.mediaType,
+            )
                 .onSuccess { pulse ->
-                    _state.update { it.copy(posting = false, input = "", pulses = listOf(pulse) + it.pulses) }
+                    _state.update {
+                        it.copy(
+                            posting = false,
+                            input = androidx.compose.ui.text.input.TextFieldValue(""),
+                            attachment = null,
+                            pulses = listOf(pulse) + it.pulses,
+                        )
+                    }
                 }
                 .onError { e -> _state.update { it.copy(posting = false, actionMessage = e.userMessage) } }
         }
@@ -155,7 +211,7 @@ class PulseViewModel @Inject constructor(
     fun clearActionMessage() = _state.update { it.copy(actionMessage = null) }
 
     companion object {
-        const val PULSE_MAX_CHARS = 220
+        const val PULSE_MAX_CHARS = PulseComposerText.MAX_CHARS
     }
 }
 
@@ -177,6 +233,9 @@ fun PulseScreen(
             state = state,
             modifier = Modifier.padding(padding),
             onInput = viewModel::onInput,
+            onEmoji = viewModel::insertEmoji,
+            onAttach = viewModel::setAttachment,
+            onAttachFailed = viewModel::reportAttachmentFailure,
             onPost = viewModel::post,
             onLike = viewModel::toggleLike,
             onDelete = viewModel::delete,
@@ -202,7 +261,10 @@ fun PulseScreen(
 internal fun PulseBody(
     state: PulseUiState,
     modifier: Modifier = Modifier,
-    onInput: (String) -> Unit = {},
+    onInput: (androidx.compose.ui.text.input.TextFieldValue) -> Unit = {},
+    onEmoji: (String) -> Unit = {},
+    onAttach: (PulseAttachment?) -> Unit = {},
+    onAttachFailed: (String) -> Unit = {},
     onPost: () -> Unit = {},
     onLike: (Pulse) -> Unit = {},
     onDelete: (Pulse) -> Unit = {},
@@ -269,26 +331,78 @@ internal fun PulseBody(
 
             PulseComposer(
                 input = state.input,
+                attachment = state.attachment,
                 posting = state.posting,
                 onInput = onInput,
+                onEmoji = onEmoji,
+                onAttach = onAttach,
+                onAttachFailed = onAttachFailed,
                 onPost = onPost,
             )
         }
 }
 
 /**
- * The Pulse composer: 220 characters, a quick emoji row, and photo/voice
- * attachment slots that mirror the prototype's shared mediaPending pattern.
+ * The Pulse composer.
+ *
+ * 220 characters, an emoji row that inserts at the caret, and attachment
+ * buttons that open the real photo picker and the real microphone. Nothing here
+ * reports success it did not have: if the picker is dismissed or the recorder
+ * refuses, no chip appears and the member is told why.
  */
 @Composable
 private fun PulseComposer(
-    input: String,
+    input: androidx.compose.ui.text.input.TextFieldValue,
+    attachment: PulseAttachment?,
     posting: Boolean,
-    onInput: (String) -> Unit,
+    onInput: (androidx.compose.ui.text.input.TextFieldValue) -> Unit,
+    onEmoji: (String) -> Unit,
+    onAttach: (PulseAttachment?) -> Unit,
+    onAttachFailed: (String) -> Unit,
     onPost: () -> Unit,
 ) {
-    var attachment by remember { mutableStateOf<String?>(null) }
-    val remaining = PulseViewModel.PULSE_MAX_CHARS - input.length
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val remaining = PulseViewModel.PULSE_MAX_CHARS - input.text.length
+
+    // Android's own photo picker: no storage permission, and it hands back a
+    // uri only when something was actually chosen.
+    val pickPhoto = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia(),
+    ) { uri ->
+        if (uri != null) onAttach(PulseAttachment.Photo(uri.toString()))
+    }
+
+    val recorder = remember { VoiceRecorder(context) }
+    var recording by remember { mutableStateOf(false) }
+    var elapsed by remember { mutableStateOf(0) }
+
+    val askForMic = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) {
+            if (recorder.start()) {
+                elapsed = 0
+                recording = true
+            } else {
+                onAttachFailed("Couldn't start recording — the microphone is busy.")
+            }
+        } else {
+            onAttachFailed("Voice notes need microphone access.")
+        }
+    }
+
+    // Tick while recording so the chip shows real elapsed time.
+    androidx.compose.runtime.LaunchedEffect(recording) {
+        while (recording) {
+            kotlinx.coroutines.delay(1000)
+            elapsed += 1
+        }
+    }
+
+    // Never leave the microphone open if the screen goes away mid-recording.
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        onDispose { recorder.cancel() }
+    }
 
     Column(
         modifier = Modifier
@@ -297,21 +411,80 @@ private fun PulseComposer(
             .padding(horizontal = FloorTheme.spacing.gutter, vertical = 10.dp),
     ) {
         if (attachment != null) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                com.thefloor.app.core.designsystem.components.FloorBadge(
-                    attachment!!,
-                    tone = com.thefloor.app.core.designsystem.components.BadgeTone.TEAL,
+            Row(
+                modifier = Modifier.padding(bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                when (attachment) {
+                    is PulseAttachment.Photo -> coil.compose.AsyncImage(
+                        model = attachment.url,
+                        contentDescription = "Attached photo",
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(10.dp)),
+                    )
+                    is PulseAttachment.Voice -> Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(FloorTheme.colors.tealSoft),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            Icons.Filled.Mic,
+                            contentDescription = null,
+                            tint = FloorTheme.colors.teal,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
+                }
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    attachment.label,
+                    style = FloorTheme.typography.body,
+                    color = FloorTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f),
                 )
-                IconButton(onClick = { attachment = null }, modifier = Modifier.size(28.dp)) {
+                IconButton(onClick = { onAttach(null) }, modifier = Modifier.size(32.dp)) {
                     Icon(
                         Icons.Filled.Close,
                         contentDescription = "Remove attachment",
                         tint = FloorTheme.colors.textMuted,
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(18.dp),
                     )
                 }
             }
-            Spacer(Modifier.height(6.dp))
+        }
+
+        if (recording) {
+            Row(
+                modifier = Modifier.padding(bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                com.thefloor.app.core.designsystem.components.FloorLiveDot(
+                    color = FloorTheme.colors.coral,
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Recording · %d:%02d".format(elapsed / 60, elapsed % 60),
+                    style = FloorTheme.typography.mono,
+                    color = FloorTheme.colors.coral,
+                    modifier = Modifier.weight(1f),
+                )
+                com.thefloor.app.core.designsystem.components.FloorPillButton(
+                    text = "Stop",
+                    onClick = {
+                        recording = false
+                        val note = recorder.stop()
+                        if (note != null) {
+                            onAttach(note)
+                        } else {
+                            onAttachFailed("Nothing was recorded.")
+                        }
+                    },
+                )
+            }
         }
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -321,7 +494,7 @@ private fun PulseComposer(
                     style = FloorTheme.typography.bodyL,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable { onInput(input + e) }
+                        .clickable { onEmoji(e) }
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                 )
             }
@@ -333,6 +506,7 @@ private fun PulseComposer(
                 value = input,
                 onValueChange = onInput,
                 label = "What's happening?",
+                singleLine = false,
                 modifier = Modifier.weight(1f),
             )
             Spacer(Modifier.width(8.dp))
@@ -340,7 +514,7 @@ private fun PulseComposer(
                 text = "Post",
                 onClick = onPost,
                 loading = posting,
-                enabled = input.isNotBlank(),
+                enabled = input.text.isNotBlank() || attachment != null,
             )
         }
         Row(
@@ -348,7 +522,17 @@ private fun PulseComposer(
             modifier = Modifier.fillMaxWidth().padding(top = 2.dp, end = 64.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = { attachment = "Photo attached" }, modifier = Modifier.size(34.dp)) {
+            IconButton(
+                onClick = {
+                    pickPhoto.launch(
+                        androidx.activity.result.PickVisualMediaRequest(
+                            androidx.activity.result.contract.ActivityResultContracts
+                                .PickVisualMedia.ImageOnly,
+                        ),
+                    )
+                },
+                modifier = Modifier.size(34.dp),
+            ) {
                 Icon(
                     Icons.Filled.CameraAlt,
                     contentDescription = "Attach a photo",
@@ -356,11 +540,22 @@ private fun PulseComposer(
                     modifier = Modifier.size(19.dp),
                 )
             }
-            IconButton(onClick = { attachment = "Voice note attached" }, modifier = Modifier.size(34.dp)) {
+            IconButton(
+                onClick = {
+                    if (recording) {
+                        recording = false
+                        val note = recorder.stop()
+                        if (note != null) onAttach(note) else onAttachFailed("Nothing was recorded.")
+                    } else {
+                        askForMic.launch(android.Manifest.permission.RECORD_AUDIO)
+                    }
+                },
+                modifier = Modifier.size(34.dp),
+            ) {
                 Icon(
                     Icons.Filled.Mic,
-                    contentDescription = "Record a voice note",
-                    tint = FloorTheme.colors.textMuted,
+                    contentDescription = if (recording) "Stop recording" else "Record a voice note",
+                    tint = if (recording) FloorTheme.colors.coral else FloorTheme.colors.textMuted,
                     modifier = Modifier.size(19.dp),
                 )
             }
@@ -412,8 +607,40 @@ private fun PulseCard(
                 )
             }
         }
-        Spacer(Modifier.height(10.dp))
-        Text(pulse.body, style = FloorTheme.typography.body, color = FloorTheme.colors.textPrimary)
+        if (pulse.body.isNotBlank()) {
+            Spacer(Modifier.height(10.dp))
+            Text(pulse.body, style = FloorTheme.typography.body, color = FloorTheme.colors.textPrimary)
+        }
+        if (pulse.mediaUrl != null) {
+            Spacer(Modifier.height(12.dp))
+            when (pulse.mediaType) {
+                "photo" -> coil.compose.AsyncImage(
+                    model = pulse.mediaUrl,
+                    contentDescription = null,
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(190.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                )
+                else -> Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(FloorTheme.colors.tealSoft)
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        Icons.Filled.Mic,
+                        contentDescription = null,
+                        tint = FloorTheme.colors.teal,
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text("Voice note", style = FloorTheme.typography.monoTag, color = FloorTheme.colors.teal)
+                }
+            }
+        }
         Spacer(Modifier.height(10.dp))
         val view = LocalView.current
         val heartScale by animateFloatAsState(

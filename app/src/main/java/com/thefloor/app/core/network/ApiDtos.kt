@@ -203,6 +203,8 @@ data class PulseDto(
     val authorId: String = "",
     val authorName: String = "",
     val body: String = "",
+    val mediaUrl: String? = null,
+    val mediaType: String? = null,
     val likeCount: Int = 0,
     val liked: Boolean = false,
     val createdAt: String = "",
@@ -212,7 +214,11 @@ data class PulseDto(
 data class PulsePageDto(val items: List<PulseDto> = emptyList(), val nextCursor: String? = null)
 
 @Serializable
-data class CreatePulseRequestDto(val body: String)
+data class CreatePulseRequestDto(
+    val body: String,
+    val mediaUrl: String? = null,
+    val mediaType: String? = null,
+)
 
 @Serializable
 data class ReactionRequestDto(val kind: String)

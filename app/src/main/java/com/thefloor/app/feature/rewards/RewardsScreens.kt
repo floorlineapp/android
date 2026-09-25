@@ -89,6 +89,7 @@ class RewardsViewModel @Inject constructor(
 fun RewardsScreen(
     onBack: () -> Unit,
     onOpenTransactions: () -> Unit,
+    onOpenPointsRules: () -> Unit,
     onNavigate: (String) -> Unit,
     viewModel: RewardsViewModel = hiltViewModel(),
 ) {
@@ -112,6 +113,7 @@ fun RewardsScreen(
                 transactions = state.transactions,
                 modifier = Modifier.padding(padding),
                 onOpenTransactions = onOpenTransactions,
+                onOpenPointsRules = onOpenPointsRules,
                 onNavigate = onNavigate,
             )
         }
@@ -144,6 +146,7 @@ internal fun RewardsBody(
     transactions: List<RewardTransaction>,
     modifier: Modifier = Modifier,
     onOpenTransactions: () -> Unit = {},
+    onOpenPointsRules: () -> Unit = {},
     onNavigate: (String) -> Unit = {},
 ) {
     val earned = transactions.filter { it.deltaCredits > 0 }.sumOf { it.deltaCredits }
@@ -165,7 +168,9 @@ internal fun RewardsBody(
                 title = "Good things should feel good — and make sense.",
                 subtitle = "Earn Floor Points for verified participation across The Floor. Every point has a source, a timestamp and a transaction record, so you always know why your balance changed.",
                 actions = {
-                    FloorPillButton("How points work", onClick = onOpenTransactions)
+                    // Two buttons, two destinations. They used to land in the
+                    // same place, which left the rules with nowhere to live.
+                    FloorPillButton("How points work", onClick = onOpenPointsRules)
                     FloorPillButton("Full history", onClick = onOpenTransactions, primary = false)
                 },
             )

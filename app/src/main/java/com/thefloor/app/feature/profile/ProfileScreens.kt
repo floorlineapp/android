@@ -72,6 +72,8 @@ data class ProfileUiState(
     val saving: Boolean = false,
     val savedMessage: String? = null,
     val floorPoints: Int = 0,
+    /** One-shot: a save landed, so the editor should hand back to the profile. */
+    val justSaved: Boolean = false,
 )
 
 @HiltViewModel
@@ -105,11 +107,15 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             userRepository.updateProfile(update)
                 .onSuccess { profile ->
-                    state.update { it.copy(saving = false, profile = profile, savedMessage = "Saved") }
+                    state.update {
+                        it.copy(saving = false, profile = profile, savedMessage = "Saved", justSaved = true)
+                    }
                 }
                 .onError { e -> state.update { it.copy(saving = false, error = e.userMessage) } }
         }
     }
+
+    fun consumeJustSaved() = state.update { it.copy(justSaved = false, savedMessage = null) }
 
     fun setVisibility(field: String, level: String) {
         viewModelScope.launch {
@@ -443,6 +449,17 @@ fun EditProfileScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val profile = state.profile
+
+    // A save used to leave the member sitting in the editor, looking at fields
+    // that had just been reset from the server response — it read as if the
+    // screen had bounced back into edit mode. Saving now returns to the profile.
+    androidx.compose.runtime.LaunchedEffect(state.justSaved) {
+        if (state.justSaved) {
+            kotlinx.coroutines.delay(450) // let the "Saved" confirmation register
+            viewModel.consumeJustSaved()
+            onBack()
+        }
+    }
 
     var displayName by androidx.compose.runtime.remember(profile) {
         androidx.compose.runtime.mutableStateOf(profile?.displayName.orEmpty())

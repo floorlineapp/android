@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -214,6 +215,7 @@ fun FloorNavHost(
             RewardsScreen(
                 onBack = { navController.popBackStack() },
                 onOpenTransactions = { navController.navigate(Routes.REWARD_TRANSACTIONS) },
+                onOpenPointsRules = { navController.navigate(Routes.POINTS_RULES) },
                 onNavigate = { route -> navController.navigate(route) },
             )
         }
@@ -296,16 +298,51 @@ fun FloorNavHost(
             PulseScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.JOBS) { com.thefloor.app.feature.pages.JobsScreen(onBack = { navController.popBackStack() }) }
-        composable(Routes.ACADEMY) { com.thefloor.app.feature.pages.AcademyScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.ACADEMY) {
+            val vm: com.thefloor.app.feature.pages.AcademyViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+            val passport by vm.passport.collectAsStateWithLifecycle()
+            com.thefloor.app.feature.pages.AcademyScreen(
+                onBack = { navController.popBackStack() },
+                passport = passport,
+            )
+        }
         composable(Routes.MARKETPLACE) { com.thefloor.app.feature.pages.MarketplaceScreen(onBack = { navController.popBackStack() }) }
-        composable(Routes.INSIGHTS) { com.thefloor.app.feature.pages.InsightsScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.INSIGHTS) {
+            com.thefloor.app.feature.pages.InsightsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenRules = { navController.navigate(Routes.SPOTLIGHT_RULES) },
+                onOpenSubmit = { navController.navigate(Routes.SPOTLIGHT_SUBMIT) },
+                onOpenProfile = { navController.navigate(Routes.PROFILE) },
+                onOpenAcademy = { navController.navigate(Routes.ACADEMY) },
+            )
+        }
+        composable(Routes.SPOTLIGHT_RULES) {
+            com.thefloor.app.feature.spotlight.SpotlightRulesScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Routes.SPOTLIGHT_SUBMIT) {
+            com.thefloor.app.feature.spotlight.SubmitSpotlightScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Routes.RADIO_PASS) {
+            com.thefloor.app.feature.radio.RadioPassScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Routes.POINTS_RULES) {
+            com.thefloor.app.feature.rewards.PointsRulesScreen(
+                onBack = { navController.popBackStack() },
+                onOpenTransactions = { navController.navigate(Routes.REWARD_TRANSACTIONS) },
+            )
+        }
         composable(Routes.ABOUT) {
             com.thefloor.app.feature.pages.AboutScreen(
                 onBack = { navController.popBackStack() },
                 onOpenWellbeing = { navController.navigate(Routes.WELLBEING) },
             )
         }
-        composable(Routes.EVENTS) { com.thefloor.app.feature.pages.EventsScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.EVENTS) {
+            com.thefloor.app.feature.pages.EventsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenRadioPass = { navController.navigate(Routes.RADIO_PASS) },
+            )
+        }
         composable(Routes.RESOURCES) { com.thefloor.app.feature.pages.ResourcesScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.WELLBEING) { com.thefloor.app.feature.pages.WellbeingScreen(onBack = { navController.popBackStack() }) }
     }
