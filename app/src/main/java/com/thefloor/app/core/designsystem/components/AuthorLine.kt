@@ -55,18 +55,40 @@ fun FloorAuthorLine(
                     color = FloorTheme.colors.textPrimary,
                     maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                    // The name gives way before the badge does — a truncated
-                    // name still reads; a wrapped badge reads as broken.
-                    modifier = Modifier.weight(1f, fill = false),
                 )
-                if (!tier.isNullOrBlank() && tier != "Member") {
-                    Spacer(Modifier.width(7.dp))
-                    FloorBadge(tier, tone = tierTone(tier))
-                }
             }
-            if (!subtitle.isNullOrBlank()) {
-                Spacer(Modifier.height(2.dp))
-                Text(subtitle, style = FloorTheme.typography.caption, color = FloorTheme.colors.textMuted)
+            // Tier sits on its own line rather than competing with the name for
+            // width. Putting it beside the name meant either a wrapped badge or
+            // a truncated person — and a truncated name is the worse of the two.
+            val showTier = !tier.isNullOrBlank() && tier != "Member"
+            if (showTier || !subtitle.isNullOrBlank()) {
+                Spacer(Modifier.height(3.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (showTier) {
+                        Text(
+                            tier!!,
+                            style = FloorTheme.typography.monoTag,
+                            color = tierColor(tier),
+                            maxLines = 1,
+                        )
+                    }
+                    if (showTier && !subtitle.isNullOrBlank()) {
+                        Text(
+                            "  ·  ",
+                            style = FloorTheme.typography.caption,
+                            color = FloorTheme.colors.textMuted,
+                        )
+                    }
+                    if (!subtitle.isNullOrBlank()) {
+                        Text(
+                            subtitle,
+                            style = FloorTheme.typography.caption,
+                            color = FloorTheme.colors.textMuted,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        )
+                    }
+                }
             }
         }
         if (trailing != null) {
@@ -76,11 +98,11 @@ fun FloorAuthorLine(
     }
 }
 
-private fun tierTone(tier: String?): BadgeTone = when (tier) {
-    "Workplace Ambassador" -> BadgeTone.AMBER
-    "Floor Voice" -> BadgeTone.TEAL
-    "Recognised Member" -> BadgeTone.TEAL
-    else -> BadgeTone.NEUTRAL
+@Composable
+private fun tierColor(tier: String?): androidx.compose.ui.graphics.Color = when (tier) {
+    "Workplace Ambassador" -> FloorTheme.colors.amber
+    "Floor Voice", "Recognised Member" -> FloorTheme.colors.teal
+    else -> FloorTheme.colors.textMuted
 }
 
 private fun tierAccent(tier: String?): FloorAccent = when (tier) {
