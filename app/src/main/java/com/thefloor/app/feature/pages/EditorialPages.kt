@@ -61,6 +61,7 @@ import com.thefloor.app.core.designsystem.components.FloorProgressBar
 import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.core.common.onSuccess
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 /* ------------------------------------------------------------------ *
@@ -458,7 +459,7 @@ class AcademyViewModel @javax.inject.Inject constructor(
     val passport = kotlinx.coroutines.flow.MutableStateFlow(Passport())
 
     init {
-        androidx.lifecycle.viewModelScope.launch {
+        viewModelScope.launch {
             var points = 0
             rewardsRepository.summary().onSuccess { points = it.creditsBalance.toInt() }
             userRepository.me().onSuccess { profile ->
