@@ -606,11 +606,29 @@ class DemoBackend @Inject constructor() {
         ),
     )
 
+    // Named arguments throughout: PulseDto carries optional media in the middle
+    // of its parameter list, and positional calls silently shift when it grows.
     private fun seedPulses() = listOf(
-        PulseDto("x1", "u2", "Thabo N.", "Third escalation before 9am and the coffee machine is broken. Send help.", 24, false, ago(2)),
-        PulseDto("x2", DemoMode.USER_ID, "Naledi M.", "Just closed the longest call of my life. 74 minutes. We got there.", 61, true, ago(5)),
-        PulseDto("x3", "u3", "Grace A.", "Night shift crew — what are we listening to tonight?", 12, false, ago(9)),
-        PulseDto("x4", "u7", "Owen K.", "Passed my QA review with 96%. Six months ago I was at 71%.", 88, false, ago(20)),
+        PulseDto(
+            id = "x1", authorId = "u2", authorName = "Thabo N.",
+            body = "Third escalation before 9am and the coffee machine is broken. Send help.",
+            likeCount = 24, liked = false, createdAt = ago(2),
+        ),
+        PulseDto(
+            id = "x2", authorId = DemoMode.USER_ID, authorName = "Naledi M.",
+            body = "Just closed the longest call of my life. 74 minutes. We got there.",
+            likeCount = 61, liked = true, createdAt = ago(5),
+        ),
+        PulseDto(
+            id = "x3", authorId = "u3", authorName = "Grace A.",
+            body = "Night shift crew — what are we listening to tonight?",
+            likeCount = 12, liked = false, createdAt = ago(9),
+        ),
+        PulseDto(
+            id = "x4", authorId = "u7", authorName = "Owen K.",
+            body = "Passed my QA review with 96%. Six months ago I was at 71%.",
+            likeCount = 88, liked = false, createdAt = ago(20),
+        ),
     )
 
     private fun seedNotifications() = listOf(

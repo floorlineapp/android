@@ -367,9 +367,21 @@ private val fakePulse = PulseUiState(
     loading = false,
     myUserId = "u1",
     pulses = listOf(
-        Pulse("x1", "u2", "Thabo N.", "Third escalation before 9am and the coffee machine is broken. Send help.", 24, false, "2026-09-09T07:00:00Z"),
-        Pulse("x1b", "u1", "Naledi M.", "Just closed the longest call of my life. 74 minutes. We got there.", 61, true, "2026-09-09T06:10:00Z"),
-        Pulse("x2", "u3", "Grace A.", "Night shift crew — what are we listening to tonight?", 12, false, "2026-09-09T05:30:00Z"),
+        Pulse(
+            id = "x1", authorId = "u2", authorName = "Thabo N.",
+            body = "Third escalation before 9am and the coffee machine is broken. Send help.",
+            likeCount = 24, liked = false, createdAt = "2026-09-09T07:00:00Z",
+        ),
+        Pulse(
+            id = "x1b", authorId = "u1", authorName = "Naledi M.",
+            body = "Just closed the longest call of my life. 74 minutes. We got there.",
+            likeCount = 61, liked = true, createdAt = "2026-09-09T06:10:00Z",
+        ),
+        Pulse(
+            id = "x2", authorId = "u3", authorName = "Grace A.",
+            body = "Night shift crew — what are we listening to tonight?",
+            likeCount = 12, liked = false, createdAt = "2026-09-09T05:30:00Z",
+        ),
     ),
 )
 
