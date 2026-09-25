@@ -80,7 +80,13 @@ fun FloorBadge(
                 )
                 androidx.compose.foundation.layout.Spacer(Modifier.size(6.dp))
             }
-            Text(text, style = FloorTheme.typography.caption, color = fg)
+            Text(
+                text,
+                style = FloorTheme.typography.caption,
+                color = fg,
+                maxLines = 1,
+                softWrap = false,
+            )
         }
     }
 }

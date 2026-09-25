@@ -53,6 +53,11 @@ fun FloorAuthorLine(
                     name,
                     style = FloorTheme.typography.bodyStrong,
                     color = FloorTheme.colors.textPrimary,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    // The name gives way before the badge does — a truncated
+                    // name still reads; a wrapped badge reads as broken.
+                    modifier = Modifier.weight(1f, fill = false),
                 )
                 if (!tier.isNullOrBlank() && tier != "Member") {
                     Spacer(Modifier.width(7.dp))

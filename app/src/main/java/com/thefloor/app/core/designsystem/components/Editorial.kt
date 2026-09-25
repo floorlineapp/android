@@ -164,19 +164,21 @@ fun FloorHero(
                         ),
                     )
                 }
-                .padding(horizontal = 22.dp, vertical = 26.dp),
+                // Tightened from 26dp. Fifteen pages open with one of these,
+                // so every dp here is a dp of content pushed below the fold.
+                .padding(horizontal = 20.dp, vertical = 20.dp),
         ) {
             if (eyebrow != null) {
                 FloorEyebrow(eyebrow, accent = eyebrowAccent)
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(9.dp))
             }
             Text(title, style = FloorTheme.typography.headline, color = FloorTheme.colors.textPrimary)
             if (subtitle != null) {
-                Spacer(Modifier.height(10.dp))
-                Text(subtitle, style = FloorTheme.typography.bodyL, color = FloorTheme.colors.textSecondary)
+                Spacer(Modifier.height(8.dp))
+                Text(subtitle, style = FloorTheme.typography.body, color = FloorTheme.colors.textSecondary)
             }
             if (actions != null) {
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(16.dp))
                 // Wraps: a hero with four actions overflowed a single Row and
                 // left a tall empty band where the buttons should have been.
                 androidx.compose.foundation.layout.FlowRow(
