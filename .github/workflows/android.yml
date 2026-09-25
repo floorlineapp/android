@@ -37,6 +37,19 @@ jobs:
           set -o pipefail
           ./gradlew assembleDebug --stacktrace 2>&1 | tee -a build.log
 
+      # Release turns R8 on. Nothing else in CI exercises it, so shrinking that
+      # strips a Retrofit or serialization class would only surface after ship.
+      - name: Assemble release APK (exercises R8)
+        run: |
+          set -o pipefail
+          ./gradlew assembleRelease --stacktrace 2>&1 | tee -a build.log
+
+      - name: Android Lint
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ./gradlew lintDebug --stacktrace 2>&1 | tee -a build.log
+
       # Diagnostics travel back as annotations, which are readable via the API
       # even where artifact downloads are not.
       - name: Collect and report screenshots
