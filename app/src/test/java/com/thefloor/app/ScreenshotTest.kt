@@ -191,6 +191,7 @@ private val fakeWalker = WalkerState(
         WalkerMessage(4, WalkerSender.AGENT, "This conversation is now with the Walker team. We'll come back to you here — you'll get a notification when someone replies. Support runs across timezones, so an answer may not be instant."),
     ),
     status = WalkerStatus.ESCALATED,
+    reference = "WLK-4821",
 )
 
 /** Real Home content, fed representative data. */
@@ -245,6 +246,7 @@ private val fakeHome = HomeContent(
     trendingPosts = listOf(
         Post(
             id = "p1", authorId = "u1", authorName = "Mika R.", authorLevel = CareerLevel.TEAM_LEADER,
+            authorTier = "Workplace Ambassador", authorCountry = "ZA",
             categoryId = "c1", categoryName = "The Job", communityId = "za",
             body = "Should agents be penalised for AHT when the customer genuinely needs more time?",
             commentCount = 118, reactionCount = 296, myReaction = null, saved = false,
@@ -252,6 +254,7 @@ private val fakeHome = HomeContent(
         ),
         Post(
             id = "p2", authorId = "u2", authorName = "Thabo N.", authorLevel = CareerLevel.SENIOR_AGENT,
+            authorTier = "Floor Voice", authorCountry = "ZA",
             categoryId = "c2", categoryName = "Leadership", communityId = "za",
             body = "When does coaching become micromanagement? Where should a Team Leader draw the line?",
             commentCount = 76, reactionCount = 184, myReaction = null, saved = false,
@@ -315,16 +318,24 @@ private val fakeTalk = TalkFeedUiState(
         TalkCategory("c4", "ai", "AI & The Future"),
     ),
     posts = listOf(
-        Post("p1", "u1", "Mika R.", CareerLevel.TEAM_LEADER, "c1", "The Job", "za",
-            "Should agents be penalised for AHT when the customer genuinely needs more time?",
-            118, 296, null, false, "2026-09-08T10:00:00Z"),
-        Post("p2", "u2", "Priya S.", CareerLevel.SME, "c3", "Pay & Progression", "ph",
-            "Are BPO salaries keeping pace with what companies now expect agents to handle?",
-            129, 341, null, false, "2026-09-07T10:00:00Z"),
-        Post("p3", "u3", "Owen K.", CareerLevel.AGENT, "c4", "AI & The Future", "za",
-            "AI quality scoring is here. Should an algorithm be allowed to affect an agent bonus?",
-            143, 267, null, false, "2026-09-06T10:00:00Z"),
+        fakePost("p1", "Mika R.", CareerLevel.TEAM_LEADER, "Workplace Ambassador", "ZA", "c1", "The Job",
+            "Should agents be penalised for AHT when the customer genuinely needs more time?", 118, 296),
+        fakePost("p2", "Priya S.", CareerLevel.SME, "Floor Voice", "IN", "c3", "Pay & Progression",
+            "Are BPO salaries keeping pace with what companies now expect agents to handle?", 129, 341),
+        fakePost("p3", "Owen K.", CareerLevel.AGENT, "Recognised Member", "PH", "c4", "AI & The Future",
+            "AI quality scoring is here. Should an algorithm be allowed to affect an agent bonus?", 143, 267),
     ),
+)
+
+private fun fakePost(
+    id: String, author: String, level: CareerLevel, tier: String, country: String,
+    categoryId: String, categoryName: String, body: String, comments: Int, reactions: Int,
+) = Post(
+    id = id, authorId = "u$id", authorName = author, authorLevel = level,
+    authorTier = tier, authorCountry = country,
+    categoryId = categoryId, categoryName = categoryName, communityId = "za",
+    body = body, commentCount = comments, reactionCount = reactions,
+    myReaction = null, saved = false, createdAt = "2026-09-08T10:00:00Z",
 )
 
 private val fakeDiscover = DiscoverUiState.Ready(
@@ -369,16 +380,19 @@ private val fakePulse = PulseUiState(
     pulses = listOf(
         Pulse(
             id = "x1", authorId = "u2", authorName = "Thabo N.",
+            authorTier = "Floor Voice", authorCountry = "ZA",
             body = "Third escalation before 9am and the coffee machine is broken. Send help.",
             likeCount = 24, liked = false, createdAt = "2026-09-09T07:00:00Z",
         ),
         Pulse(
             id = "x1b", authorId = "u1", authorName = "Naledi M.",
+            authorTier = "Floor Voice", authorCountry = "ZA",
             body = "Just closed the longest call of my life. 74 minutes. We got there.",
             likeCount = 61, liked = true, createdAt = "2026-09-09T06:10:00Z",
         ),
         Pulse(
             id = "x2", authorId = "u3", authorName = "Grace A.",
+            authorTier = "Contributor", authorCountry = "KE",
             body = "Night shift crew — what are we listening to tonight?",
             likeCount = 12, liked = false, createdAt = "2026-09-09T05:30:00Z",
         ),
