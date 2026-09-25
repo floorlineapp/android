@@ -35,17 +35,18 @@ import com.thefloor.app.core.datastore.ThemeStore
 import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.FloorDestructiveButton
 import com.thefloor.app.core.designsystem.components.FloorListItem
+import com.thefloor.app.core.designsystem.components.FloorPrimaryButton
 import com.thefloor.app.core.designsystem.components.FloorSecondaryButton
 import com.thefloor.app.core.designsystem.components.FloorTextField
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -216,7 +217,7 @@ fun DeleteAccountScreen(
                     color = FloorTheme.colors.textPrimary,
                 )
                 Spacer(Modifier.height(24.dp))
-                com.thefloor.app.core.designsystem.components.FloorPrimaryButton(
+                FloorPrimaryButton(
                     text = "Got it — log me out",
                     onClick = viewModel::acknowledgeDeletion,
                     modifier = Modifier.fillMaxWidth(),

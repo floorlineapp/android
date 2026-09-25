@@ -1,17 +1,18 @@
 package com.thefloor.app.feature.talk
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,8 +26,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,12 +42,16 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import com.thefloor.app.core.common.TimeAgo
 import com.thefloor.app.core.common.onError
 import com.thefloor.app.core.common.onSuccess
 import com.thefloor.app.core.data.TalkRepository
 import com.thefloor.app.core.data.UserRepository
+import com.thefloor.app.core.datastore.SessionStore
 import com.thefloor.app.core.designsystem.FloorTheme
+import com.thefloor.app.core.designsystem.components.FloorAuthorLine
 import com.thefloor.app.core.designsystem.components.FloorErrorState
+import com.thefloor.app.core.designsystem.components.FloorListItem
 import com.thefloor.app.core.designsystem.components.FloorLoading
 import com.thefloor.app.core.designsystem.components.FloorPrimaryButton
 import com.thefloor.app.core.designsystem.components.FloorSecondaryButton
@@ -53,12 +60,12 @@ import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.core.model.Comment
 import com.thefloor.app.core.model.Post
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class Participant(val userId: String, val name: String)
 
@@ -93,7 +100,7 @@ class PostDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val talkRepository: TalkRepository,
     private val userRepository: UserRepository,
-    private val sessionStore: com.thefloor.app.core.datastore.SessionStore,
+    private val sessionStore: SessionStore,
 ) : ViewModel() {
     private val postId: String = savedStateHandle.get<String>("postId").orEmpty()
 
@@ -253,7 +260,7 @@ fun PostDetailScreen(
     var reportSheetOpen by remember { mutableStateOf(false) }
     var tagMenuOpen by remember { mutableStateOf(false) }
 
-    androidx.compose.runtime.LaunchedEffect(state.postDeleted) {
+    LaunchedEffect(state.postDeleted) {
         if (state.postDeleted) onBack()
     }
 
@@ -342,11 +349,11 @@ fun PostDetailScreen(
                             items(state.comments, key = { it.id }) { comment ->
                                 Column {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        com.thefloor.app.core.designsystem.components.FloorAuthorLine(
+                                        FloorAuthorLine(
                                             name = comment.authorName,
                                             tier = comment.authorTier,
                                             countryCode = comment.authorCountry,
-                                            subtitle = com.thefloor.app.core.common.TimeAgo.format(comment.createdAt),
+                                            subtitle = TimeAgo.format(comment.createdAt),
                                             avatarSize = 28.dp,
                                             modifier = Modifier.weight(1f),
                                         )
@@ -374,7 +381,7 @@ fun PostDetailScreen(
                             .padding(horizontal = FloorTheme.spacing.gutter, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        androidx.compose.foundation.layout.Box {
+                        Box {
                             IconButton(
                                 onClick = { tagMenuOpen = true },
                                 enabled = state.participants.isNotEmpty(),
@@ -427,7 +434,7 @@ fun PostDetailScreen(
                     Text("Why are you reporting this?", style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
                     Spacer(Modifier.height(8.dp))
                     reportReasons.forEach { (code, label) ->
-                        com.thefloor.app.core.designsystem.components.FloorListItem(
+                        FloorListItem(
                             title = label,
                             onClick = {
                                 reportSheetOpen = false
@@ -441,11 +448,11 @@ fun PostDetailScreen(
         }
 
         state.actionMessage?.let { message ->
-            androidx.compose.runtime.LaunchedEffect(message) {
+            LaunchedEffect(message) {
                 kotlinx.coroutines.delay(2500)
                 viewModel.clearActionMessage()
             }
-            androidx.compose.material3.Snackbar(
+            Snackbar(
                 modifier = Modifier.padding(16.dp),
                 containerColor = FloorTheme.colors.surfaceAlt,
                 contentColor = FloorTheme.colors.textPrimary,

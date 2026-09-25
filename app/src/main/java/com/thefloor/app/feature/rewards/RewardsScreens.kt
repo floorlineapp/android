@@ -12,12 +12,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -28,8 +33,10 @@ import com.thefloor.app.core.common.onError
 import com.thefloor.app.core.common.onSuccess
 import com.thefloor.app.core.data.RewardsRepository
 import com.thefloor.app.core.designsystem.FloorTheme
+import com.thefloor.app.core.designsystem.floorListPadding
 import com.thefloor.app.core.designsystem.components.BadgeTone
 import com.thefloor.app.core.designsystem.components.FloorAccent
+import com.thefloor.app.core.designsystem.components.FloorAnimatedNumber
 import com.thefloor.app.core.designsystem.components.FloorBadge
 import com.thefloor.app.core.designsystem.components.FloorCard
 import com.thefloor.app.core.designsystem.components.FloorEmptyState
@@ -43,11 +50,13 @@ import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.core.designsystem.components.SkeletonList
 import com.thefloor.app.core.model.RewardTransaction
 import com.thefloor.app.core.model.RewardsSummary
+import com.thefloor.app.domain.DeepLinkParser
+import com.thefloor.app.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class RewardsUiState(
     val loading: Boolean = true,
@@ -93,7 +102,7 @@ fun RewardsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    androidx.compose.runtime.LaunchedEffect(Unit) { viewModel.loadTransactions() }
+    LaunchedEffect(Unit) { viewModel.loadTransactions() }
 
     Scaffold(
         containerColor = FloorTheme.colors.ink,
@@ -151,12 +160,7 @@ internal fun RewardsBody(
 
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(
-                        start = FloorTheme.spacing.gutter,
-                        end = FloorTheme.spacing.gutter,
-                        top = FloorTheme.spacing.gutter,
-                        bottom = 96.dp,
-                    ),
+        contentPadding = floorListPadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
@@ -195,7 +199,7 @@ internal fun RewardsBody(
             FloorCard(modifier = Modifier.fillMaxWidth()) {
                 FloorEyebrow("Available balance", accent = FloorAccent.FAINT)
                 Spacer(Modifier.height(6.dp))
-                com.thefloor.app.core.designsystem.components.FloorAnimatedNumber(
+                FloorAnimatedNumber(
                     value = summary.creditsBalance,
                 )
                 Text("Floor Points", style = FloorTheme.typography.caption, color = FloorTheme.colors.textSecondary)
@@ -216,16 +220,16 @@ internal fun RewardsBody(
         }
         items(summary.waysToEarn, key = { it.title }) { way ->
             FloorCard(onClick = {
-                val target = com.thefloor.app.domain.DeepLinkParser.parse(way.deepLink)
+                val target = DeepLinkParser.parse(way.deepLink)
                 val route = when (target) {
-                    com.thefloor.app.domain.DeepLinkParser.Target.ProfileEdit -> com.thefloor.app.navigation.Routes.PROFILE_EDIT
-                    com.thefloor.app.domain.DeepLinkParser.Target.FloorTab -> com.thefloor.app.navigation.Routes.FLOOR
-                    com.thefloor.app.domain.DeepLinkParser.Target.TalkTab -> com.thefloor.app.navigation.Routes.TALK
-                    com.thefloor.app.domain.DeepLinkParser.Target.Academy -> com.thefloor.app.navigation.Routes.ACADEMY
-                    com.thefloor.app.domain.DeepLinkParser.Target.Insights -> com.thefloor.app.navigation.Routes.INSIGHTS
-                    com.thefloor.app.domain.DeepLinkParser.Target.Events -> com.thefloor.app.navigation.Routes.EVENTS
-                    com.thefloor.app.domain.DeepLinkParser.Target.Rewards -> null
-                    else -> com.thefloor.app.navigation.Routes.INVITE_EARN
+                    DeepLinkParser.Target.ProfileEdit -> Routes.PROFILE_EDIT
+                    DeepLinkParser.Target.FloorTab -> Routes.FLOOR
+                    DeepLinkParser.Target.TalkTab -> Routes.TALK
+                    DeepLinkParser.Target.Academy -> Routes.ACADEMY
+                    DeepLinkParser.Target.Insights -> Routes.INSIGHTS
+                    DeepLinkParser.Target.Events -> Routes.EVENTS
+                    DeepLinkParser.Target.Rewards -> null
+                    else -> Routes.INVITE_EARN
                 }
                 if (route != null) onNavigate(route)
             }) {
@@ -279,29 +283,29 @@ internal fun RewardsBody(
             )
         }
         items(games, key = { it.name }) { g ->
-            androidx.compose.material3.Surface(
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
-                color = androidx.compose.ui.graphics.Color.Transparent,
+                shape = RoundedCornerShape(14.dp),
+                color = Color.Transparent,
             ) {
                 Column(
                     modifier = Modifier
                         .background(
-                            androidx.compose.ui.graphics.Brush.linearGradient(
+                            Brush.linearGradient(
                                 listOf(
-                                    androidx.compose.ui.graphics.Color(g.from),
-                                    androidx.compose.ui.graphics.Color(g.to),
+                                    Color(g.from),
+                                    Color(g.to),
                                 ),
                             ),
                         )
                         .padding(20.dp),
                 ) {
-                    Text(g.name, style = FloorTheme.typography.title, color = androidx.compose.ui.graphics.Color.White)
+                    Text(g.name, style = FloorTheme.typography.title, color = Color.White)
                     Spacer(Modifier.height(5.dp))
                     Text(
                         g.desc,
                         style = FloorTheme.typography.body,
-                        color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.88f),
+                        color = Color.White.copy(alpha = 0.88f),
                     )
                 }
             }
@@ -364,7 +368,7 @@ fun RewardTransactionsScreen(
     viewModel: RewardsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    androidx.compose.runtime.LaunchedEffect(Unit) { viewModel.loadTransactions() }
+    LaunchedEffect(Unit) { viewModel.loadTransactions() }
 
     Scaffold(
         containerColor = FloorTheme.colors.ink,

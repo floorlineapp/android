@@ -103,3 +103,13 @@ fun FloorTheme(
         )
     }
 }
+
+/** Standard list insets: gutter on three sides, clearance for the Walker button below. */
+@androidx.compose.runtime.Composable
+fun floorListPadding(top: androidx.compose.ui.unit.Dp = FloorTheme.spacing.gutter) =
+    androidx.compose.foundation.layout.PaddingValues(
+        start = FloorTheme.spacing.gutter,
+        end = FloorTheme.spacing.gutter,
+        top = top,
+        bottom = 96.dp,
+    )

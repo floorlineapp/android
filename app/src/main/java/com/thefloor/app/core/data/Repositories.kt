@@ -3,8 +3,6 @@ package com.thefloor.app.core.data
 import com.thefloor.app.core.common.AppResult
 import com.thefloor.app.core.common.map
 import com.thefloor.app.core.common.onSuccess
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import com.thefloor.app.core.database.CachedCommunityEntity
 import com.thefloor.app.core.database.CachedNotificationEntity
 import com.thefloor.app.core.database.CachedPostEntity
@@ -31,6 +29,8 @@ import com.thefloor.app.core.model.UserProfile
 import com.thefloor.app.core.model.WayToEarn
 import com.thefloor.app.core.network.CreateCommentRequestDto
 import com.thefloor.app.core.network.CreatePostRequestDto
+import com.thefloor.app.core.network.CreatePulseRequestDto
+import com.thefloor.app.core.network.CreateSpotlightRequestDto
 import com.thefloor.app.core.network.DeleteAccountRequestDto
 import com.thefloor.app.core.network.FloorApi
 import com.thefloor.app.core.network.PrefsDto
@@ -38,12 +38,17 @@ import com.thefloor.app.core.network.PrivacyRequestDto
 import com.thefloor.app.core.network.ReactionRequestDto
 import com.thefloor.app.core.network.ReportRequestDto
 import com.thefloor.app.core.network.ShareEventDto
+import com.thefloor.app.core.network.SpotlightSubmissionDto
+import com.thefloor.app.core.network.SupportConversationDto
+import com.thefloor.app.core.network.SupportSendRequestDto
 import com.thefloor.app.core.network.UpdateProfileRequestDto
 import com.thefloor.app.core.network.safeCall
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 @Singleton
 class UserRepository @Inject constructor(private val api: FloorApi) {
@@ -68,7 +73,7 @@ class UserRepository @Inject constructor(private val api: FloorApi) {
 /** Workplace Spotlight submissions — the record behind the submit screen. */
 @Singleton
 class SpotlightRepository @Inject constructor(private val api: FloorApi) {
-    suspend fun submissions(): AppResult<List<com.thefloor.app.core.network.SpotlightSubmissionDto>> =
+    suspend fun submissions(): AppResult<List<SpotlightSubmissionDto>> =
         safeCall { api.spotlightSubmissions() }.map { it.items }
 
     suspend fun submit(
@@ -77,9 +82,9 @@ class SpotlightRepository @Inject constructor(private val api: FloorApi) {
         story: String,
         proofText: String,
         mediaUrl: String?,
-    ): AppResult<com.thefloor.app.core.network.SpotlightSubmissionDto> = safeCall {
+    ): AppResult<SpotlightSubmissionDto> = safeCall {
         api.createSpotlightSubmission(
-            com.thefloor.app.core.network.CreateSpotlightRequestDto(
+            CreateSpotlightRequestDto(
                 category = category,
                 title = title,
                 story = story,
@@ -93,15 +98,15 @@ class SpotlightRepository @Inject constructor(private val api: FloorApi) {
 /** Walker's conversation record. */
 @Singleton
 class SupportRepository @Inject constructor(private val api: FloorApi) {
-    suspend fun conversation(): AppResult<com.thefloor.app.core.network.SupportConversationDto> =
+    suspend fun conversation(): AppResult<SupportConversationDto> =
         safeCall { api.supportConversation() }
 
     suspend fun send(
         body: String,
         escalate: Boolean = false,
-    ): AppResult<com.thefloor.app.core.network.SupportConversationDto> = safeCall {
+    ): AppResult<SupportConversationDto> = safeCall {
         api.sendSupportMessage(
-            com.thefloor.app.core.network.SupportSendRequestDto(body, escalate),
+            SupportSendRequestDto(body, escalate),
         )
     }
 }
@@ -383,7 +388,7 @@ class PulseRepository @Inject constructor(private val api: FloorApi) {
         mediaType: String? = null,
     ): AppResult<Pulse> = safeCall {
         api.createPulse(
-            com.thefloor.app.core.network.CreatePulseRequestDto(body, mediaUrl, mediaType),
+            CreatePulseRequestDto(body, mediaUrl, mediaType),
         )
     }.map { it.toDomain() }
 

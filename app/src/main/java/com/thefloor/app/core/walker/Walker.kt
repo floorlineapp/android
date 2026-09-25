@@ -15,12 +15,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.SupportAgent
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
@@ -40,19 +42,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import com.thefloor.app.core.designsystem.FloorTheme
-import com.thefloor.app.core.designsystem.components.FloorAccent
-import com.thefloor.app.core.designsystem.components.FloorEyebrow
-import com.thefloor.app.core.designsystem.components.FloorPillButton
 import com.thefloor.app.core.common.onError
 import com.thefloor.app.core.common.onSuccess
+import com.thefloor.app.core.data.SupportRepository
+import com.thefloor.app.core.designsystem.FloorTheme
+import com.thefloor.app.core.designsystem.components.FloorAccent
 import com.thefloor.app.core.designsystem.components.FloorChip
+import com.thefloor.app.core.designsystem.components.FloorEyebrow
+import com.thefloor.app.core.designsystem.components.FloorPillButton
 import com.thefloor.app.core.designsystem.components.FloorTextField
+import com.thefloor.app.core.network.SupportConversationDto
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /** Walker — the global support layer. */
 enum class WalkerSender { USER, AI, AGENT }
@@ -86,14 +90,14 @@ val WALKER_TOPICS = listOf(
 /** Lets any screen raise Walker without owning it. */
 @javax.inject.Singleton
 class WalkerBus @Inject constructor() {
-    val open = MutableStateFlow(false)
-    fun open() { open.value = true }
-    fun close() { open.value = false }
+    val isOpen = MutableStateFlow(false)
+    fun show() { isOpen.value = true }
+    fun hide() { isOpen.value = false }
 }
 
 @HiltViewModel
 class WalkerViewModel @Inject constructor(
-    private val support: com.thefloor.app.core.data.SupportRepository,
+    private val support: SupportRepository,
 ) : ViewModel() {
     val state = MutableStateFlow(WalkerState())
 
@@ -125,7 +129,7 @@ class WalkerViewModel @Inject constructor(
         }
     }
 
-    private fun apply(dto: com.thefloor.app.core.network.SupportConversationDto) {
+    private fun apply(dto: SupportConversationDto) {
         state.value = WalkerState(
             messages = dto.messages.mapIndexed { index, m ->
                 WalkerMessage(
@@ -171,7 +175,7 @@ fun WalkerFab(onClick: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WalkerSheet(
     onDismiss: () -> Unit,
@@ -266,7 +270,7 @@ internal fun WalkerConversation(
 
         if (state.messages.count { it.sender == WalkerSender.USER } < 2) {
             Spacer(Modifier.height(10.dp))
-            androidx.compose.foundation.lazy.LazyRow(
+            LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(WALKER_TOPICS) { topic ->

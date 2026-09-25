@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.thefloor.app.R
@@ -34,7 +35,7 @@ fun FloorLogoMark(modifier: Modifier = Modifier, size: Dp = 24.dp) {
 fun FloorWordmark(
     modifier: Modifier = Modifier,
     markSize: Dp = 22.dp,
-    fontSize: androidx.compose.ui.unit.TextUnit = 18.sp,
+    fontSize: TextUnit = 18.sp,
 ) {
     Row(
         modifier = modifier,

@@ -23,10 +23,12 @@ import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material.icons.filled.WorkOutline
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -44,6 +46,7 @@ import com.thefloor.app.core.common.onSuccess
 import com.thefloor.app.core.data.HomeRepository
 import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.FloorAccent
+import com.thefloor.app.core.designsystem.components.FloorAvatar
 import com.thefloor.app.core.designsystem.components.FloorCard
 import com.thefloor.app.core.designsystem.components.FloorErrorState
 import com.thefloor.app.core.designsystem.components.FloorEyebrow
@@ -55,19 +58,19 @@ import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTile
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.core.designsystem.components.FloorWordmark
-import com.thefloor.app.core.designsystem.components.ThemeToggleAction
 import com.thefloor.app.core.designsystem.components.OfflineBanner
 import com.thefloor.app.core.designsystem.components.SkeletonList
+import com.thefloor.app.core.designsystem.components.ThemeToggleAction
 import com.thefloor.app.core.model.HomeContent
 import com.thefloor.app.feature.talk.PostCard
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalTime
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalTime
-import javax.inject.Inject
 
 sealed interface HomeUiState {
     data object Loading : HomeUiState
@@ -115,7 +118,7 @@ class HomeViewModel @Inject constructor(
 }
 
 @Composable
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 fun HomeScreen(
     onOpenInvite: () -> Unit,
     onOpenRewards: () -> Unit,
@@ -155,7 +158,7 @@ fun HomeScreen(
             )
             is HomeUiState.Ready -> {
                 val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
-                androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+                PullToRefreshBox(
                     isRefreshing = refreshing,
                     onRefresh = viewModel::refresh,
                     modifier = Modifier.padding(padding),
@@ -278,7 +281,7 @@ internal fun HomeContentList(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
                         content.presenceNames.take(6).forEach { who ->
-                            com.thefloor.app.core.designsystem.components.FloorAvatar(
+                            FloorAvatar(
                                 name = who,
                                 ring = FloorAccent.TEAL,
                                 size = 34.dp,

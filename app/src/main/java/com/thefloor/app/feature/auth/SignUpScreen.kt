@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -37,12 +38,12 @@ import com.thefloor.app.core.designsystem.components.FloorTextField
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.domain.Validators
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class SignUpUiState(
     val email: String = "",
@@ -137,7 +138,7 @@ fun SignUpScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     if (state.done) {
-        androidx.compose.runtime.LaunchedEffect(Unit) { onSignedUp() }
+        LaunchedEffect(Unit) { onSignedUp() }
     }
 
     Scaffold(

@@ -8,6 +8,10 @@ import com.thefloor.app.core.network.CommentPageDto
 import com.thefloor.app.core.network.CommunityDto
 import com.thefloor.app.core.network.CommunityListDto
 import com.thefloor.app.core.network.CompletionCardDto
+import com.thefloor.app.core.network.CreateCommentRequestDto
+import com.thefloor.app.core.network.CreatePostRequestDto
+import com.thefloor.app.core.network.CreatePulseRequestDto
+import com.thefloor.app.core.network.CreateSpotlightRequestDto
 import com.thefloor.app.core.network.FaqItemDto
 import com.thefloor.app.core.network.HomeDto
 import com.thefloor.app.core.network.InviteMiniDto
@@ -21,6 +25,7 @@ import com.thefloor.app.core.network.OkDto
 import com.thefloor.app.core.network.PostDto
 import com.thefloor.app.core.network.PostPageDto
 import com.thefloor.app.core.network.PrefsDto
+import com.thefloor.app.core.network.PrivacyRequestDto
 import com.thefloor.app.core.network.ProfileDto
 import com.thefloor.app.core.network.PublicConfigDto
 import com.thefloor.app.core.network.PulseDto
@@ -35,18 +40,21 @@ import com.thefloor.app.core.network.SpotlightListDto
 import com.thefloor.app.core.network.SpotlightSubmissionDto
 import com.thefloor.app.core.network.SupportConversationDto
 import com.thefloor.app.core.network.SupportMessageDto
+import com.thefloor.app.core.network.SupportSendRequestDto
 import com.thefloor.app.core.network.TokenPairDto
+import com.thefloor.app.core.network.UpdateProfileRequestDto
 import com.thefloor.app.core.network.WayToEarnDto
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /** Answers every API call locally when [DemoMode] is on, so the app is fully explorable with no backend. */
 @Singleton
@@ -210,11 +218,11 @@ class DemoBackend @Inject constructor() {
             seg == listOf("referrals", "summary") ->
                 json.encodeToString(ReferralSummaryDto.serializer(), referrals())
             seg == listOf("referrals", "milestones") ->
-                json.encodeToString(kotlinx.serialization.builtins.ListSerializer(MilestoneTierDto.serializer()), MILESTONES)
+                json.encodeToString(ListSerializer(MilestoneTierDto.serializer()), MILESTONES)
             seg == listOf("referrals") ->
                 json.encodeToString(ReferralListDto.serializer(), ReferralListDto(REFERRAL_HISTORY))
             seg == listOf("referrals", "faq") ->
-                json.encodeToString(kotlinx.serialization.builtins.ListSerializer(FaqItemDto.serializer()), FAQ)
+                json.encodeToString(ListSerializer(FaqItemDto.serializer()), FAQ)
             seg.firstOrNull() == "referrals" -> ok
 
             seg == listOf("spotlight", "submissions") && method == "POST" ->
@@ -254,7 +262,7 @@ class DemoBackend @Inject constructor() {
 
     private fun createPost(body: String): PostDto {
         val req = runCatching {
-            json.decodeFromString(com.thefloor.app.core.network.CreatePostRequestDto.serializer(), body)
+            json.decodeFromString(CreatePostRequestDto.serializer(), body)
         }.getOrNull()
         val categoryId = req?.categoryId?.ifBlank { null } ?: CATEGORIES.first().id
         val post = PostDto(
@@ -282,7 +290,7 @@ class DemoBackend @Inject constructor() {
 
     private fun createComment(postId: String, body: String): CommentDto {
         val req = runCatching {
-            json.decodeFromString(com.thefloor.app.core.network.CreateCommentRequestDto.serializer(), body)
+            json.decodeFromString(CreateCommentRequestDto.serializer(), body)
         }.getOrNull()
         val comment = CommentDto(
             id = id("cm"),
@@ -301,7 +309,7 @@ class DemoBackend @Inject constructor() {
 
     private fun createPulse(body: String): PulseDto {
         val req = runCatching {
-            json.decodeFromString(com.thefloor.app.core.network.CreatePulseRequestDto.serializer(), body)
+            json.decodeFromString(CreatePulseRequestDto.serializer(), body)
         }.getOrNull()
         val pulse = PulseDto(
             id = id("x"),
@@ -364,7 +372,7 @@ class DemoBackend @Inject constructor() {
     /** A submission is a record, not a screen state. */
     private fun createSubmission(body: String): SpotlightSubmissionDto {
         val req = runCatching {
-            json.decodeFromString(com.thefloor.app.core.network.CreateSpotlightRequestDto.serializer(), body)
+            json.decodeFromString(CreateSpotlightRequestDto.serializer(), body)
         }.getOrNull()
         val submission = SpotlightSubmissionDto(
             id = id("sp"),
@@ -381,7 +389,7 @@ class DemoBackend @Inject constructor() {
         spotlight.add(0, submission)
         notifications.add(
             0,
-            com.thefloor.app.core.network.NotificationDto(
+            NotificationDto(
                 id = id("n"),
                 type = "SPOTLIGHT",
                 title = "Your Spotlight is in review",
@@ -404,7 +412,7 @@ class DemoBackend @Inject constructor() {
     /** Walker's first line. */
     private fun handleSupport(body: String): SupportConversationDto {
         val req = runCatching {
-            json.decodeFromString(com.thefloor.app.core.network.SupportSendRequestDto.serializer(), body)
+            json.decodeFromString(SupportSendRequestDto.serializer(), body)
         }.getOrNull()
         val text = req?.body.orEmpty().trim()
 
@@ -518,7 +526,7 @@ class DemoBackend @Inject constructor() {
 
     private fun applyProfileUpdate(body: String) {
         val u = runCatching {
-            json.decodeFromString(com.thefloor.app.core.network.UpdateProfileRequestDto.serializer(), body)
+            json.decodeFromString(UpdateProfileRequestDto.serializer(), body)
         }.getOrNull() ?: return
         profile = profile.copy(
             displayName = u.displayName ?: profile.displayName,
@@ -542,7 +550,7 @@ class DemoBackend @Inject constructor() {
     /** Visibility is a merge, not a replace: the screen sends the one field the member just changed, and the… */
     private fun applyPrivacyUpdate(body: String) {
         val request = runCatching {
-            json.decodeFromString(com.thefloor.app.core.network.PrivacyRequestDto.serializer(), body)
+            json.decodeFromString(PrivacyRequestDto.serializer(), body)
         }.getOrNull() ?: return
         profile = profile.copy(visibility = profile.visibility + request.visibility)
     }

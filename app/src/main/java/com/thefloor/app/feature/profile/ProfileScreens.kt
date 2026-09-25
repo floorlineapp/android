@@ -1,22 +1,28 @@
 package com.thefloor.app.feature.profile
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,21 +30,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.thefloor.app.core.common.onError
 import com.thefloor.app.core.common.onSuccess
+import com.thefloor.app.core.data.RewardsRepository
 import com.thefloor.app.core.data.UserRepository
 import com.thefloor.app.core.designsystem.FloorTheme
+import com.thefloor.app.core.designsystem.floorListPadding
 import com.thefloor.app.core.designsystem.components.BadgeTone
 import com.thefloor.app.core.designsystem.components.FloorAccent
+import com.thefloor.app.core.designsystem.components.FloorAnimatedNumber
 import com.thefloor.app.core.designsystem.components.FloorAvatar
 import com.thefloor.app.core.designsystem.components.FloorBadge
 import com.thefloor.app.core.designsystem.components.FloorCard
 import com.thefloor.app.core.designsystem.components.FloorChip
+import com.thefloor.app.core.designsystem.components.FloorDestructiveButton
 import com.thefloor.app.core.designsystem.components.FloorErrorState
 import com.thefloor.app.core.designsystem.components.FloorEyebrow
 import com.thefloor.app.core.designsystem.components.FloorHero
@@ -50,20 +62,19 @@ import com.thefloor.app.core.designsystem.components.FloorProgressBar
 import com.thefloor.app.core.designsystem.components.FloorTextField
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.core.designsystem.components.FloorVerifiedBadge
-import androidx.compose.foundation.layout.width
 import com.thefloor.app.core.model.CareerLevel
 import com.thefloor.app.core.model.RecognitionLevel
 import com.thefloor.app.core.model.UserProfile
+import com.thefloor.app.core.model.WorkMode
 import com.thefloor.app.core.model.nextRecognitionLevel
 import com.thefloor.app.core.model.recognitionLevel
 import com.thefloor.app.core.model.recognitionRequirement
-import com.thefloor.app.core.model.WorkMode
 import com.thefloor.app.core.network.UpdateProfileRequestDto
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class ProfileUiState(
     val loading: Boolean = true,
@@ -79,7 +90,7 @@ data class ProfileUiState(
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val rewardsRepository: com.thefloor.app.core.data.RewardsRepository,
+    private val rewardsRepository: RewardsRepository,
 ) : ViewModel() {
     val state = MutableStateFlow(ProfileUiState())
 
@@ -132,7 +143,7 @@ fun ProfileScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    androidx.lifecycle.compose.LifecycleResumeEffect(Unit) {
+    LifecycleResumeEffect(Unit) {
         viewModel.refresh()
         onPauseOrDispose { }
     }
@@ -173,12 +184,7 @@ internal fun ProfileBody(
     val next = nextRecognitionLevel(level)
                 LazyColumn(
                     modifier = modifier,
-                    contentPadding = PaddingValues(
-                        start = FloorTheme.spacing.gutter,
-                        end = FloorTheme.spacing.gutter,
-                        top = FloorTheme.spacing.gutter,
-                        bottom = 96.dp,
-                    ),
+                    contentPadding = floorListPadding(),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     item {
@@ -220,7 +226,7 @@ internal fun ProfileBody(
                             }
                             FloorEyebrow("Floor Points balance", accent = FloorAccent.FAINT)
                             Spacer(Modifier.height(4.dp))
-                            com.thefloor.app.core.designsystem.components.FloorAnimatedNumber(
+                            FloorAnimatedNumber(
                                 value = floorPoints.toLong(),
                             )
                             Spacer(Modifier.height(16.dp))
@@ -267,9 +273,9 @@ internal fun ProfileBody(
                                         )
                                     }
                                     if (rung == level) {
-                                        com.thefloor.app.core.designsystem.components.FloorBadge(
+                                        FloorBadge(
                                             "You",
-                                            tone = com.thefloor.app.core.designsystem.components.BadgeTone.TEAL,
+                                            tone = BadgeTone.TEAL,
                                         )
                                     }
                                 }
@@ -357,14 +363,14 @@ internal fun ProfileBody(
                                     com.thefloor.app.R.drawable.floor_nightshift,
                                     com.thefloor.app.R.drawable.floor_teamleaders,
                                 ).forEach { art ->
-                                    androidx.compose.foundation.Image(
+                                    Image(
                                         painter = androidx.compose.ui.res.painterResource(art),
                                         contentDescription = null,
-                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                        contentScale = ContentScale.Crop,
                                         modifier = Modifier
                                             .weight(1f)
                                             .aspectRatio(1f)
-                                            .clip(androidx.compose.foundation.shape.RoundedCornerShape(10.dp)),
+                                            .clip(RoundedCornerShape(10.dp)),
                                     )
                                 }
                             }
@@ -420,10 +426,10 @@ private fun ProfileField(label: String, value: String?) {
 }
 
 /** Wraps skill pills across lines. */
-@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SkillsFlow(skills: List<String>) {
-    androidx.compose.foundation.layout.FlowRow(
+    FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -439,7 +445,7 @@ fun EditProfileScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val profile = state.profile
 
-    androidx.compose.runtime.LaunchedEffect(state.justSaved) {
+    LaunchedEffect(state.justSaved) {
         if (state.justSaved) {
             kotlinx.coroutines.delay(450)
             viewModel.consumeJustSaved()
@@ -606,7 +612,7 @@ fun PublicProfileScreen(
     viewModel: PublicProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    androidx.compose.runtime.LaunchedEffect(userId) { viewModel.load(userId) }
+    LaunchedEffect(userId) { viewModel.load(userId) }
 
     Scaffold(
         containerColor = FloorTheme.colors.ink,
@@ -635,7 +641,7 @@ fun PublicProfileScreen(
                         ProfileField("Industry", profile.industry)
                         ProfileField("Country", profile.country)
                     }
-                    com.thefloor.app.core.designsystem.components.FloorDestructiveButton(
+                    FloorDestructiveButton(
                         text = "Block this member",
                         onClick = { viewModel.block(userId) },
                         modifier = Modifier.fillMaxWidth(),

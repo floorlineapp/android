@@ -5,15 +5,18 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.thefloor.app.domain.DeepLinkParser
+import com.thefloor.app.feature.auth.DemoEntryViewModel
 import com.thefloor.app.feature.auth.ForgotPasswordScreen
 import com.thefloor.app.feature.auth.LoginScreen
 import com.thefloor.app.feature.auth.OnboardingScreen
@@ -29,17 +32,32 @@ import com.thefloor.app.feature.invite.InviteFaqScreen
 import com.thefloor.app.feature.invite.InviteHistoryScreen
 import com.thefloor.app.feature.invite.InviteMilestonesScreen
 import com.thefloor.app.feature.more.MoreScreen
-import com.thefloor.app.feature.pulse.PulseScreen
 import com.thefloor.app.feature.notifications.NotificationCenterScreen
 import com.thefloor.app.feature.notifications.NotificationPrefsScreen
+import com.thefloor.app.feature.pages.AboutScreen
+import com.thefloor.app.feature.pages.AcademyScreen
+import com.thefloor.app.feature.pages.AcademyViewModel
+import com.thefloor.app.feature.pages.EventsScreen
+import com.thefloor.app.feature.pages.InsightsScreen
+import com.thefloor.app.feature.pages.JobsScreen
+import com.thefloor.app.feature.pages.MarketplaceScreen
+import com.thefloor.app.feature.pages.ResourcesScreen
+import com.thefloor.app.feature.pages.SpotlightViewModel
+import com.thefloor.app.feature.pages.WellbeingScreen
 import com.thefloor.app.feature.profile.EditProfileScreen
 import com.thefloor.app.feature.profile.PrivacyScreen
 import com.thefloor.app.feature.profile.ProfileScreen
+import com.thefloor.app.feature.profile.PublicProfileScreen
+import com.thefloor.app.feature.pulse.PulseScreen
+import com.thefloor.app.feature.radio.RadioPassScreen
 import com.thefloor.app.feature.radio.RadioScreen
+import com.thefloor.app.feature.rewards.PointsRulesScreen
 import com.thefloor.app.feature.rewards.RewardTransactionsScreen
 import com.thefloor.app.feature.rewards.RewardsScreen
 import com.thefloor.app.feature.settings.DeleteAccountScreen
 import com.thefloor.app.feature.settings.SettingsScreen
+import com.thefloor.app.feature.spotlight.SpotlightRulesScreen
+import com.thefloor.app.feature.spotlight.SubmitSpotlightScreen
 import com.thefloor.app.feature.talk.ComposePostScreen
 import com.thefloor.app.feature.talk.PostDetailScreen
 import com.thefloor.app.feature.talk.TalkFeedScreen
@@ -68,7 +86,7 @@ fun FloorNavHost(
         },
     ) {
         composable(Routes.WELCOME) {
-            val demoVm: com.thefloor.app.feature.auth.DemoEntryViewModel =
+            val demoVm: DemoEntryViewModel =
                 androidx.hilt.navigation.compose.hiltViewModel()
             val demoBusy by demoVm.busy.collectAsState()
             WelcomeScreen(
@@ -216,27 +234,27 @@ fun FloorNavHost(
                 onBack = { navController.popBackStack() },
                 onOpenPrefs = { navController.navigate(Routes.NOTIFICATION_PREFS) },
                 onOpenDeepLink = { uri ->
-                    when (val target = com.thefloor.app.domain.DeepLinkParser.parse(uri)) {
-                        is com.thefloor.app.domain.DeepLinkParser.Target.Invite,
-                        com.thefloor.app.domain.DeepLinkParser.Target.InviteEarn ->
+                    when (val target = DeepLinkParser.parse(uri)) {
+                        is DeepLinkParser.Target.Invite,
+                        DeepLinkParser.Target.InviteEarn ->
                             navController.navigate(Routes.INVITE_EARN)
-                        is com.thefloor.app.domain.DeepLinkParser.Target.TalkPost ->
+                        is DeepLinkParser.Target.TalkPost ->
                             navController.navigate(Routes.postDetail(target.postId))
-                        is com.thefloor.app.domain.DeepLinkParser.Target.Floor ->
+                        is DeepLinkParser.Target.Floor ->
                             navController.navigate(Routes.communityDetail(target.communityId))
-                        com.thefloor.app.domain.DeepLinkParser.Target.Rewards ->
+                        DeepLinkParser.Target.Rewards ->
                             navController.navigate(Routes.REWARDS)
-                        com.thefloor.app.domain.DeepLinkParser.Target.ProfileEdit ->
+                        DeepLinkParser.Target.ProfileEdit ->
                             navController.navigate(Routes.PROFILE_EDIT)
-                        is com.thefloor.app.domain.DeepLinkParser.Target.Profile ->
+                        is DeepLinkParser.Target.Profile ->
                             navController.navigate(Routes.publicProfile(target.userId))
-                        is com.thefloor.app.domain.DeepLinkParser.Target.Job ->
+                        is DeepLinkParser.Target.Job ->
                             navController.navigate(Routes.JOBS)
-                        is com.thefloor.app.domain.DeepLinkParser.Target.Course ->
+                        is DeepLinkParser.Target.Course ->
                             navController.navigate(Routes.ACADEMY)
-                        is com.thefloor.app.domain.DeepLinkParser.Target.Deal ->
+                        is DeepLinkParser.Target.Deal ->
                             navController.navigate(Routes.MARKETPLACE)
-                        com.thefloor.app.domain.DeepLinkParser.Target.Home ->
+                        DeepLinkParser.Target.Home ->
                             navController.navigate(Routes.HOME)
                         else -> Unit
                     }
@@ -264,7 +282,7 @@ fun FloorNavHost(
             Routes.PUBLIC_PROFILE,
             arguments = listOf(navArgument("userId") { type = NavType.StringType }),
         ) { entry ->
-            com.thefloor.app.feature.profile.PublicProfileScreen(
+            PublicProfileScreen(
                 userId = entry.arguments?.getString("userId").orEmpty(),
                 onBack = { navController.popBackStack() },
             )
@@ -285,26 +303,26 @@ fun FloorNavHost(
             PulseScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.JOBS) {
-            com.thefloor.app.feature.pages.JobsScreen(
+            JobsScreen(
                 onBack = { navController.popBackStack() },
                 onOpenProfile = { navController.navigate(Routes.PROFILE) },
                 onOpenAcademy = { navController.navigate(Routes.ACADEMY) },
             )
         }
         composable(Routes.ACADEMY) {
-            val vm: com.thefloor.app.feature.pages.AcademyViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+            val vm: AcademyViewModel = androidx.hilt.navigation.compose.hiltViewModel()
             val passport by vm.passport.collectAsStateWithLifecycle()
-            com.thefloor.app.feature.pages.AcademyScreen(
+            AcademyScreen(
                 onBack = { navController.popBackStack() },
                 passport = passport,
             )
         }
-        composable(Routes.MARKETPLACE) { com.thefloor.app.feature.pages.MarketplaceScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.MARKETPLACE) { MarketplaceScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.INSIGHTS) {
-            val vm: com.thefloor.app.feature.pages.SpotlightViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+            val vm: SpotlightViewModel = androidx.hilt.navigation.compose.hiltViewModel()
             val mine by vm.mine.collectAsStateWithLifecycle()
-            androidx.compose.runtime.LaunchedEffect(Unit) { vm.refresh() }
-            com.thefloor.app.feature.pages.InsightsScreen(
+            LaunchedEffect(Unit) { vm.refresh() }
+            InsightsScreen(
                 onBack = { navController.popBackStack() },
                 mySubmissions = mine,
                 onOpenRules = { navController.navigate(Routes.SPOTLIGHT_RULES) },
@@ -314,33 +332,33 @@ fun FloorNavHost(
             )
         }
         composable(Routes.SPOTLIGHT_RULES) {
-            com.thefloor.app.feature.spotlight.SpotlightRulesScreen(onBack = { navController.popBackStack() })
+            SpotlightRulesScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.SPOTLIGHT_SUBMIT) {
-            com.thefloor.app.feature.spotlight.SubmitSpotlightScreen(onBack = { navController.popBackStack() })
+            SubmitSpotlightScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.RADIO_PASS) {
-            com.thefloor.app.feature.radio.RadioPassScreen(onBack = { navController.popBackStack() })
+            RadioPassScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.POINTS_RULES) {
-            com.thefloor.app.feature.rewards.PointsRulesScreen(
+            PointsRulesScreen(
                 onBack = { navController.popBackStack() },
                 onOpenTransactions = { navController.navigate(Routes.REWARD_TRANSACTIONS) },
             )
         }
         composable(Routes.ABOUT) {
-            com.thefloor.app.feature.pages.AboutScreen(
+            AboutScreen(
                 onBack = { navController.popBackStack() },
                 onOpenWellbeing = { navController.navigate(Routes.WELLBEING) },
             )
         }
         composable(Routes.EVENTS) {
-            com.thefloor.app.feature.pages.EventsScreen(
+            EventsScreen(
                 onBack = { navController.popBackStack() },
                 onOpenRadioPass = { navController.navigate(Routes.RADIO_PASS) },
             )
         }
-        composable(Routes.RESOURCES) { com.thefloor.app.feature.pages.ResourcesScreen(onBack = { navController.popBackStack() }) }
-        composable(Routes.WELLBEING) { com.thefloor.app.feature.pages.WellbeingScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.RESOURCES) { ResourcesScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.WELLBEING) { WellbeingScreen(onBack = { navController.popBackStack() }) }
     }
 }

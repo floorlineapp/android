@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,10 +40,10 @@ import com.thefloor.app.core.model.FaqItem
 import com.thefloor.app.core.model.MilestoneTier
 import com.thefloor.app.core.model.ReferralHistoryItem
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class InviteSubState<T>(
     val loading: Boolean = true,
@@ -89,7 +90,7 @@ fun InviteMilestonesScreen(
     viewModel: InviteSubViewModel = hiltViewModel(),
 ) {
     val state by viewModel.milestones.collectAsStateWithLifecycle()
-    androidx.compose.runtime.LaunchedEffect(Unit) { viewModel.loadMilestones() }
+    LaunchedEffect(Unit) { viewModel.loadMilestones() }
 
     Scaffold(
         containerColor = FloorTheme.colors.ink,
@@ -161,7 +162,7 @@ fun InviteHistoryScreen(
     viewModel: InviteSubViewModel = hiltViewModel(),
 ) {
     val state by viewModel.history.collectAsStateWithLifecycle()
-    androidx.compose.runtime.LaunchedEffect(Unit) { viewModel.loadHistory() }
+    LaunchedEffect(Unit) { viewModel.loadHistory() }
 
     Scaffold(
         containerColor = FloorTheme.colors.ink,
@@ -216,7 +217,7 @@ fun InviteFaqScreen(
     viewModel: InviteSubViewModel = hiltViewModel(),
 ) {
     val state by viewModel.faq.collectAsStateWithLifecycle()
-    androidx.compose.runtime.LaunchedEffect(Unit) { viewModel.loadFaq() }
+    LaunchedEffect(Unit) { viewModel.loadFaq() }
 
     Scaffold(
         containerColor = FloorTheme.colors.ink,

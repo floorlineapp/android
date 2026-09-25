@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -28,6 +29,7 @@ import com.thefloor.app.core.designsystem.components.FloorPrimaryButton
 import com.thefloor.app.core.designsystem.components.FloorSecondaryButton
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,7 +37,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class VerifyUiState(
     val resendCooldownSeconds: Int = 0,
@@ -49,7 +50,7 @@ data class VerifyUiState(
 
 @HiltViewModel
 class VerifyEmailViewModel @Inject constructor(
-    savedStateHandle: androidx.lifecycle.SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val authRepository: AuthRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(VerifyUiState())

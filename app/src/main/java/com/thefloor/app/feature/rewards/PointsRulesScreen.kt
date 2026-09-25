@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.thefloor.app.core.designsystem.FloorTheme
+import com.thefloor.app.core.designsystem.floorListPadding
 import com.thefloor.app.core.designsystem.components.BadgeTone
 import com.thefloor.app.core.designsystem.components.FloorAccent
 import com.thefloor.app.core.designsystem.components.FloorBadge
@@ -47,12 +48,7 @@ fun PointsRulesScreen(onBack: () -> Unit, onOpenTransactions: () -> Unit = {}) {
     ) { padding ->
         LazyColumn(
             modifier = Modifier.padding(padding),
-            contentPadding = PaddingValues(
-                start = FloorTheme.spacing.gutter,
-                end = FloorTheme.spacing.gutter,
-                top = 12.dp,
-                bottom = 96.dp,
-            ),
+            contentPadding = floorListPadding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {

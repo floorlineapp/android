@@ -1,9 +1,10 @@
-@file:OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
+@file:OptIn(ExperimentalTextApi::class)
 
 package com.thefloor.app.core.designsystem
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily

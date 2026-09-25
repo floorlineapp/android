@@ -1,6 +1,7 @@
 package com.thefloor.app
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.thefloor.app.core.common.ShiftPhase
 import com.thefloor.app.core.datastore.ThemeMode
 import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.FloorAccent
@@ -41,31 +43,19 @@ import com.thefloor.app.core.model.TalkCategory
 import com.thefloor.app.core.model.UserProfile
 import com.thefloor.app.core.model.WayToEarn
 import com.thefloor.app.core.model.WorkMode
-import com.thefloor.app.feature.auth.WelcomeScreen
-import com.thefloor.app.feature.floor.DiscoverBody
-import com.thefloor.app.feature.floor.DiscoverUiState
-import com.thefloor.app.feature.home.HomeContentList
-import com.thefloor.app.feature.profile.ProfileBody
-import com.thefloor.app.feature.pulse.PulseBody
-import com.thefloor.app.feature.pulse.PulseUiState
+import com.thefloor.app.core.network.SpotlightSubmissionDto
 import com.thefloor.app.core.walker.WalkerConversation
 import com.thefloor.app.core.walker.WalkerMessage
 import com.thefloor.app.core.walker.WalkerSender
 import com.thefloor.app.core.walker.WalkerState
 import com.thefloor.app.core.walker.WalkerStatus
-import com.thefloor.app.core.common.ShiftPhase
+import com.thefloor.app.feature.auth.WelcomeScreen
+import com.thefloor.app.feature.floor.DiscoverBody
+import com.thefloor.app.feature.floor.DiscoverUiState
 import com.thefloor.app.feature.home.FirstStepsCard
+import com.thefloor.app.feature.home.HomeContentList
 import com.thefloor.app.feature.home.ShiftCard
 import com.thefloor.app.feature.more.MoreScreen
-import com.thefloor.app.feature.radio.RadioPassScreen
-import com.thefloor.app.feature.rewards.PointsRulesScreen
-import com.thefloor.app.feature.spotlight.SpotlightRulesScreen
-import com.thefloor.app.feature.spotlight.SubmitSpotlightScreen
-import com.thefloor.app.feature.radio.RadioBody
-import com.thefloor.app.feature.radio.RadioPlaybackState
-import com.thefloor.app.feature.rewards.RewardsBody
-import com.thefloor.app.feature.talk.TalkBody
-import com.thefloor.app.feature.talk.TalkFeedUiState
 import com.thefloor.app.feature.pages.AboutScreen
 import com.thefloor.app.feature.pages.AcademyScreen
 import com.thefloor.app.feature.pages.EventsScreen
@@ -74,6 +64,18 @@ import com.thefloor.app.feature.pages.JobsScreen
 import com.thefloor.app.feature.pages.MarketplaceScreen
 import com.thefloor.app.feature.pages.ResourcesScreen
 import com.thefloor.app.feature.pages.WellbeingScreen
+import com.thefloor.app.feature.profile.ProfileBody
+import com.thefloor.app.feature.pulse.PulseBody
+import com.thefloor.app.feature.pulse.PulseUiState
+import com.thefloor.app.feature.radio.RadioBody
+import com.thefloor.app.feature.radio.RadioPassScreen
+import com.thefloor.app.feature.radio.RadioPlaybackState
+import com.thefloor.app.feature.rewards.PointsRulesScreen
+import com.thefloor.app.feature.rewards.RewardsBody
+import com.thefloor.app.feature.spotlight.SpotlightRulesScreen
+import com.thefloor.app.feature.spotlight.SubmitSpotlightScreen
+import com.thefloor.app.feature.talk.TalkBody
+import com.thefloor.app.feature.talk.TalkFeedUiState
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -200,7 +202,7 @@ private fun HomeBody() {
 
 @Composable
 private fun ShiftCardPreview(phase: ShiftPhase) {
-    androidx.compose.foundation.layout.Box(Modifier.padding(16.dp)) {
+    Box(Modifier.padding(16.dp)) {
         ShiftCard(
             content = fakeHome,
             phase = phase,
@@ -318,12 +320,12 @@ private val fakeTalk = TalkFeedUiState(
 )
 
 private val fakeSubmissions = listOf(
-    com.thefloor.app.core.network.SpotlightSubmissionDto(
+    SpotlightSubmissionDto(
         id = "sp0", category = "Awards & Recognition",
         title = "Voice team takes national CX award",
         status = "pending", createdAt = "2026-09-24T09:00:00Z",
     ),
-    com.thefloor.app.core.network.SpotlightSubmissionDto(
+    SpotlightSubmissionDto(
         id = "sp2", category = "Career Growth",
         title = "Four of my team made Team Leader this year",
         status = "rejected",

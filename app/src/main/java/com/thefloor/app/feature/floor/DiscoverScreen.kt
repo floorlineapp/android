@@ -1,36 +1,40 @@
 package com.thefloor.app.feature.floor
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import com.thefloor.app.core.designsystem.components.FloorHero
-import com.thefloor.app.core.designsystem.components.floorPhotoRes
-import com.thefloor.app.core.designsystem.components.floorPhotoUrl
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import coil.compose.AsyncImage
 import com.thefloor.app.core.analytics.AnalyticsTracker
 import com.thefloor.app.core.analytics.Events
 import com.thefloor.app.core.common.AppError
@@ -39,18 +43,25 @@ import com.thefloor.app.core.common.onSuccess
 import com.thefloor.app.core.data.CommunityRepository
 import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.BadgeTone
+import com.thefloor.app.core.designsystem.components.FloorAccent
 import com.thefloor.app.core.designsystem.components.FloorBadge
 import com.thefloor.app.core.designsystem.components.FloorCard
 import com.thefloor.app.core.designsystem.components.FloorChip
 import com.thefloor.app.core.designsystem.components.FloorEmptyState
 import com.thefloor.app.core.designsystem.components.FloorErrorState
+import com.thefloor.app.core.designsystem.components.FloorEyebrow
+import com.thefloor.app.core.designsystem.components.FloorHero
 import com.thefloor.app.core.designsystem.components.FloorTextField
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.core.designsystem.components.OfflineBanner
 import com.thefloor.app.core.designsystem.components.SkeletonList
+import com.thefloor.app.core.designsystem.components.floorPhotoRes
+import com.thefloor.app.core.designsystem.components.floorPhotoUrl
 import com.thefloor.app.core.model.Community
 import com.thefloor.app.core.model.MembershipState
+import com.thefloor.app.core.walker.WalkerBus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -60,7 +71,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class DiscoverFilter(val label: String, val kind: String?)
 
@@ -87,10 +97,10 @@ sealed interface DiscoverUiState {
 class DiscoverViewModel @Inject constructor(
     private val communityRepository: CommunityRepository,
     private val analytics: AnalyticsTracker,
-    private val walkerBus: com.thefloor.app.core.walker.WalkerBus,
+    private val walkerBus: WalkerBus,
 ) : ViewModel() {
     /** "Suggest a Floor" goes to Walker, not to a form nobody reads. */
-    fun suggestFloor() = walkerBus.open()
+    fun suggestFloor() = walkerBus.show()
 
     private val _state = MutableStateFlow<DiscoverUiState>(DiscoverUiState.Loading)
     val state: StateFlow<DiscoverUiState> = _state.asStateFlow()
@@ -241,13 +251,13 @@ internal fun DiscoverBody(
                             }
                         }
                         item {
-                            com.thefloor.app.core.designsystem.components.FloorCard(
+                            FloorCard(
                                 onClick = onSuggestFloor,
                                 contentPadding = 18.dp,
                             ) {
-                                com.thefloor.app.core.designsystem.components.FloorEyebrow(
+                                FloorEyebrow(
                                     "Missing your people?",
-                                    accent = com.thefloor.app.core.designsystem.components.FloorAccent.TEAL,
+                                    accent = FloorAccent.TEAL,
                                 )
                                 Spacer(Modifier.height(6.dp))
                                 Text(
@@ -305,37 +315,37 @@ fun CommunityTile(
 ) {
     val amber = FloorTheme.colors.amber
     val teal = FloorTheme.colors.teal
-    androidx.compose.material3.Surface(
+    Surface(
         modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable(onClick = onOpen),
         shape = RoundedCornerShape(12.dp),
         color = FloorTheme.colors.surface,
-        border = androidx.compose.foundation.BorderStroke(1.dp, FloorTheme.colors.border),
+        border = BorderStroke(1.dp, FloorTheme.colors.border),
     ) {
         Column {
-            androidx.compose.foundation.layout.Box(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
                     .background(
-                        androidx.compose.ui.graphics.Brush.linearGradient(
+                        Brush.linearGradient(
                             listOf(amber.copy(alpha = 0.28f), teal.copy(alpha = 0.22f)),
                         ),
                     ),
             ) {
                 val bundled = floorPhotoRes(community.name)
                 if (bundled != null) {
-                    androidx.compose.foundation.Image(
+                    Image(
                         painter = androidx.compose.ui.res.painterResource(bundled),
                         contentDescription = null,
-                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxWidth().height(120.dp),
                     )
                 } else {
                     (community.imageUrl ?: floorPhotoUrl(community.name))?.let { url ->
-                        coil.compose.AsyncImage(
+                        AsyncImage(
                             model = url,
                             contentDescription = null,
-                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxWidth().height(120.dp),
                         )
                     }
@@ -370,7 +380,7 @@ fun CommunityTile(
                         MembershipState.RESTRICTED -> "Restricted" to BadgeTone.CORAL
                         MembershipState.NOT_JOINED -> "Join" to BadgeTone.AMBER
                     }
-                    androidx.compose.foundation.layout.Box(
+                    Box(
                         modifier = Modifier
                             .defaultMinSize(minWidth = 48.dp, minHeight = 44.dp)
                             .clip(RoundedCornerShape(999.dp))

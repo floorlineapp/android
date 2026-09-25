@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -27,10 +28,10 @@ import com.thefloor.app.core.designsystem.components.FloorTextField
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.domain.Validators
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class PasswordUiState(
     val input: String = "",
@@ -133,7 +134,7 @@ fun ResetPasswordScreen(
 ) {
     val state by viewModel.resetState.collectAsStateWithLifecycle()
     if (state.done) {
-        androidx.compose.runtime.LaunchedEffect(Unit) { onDone() }
+        LaunchedEffect(Unit) { onDone() }
     }
     Scaffold(
         containerColor = FloorTheme.colors.ink,

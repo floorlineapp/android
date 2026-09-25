@@ -2,9 +2,8 @@ package com.thefloor.app.feature.notifications
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
@@ -23,6 +24,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,10 +48,10 @@ import com.thefloor.app.core.designsystem.components.SkeletonList
 import com.thefloor.app.core.model.AppNotification
 import com.thefloor.app.core.network.PrefsDto
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class NotificationsUiState(
     val loading: Boolean = true,
@@ -156,7 +158,7 @@ fun NotificationCenterScreen(
                         FloorCard(onClick = { viewModel.open(notification, onOpenDeepLink) }) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 if (!notification.read) {
-                                    androidx.compose.foundation.layout.Box(
+                                    Box(
                                         modifier = Modifier
                                             .padding(end = 10.dp)
                                             .size(8.dp)
@@ -192,7 +194,7 @@ fun NotificationPrefsScreen(
     viewModel: NotificationsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    androidx.compose.runtime.LaunchedEffect(Unit) { viewModel.loadPrefs() }
+    LaunchedEffect(Unit) { viewModel.loadPrefs() }
     val prefs = state.prefs
 
     Scaffold(

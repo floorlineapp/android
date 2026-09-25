@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
@@ -46,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.thefloor.app.core.datastore.RadioRegionStore
 import com.thefloor.app.core.designsystem.FloorTheme
+import com.thefloor.app.core.designsystem.floorListPadding
 import com.thefloor.app.core.designsystem.components.BadgeTone
 import com.thefloor.app.core.designsystem.components.FloorAccent
 import com.thefloor.app.core.designsystem.components.FloorBadge
@@ -59,25 +61,26 @@ import com.thefloor.app.core.designsystem.components.FloorPillButton
 import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTextField
 import com.thefloor.app.core.designsystem.components.FloorTopBar
+import com.thefloor.app.core.walker.WalkerBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /** Floor Radio — six regional feeds, each with its own host, now-playing show, daily schedule and live chat room. */
 @HiltViewModel
 class RadioViewModel @Inject constructor(
     private val controller: RadioPlayerController,
     private val regionStore: RadioRegionStore,
-    private val walkerBus: com.thefloor.app.core.walker.WalkerBus,
+    private val walkerBus: WalkerBus,
 ) : ViewModel() {
     /** Submitting music is a conversation, not a form. */
-    fun submitMusic() = walkerBus.open()
+    fun submitMusic() = walkerBus.show()
 
     val state = controller.state
 
@@ -171,12 +174,7 @@ internal fun RadioBody(
 
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(
-            start = FloorTheme.spacing.gutter,
-            end = FloorTheme.spacing.gutter,
-            top = FloorTheme.spacing.gutter,
-            bottom = 96.dp,
-        ),
+        contentPadding = floorListPadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
@@ -409,7 +407,7 @@ internal fun RadioBody(
     }
 }
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RegionChatSheet(region: RadioRegion, onDismiss: () -> Unit) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)

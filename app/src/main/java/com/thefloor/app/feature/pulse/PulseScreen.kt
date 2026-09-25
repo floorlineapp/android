@@ -1,12 +1,15 @@
 package com.thefloor.app.feature.pulse
 
 import android.view.HapticFeedbackConstants
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,13 +28,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,13 +47,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import coil.compose.AsyncImage
 import com.thefloor.app.core.common.TimeAgo
 import com.thefloor.app.core.common.onError
 import com.thefloor.app.core.common.onSuccess
@@ -55,26 +66,32 @@ import com.thefloor.app.core.data.PulseRepository
 import com.thefloor.app.core.datastore.SessionStore
 import com.thefloor.app.core.designsystem.FloorMotion
 import com.thefloor.app.core.designsystem.FloorTheme
+import com.thefloor.app.core.designsystem.components.FloorAccent
+import com.thefloor.app.core.designsystem.components.FloorAuthorLine
 import com.thefloor.app.core.designsystem.components.FloorErrorState
+import com.thefloor.app.core.designsystem.components.FloorEyebrow
+import com.thefloor.app.core.designsystem.components.FloorInfoNote
+import com.thefloor.app.core.designsystem.components.FloorLiveDot
 import com.thefloor.app.core.designsystem.components.FloorLoading
+import com.thefloor.app.core.designsystem.components.FloorPillButton
 import com.thefloor.app.core.designsystem.components.FloorPrimaryButton
 import com.thefloor.app.core.designsystem.components.FloorTextField
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.core.model.Pulse
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class PulseUiState(
     val loading: Boolean = true,
     val pulses: List<Pulse> = emptyList(),
-    val input: androidx.compose.ui.text.input.TextFieldValue =
-        androidx.compose.ui.text.input.TextFieldValue(""),
+    val input: TextFieldValue =
+        TextFieldValue(""),
     val attachment: PulseAttachment? = null,
     val posting: Boolean = false,
     val error: String? = null,
@@ -104,15 +121,15 @@ class PulseViewModel @Inject constructor(
     }
 
     /** Pulse posts are capped at 220 characters — the same ceiling the target schema enforces as a CHECK… */
-    fun onInput(value: androidx.compose.ui.text.input.TextFieldValue) = _state.update {
-        if (value.text.length <= PULSE_MAX_CHARS) {
+    fun onInput(value: TextFieldValue) = _state.update {
+        if (value.text.length <= PulseComposerText.MAX_CHARS) {
             it.copy(input = value)
         } else {
-            val clipped = value.text.take(PULSE_MAX_CHARS)
+            val clipped = value.text.take(PulseComposerText.MAX_CHARS)
             it.copy(
-                input = androidx.compose.ui.text.input.TextFieldValue(
+                input = TextFieldValue(
                     clipped,
-                    androidx.compose.ui.text.TextRange(clipped.length),
+                    TextRange(clipped.length),
                 ),
             )
         }
@@ -127,9 +144,9 @@ class PulseViewModel @Inject constructor(
             insert = emoji,
         )
         s.copy(
-            input = androidx.compose.ui.text.input.TextFieldValue(
+            input = TextFieldValue(
                 result.text,
-                androidx.compose.ui.text.TextRange(result.caret),
+                TextRange(result.caret),
             ),
         )
     }
@@ -155,7 +172,7 @@ class PulseViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             posting = false,
-                            input = androidx.compose.ui.text.input.TextFieldValue(""),
+                            input = TextFieldValue(""),
                             attachment = null,
                             pulses = listOf(pulse) + it.pulses,
                         )
@@ -195,9 +212,6 @@ class PulseViewModel @Inject constructor(
 
     fun clearActionMessage() = _state.update { it.copy(actionMessage = null) }
 
-    companion object {
-        const val PULSE_MAX_CHARS = PulseComposerText.MAX_CHARS
-    }
 }
 
 /** The six reactions the composer offers, matching the prototype's emoji row. */
@@ -228,11 +242,11 @@ fun PulseScreen(
         )
 
         state.actionMessage?.let { message ->
-            androidx.compose.runtime.LaunchedEffect(message) {
+            LaunchedEffect(message) {
                 kotlinx.coroutines.delay(2500)
                 viewModel.clearActionMessage()
             }
-            androidx.compose.material3.Snackbar(
+            Snackbar(
                 modifier = Modifier.padding(16.dp),
                 containerColor = FloorTheme.colors.surfaceAlt,
                 contentColor = FloorTheme.colors.textPrimary,
@@ -246,7 +260,7 @@ fun PulseScreen(
 internal fun PulseBody(
     state: PulseUiState,
     modifier: Modifier = Modifier,
-    onInput: (androidx.compose.ui.text.input.TextFieldValue) -> Unit = {},
+    onInput: (TextFieldValue) -> Unit = {},
     onEmoji: (String) -> Unit = {},
     onAttach: (PulseAttachment?) -> Unit = {},
     onAttachFailed: (String) -> Unit = {},
@@ -265,11 +279,11 @@ internal fun PulseBody(
                 )
                 else -> LazyColumn(
                     modifier = Modifier.weight(1f),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(FloorTheme.spacing.gutter),
+                    contentPadding = PaddingValues(FloorTheme.spacing.gutter),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     item {
-                        com.thefloor.app.core.designsystem.components.FloorEyebrow("Pulse · The live floor", accent = com.thefloor.app.core.designsystem.components.FloorAccent.CORAL)
+                        FloorEyebrow("Pulse · The live floor", accent = FloorAccent.CORAL)
                         Spacer(Modifier.height(6.dp))
                         Text(
                             "Short, in-the-moment posts from people on shift right now — the fast " +
@@ -278,7 +292,7 @@ internal fun PulseBody(
                             color = FloorTheme.colors.textSecondary,
                         )
                         Spacer(Modifier.height(12.dp))
-                        com.thefloor.app.core.designsystem.components.FloorInfoNote {
+                        FloorInfoNote {
                             Text(
                                 "Pulse earns no Floor Points \u2014 on purpose.",
                                 style = FloorTheme.typography.bodyStrong,
@@ -330,20 +344,20 @@ internal fun PulseBody(
 /** The Pulse composer. */
 @Composable
 private fun PulseComposer(
-    input: androidx.compose.ui.text.input.TextFieldValue,
+    input: TextFieldValue,
     attachment: PulseAttachment?,
     posting: Boolean,
-    onInput: (androidx.compose.ui.text.input.TextFieldValue) -> Unit,
+    onInput: (TextFieldValue) -> Unit,
     onEmoji: (String) -> Unit,
     onAttach: (PulseAttachment?) -> Unit,
     onAttachFailed: (String) -> Unit,
     onPost: () -> Unit,
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val remaining = PulseViewModel.PULSE_MAX_CHARS - input.text.length
+    val context = LocalContext.current
+    val remaining = PulseComposerText.MAX_CHARS - input.text.length
 
     val pickPhoto = androidx.activity.compose.rememberLauncherForActivityResult(
-        androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia(),
+        ActivityResultContracts.PickVisualMedia(),
     ) { uri ->
         if (uri != null) onAttach(PulseAttachment.Photo(uri.toString()))
     }
@@ -353,7 +367,7 @@ private fun PulseComposer(
     var elapsed by remember { mutableStateOf(0) }
 
     val askForMic = androidx.activity.compose.rememberLauncherForActivityResult(
-        androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+        ActivityResultContracts.RequestPermission(),
     ) { granted ->
         if (granted) {
             if (recorder.start()) {
@@ -367,14 +381,14 @@ private fun PulseComposer(
         }
     }
 
-    androidx.compose.runtime.LaunchedEffect(recording) {
+    LaunchedEffect(recording) {
         while (recording) {
             kotlinx.coroutines.delay(1000)
             elapsed += 1
         }
     }
 
-    androidx.compose.runtime.DisposableEffect(Unit) {
+    DisposableEffect(Unit) {
         onDispose { recorder.cancel() }
     }
 
@@ -390,10 +404,10 @@ private fun PulseComposer(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 when (attachment) {
-                    is PulseAttachment.Photo -> coil.compose.AsyncImage(
+                    is PulseAttachment.Photo -> AsyncImage(
                         model = attachment.url,
                         contentDescription = "Attached photo",
-                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(52.dp)
                             .clip(RoundedCornerShape(10.dp)),
@@ -436,7 +450,7 @@ private fun PulseComposer(
                 modifier = Modifier.padding(bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                com.thefloor.app.core.designsystem.components.FloorLiveDot(
+                FloorLiveDot(
                     color = FloorTheme.colors.coral,
                 )
                 Spacer(Modifier.width(8.dp))
@@ -446,7 +460,7 @@ private fun PulseComposer(
                     color = FloorTheme.colors.coral,
                     modifier = Modifier.weight(1f),
                 )
-                com.thefloor.app.core.designsystem.components.FloorPillButton(
+                FloorPillButton(
                     text = "Stop",
                     onClick = {
                         recording = false
@@ -498,8 +512,8 @@ private fun PulseComposer(
             IconButton(
                 onClick = {
                     pickPhoto.launch(
-                        androidx.activity.result.PickVisualMediaRequest(
-                            androidx.activity.result.contract.ActivityResultContracts
+                        PickVisualMediaRequest(
+                            ActivityResultContracts
                                 .PickVisualMedia.ImageOnly,
                         ),
                     )
@@ -556,7 +570,7 @@ private fun PulseCard(
             .background(FloorTheme.colors.surface)
             .padding(16.dp),
     ) {
-        com.thefloor.app.core.designsystem.components.FloorAuthorLine(
+        FloorAuthorLine(
             name = pulse.authorName,
             tier = pulse.authorTier,
             countryCode = pulse.authorCountry,
@@ -583,10 +597,10 @@ private fun PulseCard(
         if (pulse.mediaUrl != null) {
             Spacer(Modifier.height(12.dp))
             when (pulse.mediaType) {
-                "photo" -> coil.compose.AsyncImage(
+                "photo" -> AsyncImage(
                     model = pulse.mediaUrl,
                     contentDescription = null,
-                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(190.dp)

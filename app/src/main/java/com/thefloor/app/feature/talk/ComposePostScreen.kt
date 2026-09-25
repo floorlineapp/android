@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -32,12 +33,12 @@ import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.core.model.TalkCategory
 import com.thefloor.app.domain.Validators
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class ComposeUiState(
     val categories: List<TalkCategory> = emptyList(),
@@ -95,7 +96,7 @@ fun ComposePostScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     if (state.done) {
-        androidx.compose.runtime.LaunchedEffect(Unit) { onDone() }
+        LaunchedEffect(Unit) { onDone() }
     }
 
     Scaffold(

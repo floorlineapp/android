@@ -6,6 +6,7 @@ import com.thefloor.app.core.common.onSuccess
 import com.thefloor.app.core.datastore.ReferralStore
 import com.thefloor.app.core.datastore.Session
 import com.thefloor.app.core.datastore.SessionStore
+import com.thefloor.app.core.demo.DemoStore
 import com.thefloor.app.core.network.EmailBodyDto
 import com.thefloor.app.core.network.FloorApi
 import com.thefloor.app.core.network.LoginRequestDto
@@ -14,16 +15,16 @@ import com.thefloor.app.core.network.ResetRequestDto
 import com.thefloor.app.core.network.SignupRequestDto
 import com.thefloor.app.core.network.TokenBodyDto
 import com.thefloor.app.core.network.safeCall
-import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
 
 @Singleton
 class AuthRepository @Inject constructor(
     private val api: FloorApi,
     private val sessionStore: SessionStore,
     private val referralStore: ReferralStore,
-    private val demoStore: com.thefloor.app.core.demo.DemoStore,
+    private val demoStore: DemoStore,
 ) {
     /** Null = signed out. */
     val session: Flow<Session?> = sessionStore.session

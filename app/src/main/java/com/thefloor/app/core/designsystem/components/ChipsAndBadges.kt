@@ -2,7 +2,9 @@ package com.thefloor.app.core.designsystem.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -73,12 +75,12 @@ fun FloorBadge(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (showDot) {
-                androidx.compose.foundation.layout.Box(
+                Box(
                     modifier = Modifier
                         .size(6.dp)
                         .background(fg, CircleShape),
                 )
-                androidx.compose.foundation.layout.Spacer(Modifier.size(6.dp))
+                Spacer(Modifier.size(6.dp))
             }
             Text(
                 text,

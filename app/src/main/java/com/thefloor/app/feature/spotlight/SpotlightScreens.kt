@@ -1,5 +1,7 @@
 package com.thefloor.app.feature.spotlight
 
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,19 +25,23 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.thefloor.app.core.common.onError
-import com.thefloor.app.core.common.onSuccess
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import coil.compose.AsyncImage
+import com.thefloor.app.core.common.onError
+import com.thefloor.app.core.common.onSuccess
+import com.thefloor.app.core.data.SpotlightRepository
 import com.thefloor.app.core.designsystem.FloorTheme
+import com.thefloor.app.core.designsystem.floorListPadding
 import com.thefloor.app.core.designsystem.components.BadgeTone
 import com.thefloor.app.core.designsystem.components.FloorAccent
 import com.thefloor.app.core.designsystem.components.FloorBadge
@@ -48,6 +54,9 @@ import com.thefloor.app.core.designsystem.components.FloorPrimaryButton
 import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTextField
 import com.thefloor.app.core.designsystem.components.FloorTopBar
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 private data class Rule(val n: Int, val title: String, val body: String)
 
@@ -116,12 +125,7 @@ fun SpotlightRulesScreen(onBack: () -> Unit) {
     ) { padding ->
         LazyColumn(
             modifier = Modifier.padding(padding),
-            contentPadding = PaddingValues(
-                start = FloorTheme.spacing.gutter,
-                end = FloorTheme.spacing.gutter,
-                top = 12.dp,
-                bottom = 96.dp,
-            ),
+            contentPadding = floorListPadding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
@@ -188,7 +192,7 @@ private val submissionStandards = listOf(
     "One submission per achievement. Duplicates are closed, not stacked.",
 )
 
-private val spotlightCategories = listOf(
+val SPOTLIGHT_CATEGORIES = listOf(
     "Awards & Recognition",
     "People & Culture",
     "Community Impact",
@@ -197,13 +201,13 @@ private val spotlightCategories = listOf(
     "Workplace Events",
 )
 
-@dagger.hilt.android.lifecycle.HiltViewModel
+@HiltViewModel
 class SubmitSpotlightViewModel @javax.inject.Inject constructor(
-    private val spotlight: com.thefloor.app.core.data.SpotlightRepository,
-) : androidx.lifecycle.ViewModel() {
-    val sending = kotlinx.coroutines.flow.MutableStateFlow(false)
-    val submitted = kotlinx.coroutines.flow.MutableStateFlow(false)
-    val error = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
+    private val spotlight: SpotlightRepository,
+) : ViewModel() {
+    val sending = MutableStateFlow(false)
+    val submitted = MutableStateFlow(false)
+    val error = MutableStateFlow<String?>(null)
 
     fun submit(category: String, title: String, story: String, proofText: String, mediaUrl: String?) {
         if (sending.value) return
@@ -224,18 +228,18 @@ fun SubmitSpotlightScreen(
     country: String = "",
     viewModel: SubmitSpotlightViewModel? = androidx.hilt.navigation.compose.hiltViewModel(),
 ) {
-    var category by remember { mutableStateOf(spotlightCategories.first()) }
+    var category by remember { mutableStateOf(SPOTLIGHT_CATEGORIES.first()) }
     var title by remember { mutableStateOf("") }
     var story by remember { mutableStateOf("") }
     var proof by remember { mutableStateOf("") }
     var media by remember { mutableStateOf<String?>(null) }
-    val submitted by (viewModel?.submitted ?: kotlinx.coroutines.flow.MutableStateFlow(false))
+    val submitted by (viewModel?.submitted ?: MutableStateFlow(false))
         .collectAsStateWithLifecycle()
-    val sending by (viewModel?.sending ?: kotlinx.coroutines.flow.MutableStateFlow(false))
+    val sending by (viewModel?.sending ?: MutableStateFlow(false))
         .collectAsStateWithLifecycle()
 
     val pickProof = androidx.activity.compose.rememberLauncherForActivityResult(
-        androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia(),
+        ActivityResultContracts.PickVisualMedia(),
     ) { uri -> if (uri != null) media = uri.toString() }
 
     val ready = title.isNotBlank() && story.isNotBlank() && proof.isNotBlank()
@@ -246,12 +250,7 @@ fun SubmitSpotlightScreen(
     ) { padding ->
         LazyColumn(
             modifier = Modifier.padding(padding),
-            contentPadding = PaddingValues(
-                start = FloorTheme.spacing.gutter,
-                end = FloorTheme.spacing.gutter,
-                top = 12.dp,
-                bottom = 96.dp,
-            ),
+            contentPadding = floorListPadding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (submitted) {
@@ -301,11 +300,11 @@ fun SubmitSpotlightScreen(
             }
             item {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(spotlightCategories.size) { i ->
+                    items(SPOTLIGHT_CATEGORIES.size) { i ->
                         FloorChip(
-                            text = spotlightCategories[i],
-                            selected = spotlightCategories[i] == category,
-                            onClick = { category = spotlightCategories[i] },
+                            text = SPOTLIGHT_CATEGORIES[i],
+                            selected = SPOTLIGHT_CATEGORIES[i] == category,
+                            onClick = { category = SPOTLIGHT_CATEGORIES[i] },
                         )
                     }
                 }
@@ -365,8 +364,8 @@ fun SubmitSpotlightScreen(
                             IconButton(
                                 onClick = {
                                     pickProof.launch(
-                                        androidx.activity.result.PickVisualMediaRequest(
-                                            androidx.activity.result.contract.ActivityResultContracts
+                                        PickVisualMediaRequest(
+                                            ActivityResultContracts
                                                 .PickVisualMedia.ImageOnly,
                                         ),
                                     )
@@ -387,10 +386,10 @@ fun SubmitSpotlightScreen(
                         }
                     } else {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            coil.compose.AsyncImage(
+                            AsyncImage(
                                 model = media,
                                 contentDescription = "Attached evidence",
-                                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .size(64.dp)
                                     .clip(RoundedCornerShape(10.dp)),

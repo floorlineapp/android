@@ -15,12 +15,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import com.thefloor.app.core.common.AppResult
 import com.thefloor.app.core.common.onError
 import com.thefloor.app.core.common.onSuccess
 import com.thefloor.app.core.data.CommunityRepository
@@ -36,12 +38,12 @@ import com.thefloor.app.core.model.Community
 import com.thefloor.app.core.model.MembershipState
 import com.thefloor.app.core.model.Post
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 sealed interface CommunityDetailUiState {
     data object Loading : CommunityDetailUiState
@@ -69,7 +71,7 @@ class CommunityDetailViewModel @Inject constructor(
             communityRepository.get(communityId)
                 .onSuccess { community ->
                     val posts = when (val feed = talkRepository.feed(categoryId = null, cursor = null, communityId = communityId)) {
-                        is com.thefloor.app.core.common.AppResult.Success -> feed.data.first
+                        is AppResult.Success -> feed.data.first
                         else -> emptyList()
                     }
                     _state.update { CommunityDetailUiState.Ready(community, posts) }
@@ -167,7 +169,7 @@ fun CommunityDetailScreen(
                                 style = FloorTheme.typography.body,
                                 color = FloorTheme.colors.textPrimary,
                                 maxLines = 4,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                overflow = TextOverflow.Ellipsis,
                             )
                             Spacer(Modifier.height(8.dp))
                             Text(

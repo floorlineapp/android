@@ -12,15 +12,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.SportsEsports
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -31,10 +35,13 @@ import com.thefloor.app.core.common.onError
 import com.thefloor.app.core.common.onSuccess
 import com.thefloor.app.core.data.TalkRepository
 import com.thefloor.app.core.designsystem.FloorTheme
+import com.thefloor.app.core.designsystem.floorListPadding
+import com.thefloor.app.core.designsystem.components.FloorAccent
 import com.thefloor.app.core.designsystem.components.FloorChip
 import com.thefloor.app.core.designsystem.components.FloorEmptyState
 import com.thefloor.app.core.designsystem.components.FloorErrorState
 import com.thefloor.app.core.designsystem.components.FloorHero
+import com.thefloor.app.core.designsystem.components.FloorInfoNote
 import com.thefloor.app.core.designsystem.components.FloorLiveRoomCard
 import com.thefloor.app.core.designsystem.components.FloorPillButton
 import com.thefloor.app.core.designsystem.components.FloorSectionHeader
@@ -44,13 +51,13 @@ import com.thefloor.app.core.designsystem.components.SkeletonList
 import com.thefloor.app.core.model.Post
 import com.thefloor.app.core.model.TalkCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class TalkFeedUiState(
     val loading: Boolean = true,
@@ -122,7 +129,7 @@ class TalkFeedViewModel @Inject constructor(
     }
 }
 
-private data class LiveRoom(val topic: String, val desc: String, val online: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector)
+private data class LiveRoom(val topic: String, val desc: String, val online: Int, val icon: ImageVector)
 
 private val liveRooms = listOf(
     LiveRoom("Love & dating while WFH", "Swipe stories, long-distance shifts, and dating when your schedule is upside down.", 42, Icons.Filled.FavoriteBorder),
@@ -134,7 +141,7 @@ private val liveRooms = listOf(
 )
 
 @Composable
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 fun TalkFeedScreen(
     onOpenPost: (String) -> Unit,
     onCompose: () -> Unit,
@@ -160,7 +167,7 @@ fun TalkFeedScreen(
 
 /** Stateless Talk body — internal so the screenshot suite can render it. */
 @Composable
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 internal fun TalkBody(
     state: TalkFeedUiState,
     modifier: Modifier = Modifier,
@@ -172,17 +179,12 @@ internal fun TalkBody(
 ) {
         Column(modifier = modifier) {
             if (state.offline) OfflineBanner()
-            androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+            PullToRefreshBox(
                 isRefreshing = state.refreshing,
                 onRefresh = onRefresh,
             ) {
                 LazyColumn(
-                    contentPadding = PaddingValues(
-                        start = FloorTheme.spacing.gutter,
-                        end = FloorTheme.spacing.gutter,
-                        top = 12.dp,
-                        bottom = 96.dp,
-                    ),
+                    contentPadding = floorListPadding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     item {
@@ -196,8 +198,8 @@ internal fun TalkBody(
                         )
                     }
                     item {
-                        com.thefloor.app.core.designsystem.components.FloorInfoNote(
-                            accent = com.thefloor.app.core.designsystem.components.FloorAccent.TEAL,
+                        FloorInfoNote(
+                            accent = FloorAccent.TEAL,
                         ) {
                             Text(
                                 "Talk is where a considered opinion goes. Pulse is where a passing moment goes.",
@@ -242,7 +244,7 @@ internal fun TalkBody(
                             }
                             if (state.nextCursor != null) {
                                 item {
-                                    androidx.compose.runtime.LaunchedEffect(state.nextCursor) { onLoadMore() }
+                                    LaunchedEffect(state.nextCursor) { onLoadMore() }
                                     Text("Loading more…", style = FloorTheme.typography.caption, color = FloorTheme.colors.textMuted, modifier = Modifier.padding(8.dp))
                                 }
                             }

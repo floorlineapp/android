@@ -29,9 +29,10 @@ import com.thefloor.app.core.common.ShiftClock
 import com.thefloor.app.core.common.ShiftPhase
 import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.FloorAccent
-import com.thefloor.app.core.designsystem.components.color
 import com.thefloor.app.core.designsystem.components.FloorEyebrow
+import com.thefloor.app.core.designsystem.components.FloorIconChip
 import com.thefloor.app.core.designsystem.components.FloorPillButton
+import com.thefloor.app.core.designsystem.components.color
 import com.thefloor.app.core.model.HomeContent
 
 /** The shift card. */
@@ -63,7 +64,7 @@ fun ShiftCard(
                 .padding(20.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                com.thefloor.app.core.designsystem.components.FloorIconChip(spec.icon, accent)
+                FloorIconChip(spec.icon, accent)
                 Spacer(Modifier.width(12.dp))
                 Column {
                     FloorEyebrow(spec.eyebrow, accent = accent)

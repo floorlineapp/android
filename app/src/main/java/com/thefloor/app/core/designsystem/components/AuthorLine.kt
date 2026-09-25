@@ -9,6 +9,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.thefloor.app.core.common.countryFlag
@@ -40,7 +42,7 @@ fun FloorAuthorLine(
                     style = FloorTheme.typography.bodyStrong,
                     color = FloorTheme.colors.textPrimary,
                     maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
             val showTier = !tier.isNullOrBlank() && tier != "Member"
@@ -68,7 +70,7 @@ fun FloorAuthorLine(
                             style = FloorTheme.typography.caption,
                             color = FloorTheme.colors.textMuted,
                             maxLines = 1,
-                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
@@ -82,7 +84,7 @@ fun FloorAuthorLine(
 }
 
 @Composable
-private fun tierColor(tier: String?): androidx.compose.ui.graphics.Color = when (tier) {
+private fun tierColor(tier: String?): Color = when (tier) {
     "Workplace Ambassador" -> FloorTheme.colors.amber
     "Floor Voice", "Recognised Member" -> FloorTheme.colors.teal
     else -> FloorTheme.colors.textMuted

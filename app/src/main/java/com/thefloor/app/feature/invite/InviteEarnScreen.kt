@@ -33,25 +33,30 @@ import com.thefloor.app.core.common.onError
 import com.thefloor.app.core.common.onSuccess
 import com.thefloor.app.core.data.ReferralRepository
 import com.thefloor.app.core.designsystem.FloorTheme
+import com.thefloor.app.core.designsystem.floorListPadding
 import com.thefloor.app.core.designsystem.components.BadgeTone
+import com.thefloor.app.core.designsystem.components.FloorAccent
 import com.thefloor.app.core.designsystem.components.FloorBadge
 import com.thefloor.app.core.designsystem.components.FloorCard
 import com.thefloor.app.core.designsystem.components.FloorErrorState
+import com.thefloor.app.core.designsystem.components.FloorHero
+import com.thefloor.app.core.designsystem.components.FloorInfoNote
 import com.thefloor.app.core.designsystem.components.FloorListItem
 import com.thefloor.app.core.designsystem.components.FloorPrimaryButton
 import com.thefloor.app.core.designsystem.components.FloorProgressBar
 import com.thefloor.app.core.designsystem.components.FloorSecondaryButton
+import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorStat
 import com.thefloor.app.core.designsystem.components.FloorTopBar
 import com.thefloor.app.core.designsystem.components.SkeletonList
 import com.thefloor.app.core.model.ReferralSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 sealed interface InviteUiState {
     data object Loading : InviteUiState
@@ -112,16 +117,11 @@ fun InviteEarnScreen(
                 val summary = s.summary
                 LazyColumn(
                     modifier = Modifier.padding(padding),
-                    contentPadding = PaddingValues(
-                        start = FloorTheme.spacing.gutter,
-                        end = FloorTheme.spacing.gutter,
-                        top = FloorTheme.spacing.gutter,
-                        bottom = 96.dp,
-                    ),
+                    contentPadding = floorListPadding(),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     item {
-                        com.thefloor.app.core.designsystem.components.FloorHero(
+                        FloorHero(
                             eyebrow = "Referral track · Deliberately separate",
                             title = "Bring good people to The Floor.",
                             subtitle = "Invite the people you work with — free for you, free for them. " +
@@ -129,8 +129,8 @@ fun InviteEarnScreen(
                         )
                     }
                     item {
-                        com.thefloor.app.core.designsystem.components.FloorInfoNote(
-                            accent = com.thefloor.app.core.designsystem.components.FloorAccent.CORAL,
+                        FloorInfoNote(
+                            accent = FloorAccent.CORAL,
                         ) {
                             Text(
                                 "No pay-to-play. No downlines. No commissions from other people's referrals.",
@@ -220,7 +220,7 @@ fun InviteEarnScreen(
                     }
 
                     item {
-                        com.thefloor.app.core.designsystem.components.FloorSectionHeader(
+                        FloorSectionHeader(
                             title = "Founding tiers",
                             subtitle = "Recognition for the people who bring in the most qualified members.",
                         )
@@ -263,7 +263,7 @@ fun InviteEarnScreen(
                     }
 
                     item {
-                        com.thefloor.app.core.designsystem.components.FloorSectionHeader(
+                        FloorSectionHeader(
                             title = "Top referrers",
                             subtitle = "Ranked on qualified referrals, nothing else.",
                         )
@@ -298,7 +298,7 @@ fun InviteEarnScreen(
                     }
 
                     item {
-                        com.thefloor.app.core.designsystem.components.FloorInfoNote {
+                        FloorInfoNote {
                             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                                 Text(
                                     "Community Growth Fund",
@@ -448,7 +448,6 @@ private fun FunnelStage(number: Int, title: String, subtitle: String, count: Int
         )
     }
 }
-
 
 fun statusLabel(status: String): String = when (status) {
     "CONNECTOR" -> "Floor Connector"

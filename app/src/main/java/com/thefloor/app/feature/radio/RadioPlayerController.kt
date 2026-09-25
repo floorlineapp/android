@@ -1,16 +1,18 @@
 package com.thefloor.app.feature.radio
 
 import android.content.Context
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
 sealed interface RadioPlaybackState {
     data object Stopped : RadioPlaybackState
@@ -20,7 +22,7 @@ sealed interface RadioPlaybackState {
 }
 
 /** Real ExoPlayer-backed live-stream controller. */
-@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+@OptIn(UnstableApi::class)
 @Singleton
 class RadioPlayerController @Inject constructor(
     @ApplicationContext private val context: Context,

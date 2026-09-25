@@ -17,14 +17,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import com.thefloor.app.core.designsystem.FloorTheme
 
-/** Same field, but over [androidx.compose.ui.text.input.TextFieldValue] so the caller controls the caret. */
+/** Same field, but over [TextFieldValue] so the caller controls the caret. */
 @Composable
 fun FloorTextField(
-    value: androidx.compose.ui.text.input.TextFieldValue,
-    onValueChange: (androidx.compose.ui.text.input.TextFieldValue) -> Unit,
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
     supporting: String? = null,

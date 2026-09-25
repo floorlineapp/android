@@ -1,19 +1,20 @@
 package com.thefloor.app.core.network
 
 import com.thefloor.app.BuildConfig
+import com.thefloor.app.core.demo.DemoInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import java.util.concurrent.TimeUnit
+import javax.inject.Named
+import javax.inject.Singleton
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
-import java.util.concurrent.TimeUnit
-import javax.inject.Named
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -35,7 +36,7 @@ object NetworkModule {
     fun okHttp(
         authInterceptor: AuthInterceptor,
         tokenAuthenticator: TokenAuthenticator,
-        demoInterceptor: com.thefloor.app.core.demo.DemoInterceptor,
+        demoInterceptor: DemoInterceptor,
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(demoInterceptor)
         .addInterceptor(authInterceptor)

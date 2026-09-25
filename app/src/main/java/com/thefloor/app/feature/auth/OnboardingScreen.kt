@@ -3,6 +3,8 @@ package com.thefloor.app.feature.auth
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,12 +13,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -40,12 +45,12 @@ import com.thefloor.app.core.model.Community
 import com.thefloor.app.core.model.WorkMode
 import com.thefloor.app.core.network.UpdateProfileRequestDto
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /** Steps 3–6 of the six-step sign-up: About You, BPO Profile, Experience and Your Floor. */
 private const val TOTAL_STEPS = 6
@@ -179,7 +184,7 @@ fun OnboardingScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     if (state.finished) {
-        androidx.compose.runtime.LaunchedEffect(Unit) { onFinished() }
+        LaunchedEffect(Unit) { onFinished() }
     }
 
     val title = when (state.step) {
@@ -243,7 +248,7 @@ private fun StepFooter(onContinue: () -> Unit, onSkip: () -> Unit, enabled: Bool
 }
 
 /** Multi-select chip row that wraps. */
-@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ChipWrap(
     label: String,
@@ -253,7 +258,7 @@ private fun ChipWrap(
 ) {
     FloorEyebrow(label, accent = FloorAccent.FAINT)
     Spacer(Modifier.height(8.dp))
-    androidx.compose.foundation.layout.FlowRow(
+    FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -338,8 +343,8 @@ private fun StepExperience(state: OnboardingUiState, vm: OnboardingViewModel) {
             value = state.experienceYears,
             onValueChange = vm::onYears,
             label = "Years in the industry",
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = androidx.compose.ui.text.input.KeyboardType.Number,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
             ),
         )
         Spacer(Modifier.height(18.dp))

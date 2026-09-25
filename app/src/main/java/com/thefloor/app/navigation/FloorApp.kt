@@ -21,25 +21,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.thefloor.app.core.data.AuthRepository
 import com.thefloor.app.core.data.ConfigRepository
 import com.thefloor.app.core.designsystem.FloorTheme
+import com.thefloor.app.core.walker.WalkerBus
 import com.thefloor.app.core.walker.WalkerFab
 import com.thefloor.app.core.walker.WalkerSheet
 import com.thefloor.app.domain.DeepLinkParser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /** Session gate: which world the user is in. */
 enum class SessionState { LOADING, SIGNED_OUT, SIGNED_IN, SIGNED_IN_UNVERIFIED }
@@ -48,11 +49,11 @@ enum class SessionState { LOADING, SIGNED_OUT, SIGNED_IN, SIGNED_IN_UNVERIFIED }
 class RootViewModel @Inject constructor(
     authRepository: AuthRepository,
     private val configRepository: ConfigRepository,
-    private val walkerBus: com.thefloor.app.core.walker.WalkerBus,
+    private val walkerBus: WalkerBus,
 ) : ViewModel() {
-    val walkerOpen: StateFlow<Boolean> = walkerBus.open
-    fun openWalker() = walkerBus.open()
-    fun closeWalker() = walkerBus.close()
+    val walkerOpen: StateFlow<Boolean> = walkerBus.isOpen
+    fun openWalker() = walkerBus.show()
+    fun closeWalker() = walkerBus.hide()
 
     val sessionState: StateFlow<SessionState> = authRepository.session
         .map { session ->
