@@ -106,7 +106,9 @@ class ScreenshotTest {
     }
 
     // ---------- editorial pages ----------
-    @Test fun insights() = snap("page_insights") { InsightsScreen(onBack = {}) }
+    @Test fun insights() = snap("page_insights") {
+        InsightsScreen(onBack = {}, mySubmissions = fakeSubmissions)
+    }
     @Test fun academy() = snap("page_academy") { AcademyScreen(onBack = {}) }
     @Test fun events() = snap("page_events") { EventsScreen(onBack = {}) }
     @Test fun marketplace() = snap("page_marketplace") { MarketplaceScreen {} }
@@ -169,7 +171,13 @@ class ScreenshotTest {
     // ---------- screens that were missing until Milano's pass ----------
     @Test fun spotlightRules() = snap("page_spotlight_rules") { SpotlightRulesScreen {} }
     @Test fun spotlightSubmit() = snap("page_spotlight_submit") {
-        SubmitSpotlightScreen(onBack = {}, employer = "Meridian Contact Solutions", country = "South Africa")
+        // No Hilt graph under Robolectric: render the screen without its view model.
+        SubmitSpotlightScreen(
+            onBack = {},
+            employer = "Meridian Contact Solutions",
+            country = "South Africa",
+            viewModel = null,
+        )
     }
     @Test fun pointsRules() = snap("page_points_rules") { PointsRulesScreen(onBack = {}) }
     @Test fun pointsRulesLight() = snap("page_points_rules_light", dark = false) { PointsRulesScreen(onBack = {}) }
@@ -324,6 +332,21 @@ private val fakeTalk = TalkFeedUiState(
             "Are BPO salaries keeping pace with what companies now expect agents to handle?", 129, 341),
         fakePost("p3", "Owen K.", CareerLevel.AGENT, "Recognised Member", "PH", "c4", "AI & The Future",
             "AI quality scoring is here. Should an algorithm be allowed to affect an agent bonus?", 143, 267),
+    ),
+)
+
+private val fakeSubmissions = listOf(
+    com.thefloor.app.core.network.SpotlightSubmissionDto(
+        id = "sp0", category = "Awards & Recognition",
+        title = "Voice team takes national CX award",
+        status = "pending", createdAt = "2026-09-24T09:00:00Z",
+    ),
+    com.thefloor.app.core.network.SpotlightSubmissionDto(
+        id = "sp2", category = "Career Growth",
+        title = "Four of my team made Team Leader this year",
+        status = "rejected",
+        reviewerNote = "Needs the names removed or their written agreement attached.",
+        createdAt = "2026-09-10T09:00:00Z",
     ),
 )
 
