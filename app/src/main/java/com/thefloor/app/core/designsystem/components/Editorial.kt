@@ -128,6 +128,7 @@ fun FloorPillButton(
  * radius. Eyebrow / title / subtitle then any [actions] (usually pill buttons,
  * laid out left-to-right with 10dp gaps).
  */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun FloorHero(
     title: String,
@@ -176,7 +177,12 @@ fun FloorHero(
             }
             if (actions != null) {
                 Spacer(Modifier.height(20.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) { actions() }
+                // Wraps: a hero with four actions overflowed a single Row and
+                // left a tall empty band where the buttons should have been.
+                androidx.compose.foundation.layout.FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) { actions() }
             }
         }
     }
