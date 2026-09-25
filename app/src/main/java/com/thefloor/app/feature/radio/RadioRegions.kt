@@ -1,5 +1,7 @@
 package com.thefloor.app.feature.radio
 
+import androidx.compose.runtime.getValue
+
 /** The six fixed Floor Radio regions. */
 data class RadioShow(val time: String, val name: String, val desc: String)
 

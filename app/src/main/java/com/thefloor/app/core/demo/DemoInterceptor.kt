@@ -1,5 +1,6 @@
 package com.thefloor.app.core.demo
 
+import androidx.compose.runtime.getValue
 import com.thefloor.app.core.network.AuthResponseDto
 import com.thefloor.app.core.network.CategoriesDto
 import com.thefloor.app.core.network.CategoryDto

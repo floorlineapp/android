@@ -1,5 +1,7 @@
 package com.thefloor.app.core.model
 
+import androidx.compose.runtime.getValue
+
 /** Domain models — immutable, UI-agnostic, mapped from network DTOs in repositories. */
 
 data class Money(val amountMinor: Long, val currency: String) {

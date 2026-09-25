@@ -12,11 +12,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.thefloor.app.core.designsystem.FloorTheme
-import com.thefloor.app.core.designsystem.floorListPadding
 import com.thefloor.app.core.designsystem.components.BadgeTone
 import com.thefloor.app.core.designsystem.components.FloorAccent
 import com.thefloor.app.core.designsystem.components.FloorBadge
@@ -26,6 +26,7 @@ import com.thefloor.app.core.designsystem.components.FloorHero
 import com.thefloor.app.core.designsystem.components.FloorInfoNote
 import com.thefloor.app.core.designsystem.components.FloorSectionHeader
 import com.thefloor.app.core.designsystem.components.FloorTopBar
+import com.thefloor.app.core.designsystem.floorListPadding
 
 /** How points work. */
 private data class EarnRule(val title: String, val points: Int, val cap: String, val source: String)
