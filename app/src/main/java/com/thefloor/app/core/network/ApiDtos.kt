@@ -159,6 +159,10 @@ data class PostDto(
     val authorId: String = "",
     val authorName: String = "",
     val authorLevel: String? = null,
+    // Recognition tier and country travel with every authored thing, so status
+    // is visible where the work happens rather than only on your own profile.
+    val authorTier: String? = null,
+    val authorCountry: String? = null,
     val categoryId: String = "",
     val categoryName: String = "",
     val communityId: String? = null,
@@ -178,6 +182,8 @@ data class CommentDto(
     val id: String,
     val authorId: String = "",
     val authorName: String = "",
+    val authorTier: String? = null,
+    val authorCountry: String? = null,
     val parentId: String? = null,
     val body: String = "",
     val createdAt: String = "",
@@ -202,6 +208,8 @@ data class PulseDto(
     val id: String,
     val authorId: String = "",
     val authorName: String = "",
+    val authorTier: String? = null,
+    val authorCountry: String? = null,
     val body: String = "",
     val mediaUrl: String? = null,
     val mediaType: String? = null,
@@ -303,6 +311,57 @@ data class RewardsSummaryDto(
 
 @Serializable
 data class RewardTransactionsDto(val items: List<RewardTransactionDto> = emptyList())
+
+// ---- workplace spotlight ----
+@Serializable
+data class SpotlightSubmissionDto(
+    val id: String,
+    val category: String = "",
+    val title: String = "",
+    val story: String = "",
+    val proofText: String = "",
+    val mediaUrl: String? = null,
+    val company: String = "",
+    val country: String = "",
+    /** pending / approved / rejected — mirrors spotlight_submissions.status. */
+    val status: String = "pending",
+    val reviewerNote: String? = null,
+    val createdAt: String = "",
+)
+
+@Serializable
+data class SpotlightListDto(val items: List<SpotlightSubmissionDto> = emptyList())
+
+@Serializable
+data class CreateSpotlightRequestDto(
+    val category: String,
+    val title: String,
+    val story: String,
+    val proofText: String,
+    val mediaUrl: String? = null,
+)
+
+// ---- walker / support ----
+@Serializable
+data class SupportMessageDto(
+    val id: String,
+    /** user / ai / agent — modelled from day one so staffing later is not a rebuild. */
+    val sender: String = "ai",
+    val body: String = "",
+    val createdAt: String = "",
+)
+
+@Serializable
+data class SupportConversationDto(
+    val id: String,
+    /** open / ai_handled / escalated / closed. */
+    val status: String = "open",
+    val reference: String? = null,
+    val messages: List<SupportMessageDto> = emptyList(),
+)
+
+@Serializable
+data class SupportSendRequestDto(val body: String, val escalate: Boolean = false)
 
 // ---- notifications ----
 @Serializable

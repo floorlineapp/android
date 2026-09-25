@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.BadgeTone
 import com.thefloor.app.core.designsystem.components.FloorAccent
-import com.thefloor.app.core.designsystem.components.FloorAvatar
+import com.thefloor.app.core.designsystem.components.FloorAuthorLine
 import com.thefloor.app.core.designsystem.components.FloorBadge
 import com.thefloor.app.core.designsystem.components.FloorCard
 import com.thefloor.app.core.model.Post
@@ -35,19 +35,17 @@ private fun categoryTone(name: String): BadgeTone = when {
 @Composable
 fun PostCard(post: Post, onClick: () -> Unit) {
     FloorCard(onClick = onClick, contentPadding = 18.dp) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            FloorAvatar(name = post.authorName, ring = FloorAccent.TEAL, size = 34.dp)
-            Spacer(Modifier.width(10.dp))
-            androidx.compose.foundation.layout.Column(Modifier.weight(1f)) {
-                Text(post.authorName, style = FloorTheme.typography.bodyStrong, color = FloorTheme.colors.textPrimary)
-                post.authorLevel?.let { level ->
-                    Text(level.label, style = FloorTheme.typography.caption, color = FloorTheme.colors.textMuted)
+        FloorAuthorLine(
+            name = post.authorName,
+            tier = post.authorTier,
+            countryCode = post.authorCountry,
+            subtitle = post.authorLevel?.label,
+            trailing = {
+                if (post.categoryName.isNotBlank()) {
+                    FloorBadge(text = post.categoryName.uppercase(), tone = categoryTone(post.categoryName))
                 }
-            }
-            if (post.categoryName.isNotBlank()) {
-                FloorBadge(text = post.categoryName.uppercase(), tone = categoryTone(post.categoryName))
-            }
-        }
+            },
+        )
         Spacer(Modifier.height(12.dp))
         Text(
             post.body,

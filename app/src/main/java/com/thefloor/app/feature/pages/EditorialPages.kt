@@ -256,9 +256,26 @@ private val spotlightStories = listOf(
     SpotlightStory("Workplace Events", "Harbour Line Services", "Poland", "The first all-site handover party", "Event photos and the internal invitation."),
 )
 
+@dagger.hilt.android.lifecycle.HiltViewModel
+class SpotlightViewModel @javax.inject.Inject constructor(
+    private val spotlight: com.thefloor.app.core.data.SpotlightRepository,
+) : androidx.lifecycle.ViewModel() {
+
+    val mine = kotlinx.coroutines.flow.MutableStateFlow<List<com.thefloor.app.core.network.SpotlightSubmissionDto>>(emptyList())
+
+    init { refresh() }
+
+    fun refresh() {
+        viewModelScope.launch {
+            spotlight.submissions().onSuccess { mine.value = it }
+        }
+    }
+}
+
 @Composable
 fun InsightsScreen(
     onBack: () -> Unit,
+    mySubmissions: List<com.thefloor.app.core.network.SpotlightSubmissionDto> = emptyList(),
     onOpenRules: () -> Unit = {},
     onOpenSubmit: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
@@ -365,6 +382,45 @@ fun InsightsScreen(
                                 color = FloorTheme.colors.textMuted,
                             )
                         }
+                    }
+                }
+            }
+        }
+
+        if (mySubmissions.isNotEmpty()) {
+            item {
+                FloorSectionHeader(
+                    title = "Your submissions",
+                    subtitle = "Every one is read by a person before anything is published.",
+                )
+            }
+            items(mySubmissions.size) { i ->
+                val sub = mySubmissions[i]
+                FloorCard(contentPadding = 16.dp) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        FloorEyebrow(sub.category, accent = FloorAccent.FAINT, modifier = Modifier.weight(1f))
+                        FloorBadge(
+                            when (sub.status) {
+                                "approved" -> "Approved · +75"
+                                "rejected" -> "Needs changes"
+                                else -> "In review"
+                            },
+                            tone = when (sub.status) {
+                                "approved" -> BadgeTone.TEAL
+                                "rejected" -> BadgeTone.CORAL
+                                else -> BadgeTone.AMBER
+                            },
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text(sub.title, style = FloorTheme.typography.titleSm, color = FloorTheme.colors.textPrimary)
+                    if (sub.reviewerNote != null) {
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            sub.reviewerNote,
+                            style = FloorTheme.typography.body,
+                            color = FloorTheme.colors.coral,
+                        )
                     }
                 }
             }

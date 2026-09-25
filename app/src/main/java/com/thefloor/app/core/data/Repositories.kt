@@ -66,6 +66,49 @@ class UserRepository @Inject constructor(private val api: FloorApi) {
         safeCall { api.deleteAccount(DeleteAccountRequestDto(password)) }.map { }
 }
 
+/** Workplace Spotlight submissions — the record behind the submit screen. */
+@Singleton
+class SpotlightRepository @Inject constructor(private val api: FloorApi) {
+
+    suspend fun submissions(): AppResult<List<com.thefloor.app.core.network.SpotlightSubmissionDto>> =
+        safeCall { api.spotlightSubmissions() }.map { it.items }
+
+    suspend fun submit(
+        category: String,
+        title: String,
+        story: String,
+        proofText: String,
+        mediaUrl: String?,
+    ): AppResult<com.thefloor.app.core.network.SpotlightSubmissionDto> = safeCall {
+        api.createSpotlightSubmission(
+            com.thefloor.app.core.network.CreateSpotlightRequestDto(
+                category = category,
+                title = title,
+                story = story,
+                proofText = proofText,
+                mediaUrl = mediaUrl,
+            ),
+        )
+    }
+}
+
+/** Walker's conversation record. */
+@Singleton
+class SupportRepository @Inject constructor(private val api: FloorApi) {
+
+    suspend fun conversation(): AppResult<com.thefloor.app.core.network.SupportConversationDto> =
+        safeCall { api.supportConversation() }
+
+    suspend fun send(
+        body: String,
+        escalate: Boolean = false,
+    ): AppResult<com.thefloor.app.core.network.SupportConversationDto> = safeCall {
+        api.sendSupportMessage(
+            com.thefloor.app.core.network.SupportSendRequestDto(body, escalate),
+        )
+    }
+}
+
 @Singleton
 class HomeRepository @Inject constructor(private val api: FloorApi) {
 
@@ -180,7 +223,16 @@ class TalkRepository @Inject constructor(
 
     suspend fun comments(postId: String): AppResult<List<Comment>> =
         safeCall { api.comments(postId) }.map { page ->
-            page.items.map { Comment(it.id, it.authorId, it.authorName, it.parentId, it.body, it.createdAt) }
+            page.items.map { Comment(
+                    id = it.id,
+                    authorId = it.authorId,
+                    authorName = it.authorName,
+                    authorTier = it.authorTier,
+                    authorCountry = it.authorCountry,
+                    parentId = it.parentId,
+                    body = it.body,
+                    createdAt = it.createdAt,
+                ) }
         }
 
     suspend fun addComment(
@@ -190,7 +242,16 @@ class TalkRepository @Inject constructor(
         mentionUserIds: List<String> = emptyList(),
     ): AppResult<Comment> =
         safeCall { api.createComment(postId, CreateCommentRequestDto(body, parentId, mentionUserIds)) }
-            .map { Comment(it.id, it.authorId, it.authorName, it.parentId, it.body, it.createdAt) }
+            .map { Comment(
+                    id = it.id,
+                    authorId = it.authorId,
+                    authorName = it.authorName,
+                    authorTier = it.authorTier,
+                    authorCountry = it.authorCountry,
+                    parentId = it.parentId,
+                    body = it.body,
+                    createdAt = it.createdAt,
+                ) }
 
     suspend fun deletePost(postId: String): AppResult<Unit> =
         safeCall { api.deletePost(postId) }.map { }

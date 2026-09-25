@@ -583,30 +583,26 @@ private fun PulseCard(
             .background(FloorTheme.colors.surface)
             .padding(16.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            com.thefloor.app.core.designsystem.components.FloorAvatar(
-                name = pulse.authorName,
-                ring = com.thefloor.app.core.designsystem.components.FloorAccent.AMBER,
-                size = 36.dp,
-            )
-            Spacer(Modifier.width(10.dp))
-            Column {
-                Text(pulse.authorName, style = FloorTheme.typography.label, color = FloorTheme.colors.textPrimary)
-                Text(TimeAgo.format(pulse.createdAt), style = FloorTheme.typography.caption, color = FloorTheme.colors.textMuted)
-            }
-            Spacer(Modifier.weight(1f))
-            if (isMine) {
-                Text(
-                    "Delete",
-                    style = FloorTheme.typography.caption,
-                    color = FloorTheme.colors.coral,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable(onClick = onDelete)
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                )
-            }
-        }
+        com.thefloor.app.core.designsystem.components.FloorAuthorLine(
+            name = pulse.authorName,
+            tier = pulse.authorTier,
+            countryCode = pulse.authorCountry,
+            subtitle = TimeAgo.format(pulse.createdAt),
+            avatarSize = 36.dp,
+            trailing = {
+                if (isMine) {
+                    Text(
+                        "Delete",
+                        style = FloorTheme.typography.caption,
+                        color = FloorTheme.colors.coral,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable(onClick = onDelete)
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                    )
+                }
+            },
+        )
         if (pulse.body.isNotBlank()) {
             Spacer(Modifier.height(10.dp))
             Text(pulse.body, style = FloorTheme.typography.body, color = FloorTheme.colors.textPrimary)

@@ -314,8 +314,12 @@ fun FloorNavHost(
         }
         composable(Routes.MARKETPLACE) { com.thefloor.app.feature.pages.MarketplaceScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.INSIGHTS) {
+            val vm: com.thefloor.app.feature.pages.SpotlightViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+            val mine by vm.mine.collectAsStateWithLifecycle()
+            androidx.compose.runtime.LaunchedEffect(Unit) { vm.refresh() }
             com.thefloor.app.feature.pages.InsightsScreen(
                 onBack = { navController.popBackStack() },
+                mySubmissions = mine,
                 onOpenRules = { navController.navigate(Routes.SPOTLIGHT_RULES) },
                 onOpenSubmit = { navController.navigate(Routes.SPOTLIGHT_SUBMIT) },
                 onOpenProfile = { navController.navigate(Routes.PROFILE) },

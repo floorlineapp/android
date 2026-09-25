@@ -345,14 +345,14 @@ fun PostDetailScreen(
                             items(state.comments, key = { it.id }) { comment ->
                                 Column {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(comment.authorName, style = FloorTheme.typography.label, color = FloorTheme.colors.textPrimary)
-                                        Spacer(Modifier.width(8.dp))
-                                        Text(
-                                            com.thefloor.app.core.common.TimeAgo.format(comment.createdAt),
-                                            style = FloorTheme.typography.caption,
-                                            color = FloorTheme.colors.textMuted,
+                                        com.thefloor.app.core.designsystem.components.FloorAuthorLine(
+                                            name = comment.authorName,
+                                            tier = comment.authorTier,
+                                            countryCode = comment.authorCountry,
+                                            subtitle = com.thefloor.app.core.common.TimeAgo.format(comment.createdAt),
+                                            avatarSize = 28.dp,
+                                            modifier = Modifier.weight(1f),
                                         )
-                                        Spacer(Modifier.weight(1f))
                                         // Delete your own comment (server also enforces ownership).
                                         if (comment.authorId == state.myUserId) {
                                             Text(

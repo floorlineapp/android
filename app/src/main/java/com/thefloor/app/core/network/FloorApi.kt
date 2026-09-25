@@ -175,6 +175,20 @@ interface FloorApi {
     @GET("v1/rewards/transactions")
     suspend fun rewardTransactions(): RewardTransactionsDto
 
+    // ---- workplace spotlight ----
+    @GET("v1/spotlight/submissions")
+    suspend fun spotlightSubmissions(): SpotlightListDto
+
+    @POST("v1/spotlight/submissions")
+    suspend fun createSpotlightSubmission(@Body body: CreateSpotlightRequestDto): SpotlightSubmissionDto
+
+    // ---- walker / support ----
+    @GET("v1/support/conversation")
+    suspend fun supportConversation(): SupportConversationDto
+
+    @POST("v1/support/messages")
+    suspend fun sendSupportMessage(@Body body: SupportSendRequestDto): SupportConversationDto
+
     // ---- notifications ----
     @GET("v1/notifications")
     suspend fun notifications(): NotificationsDto

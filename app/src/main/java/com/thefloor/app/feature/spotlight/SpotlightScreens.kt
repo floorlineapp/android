@@ -23,6 +23,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.thefloor.app.core.common.onError
+import com.thefloor.app.core.common.onSuccess
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -208,19 +212,43 @@ private val spotlightCategories = listOf(
     "Workplace Events",
 )
 
+@dagger.hilt.android.lifecycle.HiltViewModel
+class SubmitSpotlightViewModel @javax.inject.Inject constructor(
+    private val spotlight: com.thefloor.app.core.data.SpotlightRepository,
+) : androidx.lifecycle.ViewModel() {
+
+    val sending = kotlinx.coroutines.flow.MutableStateFlow(false)
+    val submitted = kotlinx.coroutines.flow.MutableStateFlow(false)
+    val error = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
+
+    fun submit(category: String, title: String, story: String, proofText: String, mediaUrl: String?) {
+        if (sending.value) return
+        sending.value = true
+        androidx.lifecycle.viewModelScope.launch {
+            spotlight.submit(category, title, story, proofText, mediaUrl)
+                .onSuccess { submitted.value = true; sending.value = false }
+                .onError { e -> error.value = e.userMessage; sending.value = false }
+        }
+    }
+}
+
 @Composable
 fun SubmitSpotlightScreen(
     onBack: () -> Unit,
     eligible: Boolean = true,
     employer: String = "",
     country: String = "",
+    viewModel: SubmitSpotlightViewModel? = androidx.hilt.navigation.compose.hiltViewModel(),
 ) {
     var category by remember { mutableStateOf(spotlightCategories.first()) }
     var title by remember { mutableStateOf("") }
     var story by remember { mutableStateOf("") }
     var proof by remember { mutableStateOf("") }
     var media by remember { mutableStateOf<String?>(null) }
-    var submitted by remember { mutableStateOf(false) }
+    val submitted by (viewModel?.submitted ?: kotlinx.coroutines.flow.MutableStateFlow(false))
+        .collectAsStateWithLifecycle()
+    val sending by (viewModel?.sending ?: kotlinx.coroutines.flow.MutableStateFlow(false))
+        .collectAsStateWithLifecycle()
 
     val pickProof = androidx.activity.compose.rememberLauncherForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia(),
@@ -254,9 +282,10 @@ fun SubmitSpotlightScreen(
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            "A reviewer checks the proof against the claim. You will see the status " +
-                                "change here, and an approved story pays +75 Floor Points into your " +
-                                "ledger. Nothing is published before that.",
+                            "A reviewer checks the proof against the claim. It is listed under Your " +
+                                "submissions on the Spotlight page with its status, and an approved " +
+                                "story pays +75 Floor Points into your ledger. Nothing is published " +
+                                "before that.",
                             style = FloorTheme.typography.body,
                             color = FloorTheme.colors.textSecondary,
                         )
@@ -449,8 +478,11 @@ fun SubmitSpotlightScreen(
             item {
                 FloorPrimaryButton(
                     text = "Send for review",
-                    onClick = { submitted = true },
-                    enabled = eligible && ready,
+                    loading = sending,
+                    onClick = {
+                        viewModel?.submit(category, title.trim(), story.trim(), proof.trim(), media)
+                    },
+                    enabled = eligible && ready && viewModel != null,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }

@@ -44,9 +44,11 @@ import com.thefloor.app.core.designsystem.FloorTheme
 import com.thefloor.app.core.designsystem.components.FloorAccent
 import com.thefloor.app.core.designsystem.components.FloorEyebrow
 import com.thefloor.app.core.designsystem.components.FloorPillButton
+import com.thefloor.app.core.common.onError
+import com.thefloor.app.core.common.onSuccess
+import com.thefloor.app.core.designsystem.components.FloorChip
 import com.thefloor.app.core.designsystem.components.FloorTextField
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -77,120 +79,83 @@ data class WalkerMessage(
 )
 
 data class WalkerState(
-    val messages: List<WalkerMessage> = listOf(
-        WalkerMessage(
-            id = 0,
-            sender = WalkerSender.AI,
-            body = "Hi — I'm Walker, support for The Floor. Ask me about your account, " +
-                "Floor Points, verification, a community, or anything that isn't working. " +
-                "If I can't sort it, I'll pass it to a person.",
-        ),
-    ),
+    val messages: List<WalkerMessage> = emptyList(),
     val status: WalkerStatus = WalkerStatus.OPEN,
-    val replying: Boolean = false,
+    /** Quotable ticket reference once a human has it. */
+    val reference: String? = null,
+    val sending: Boolean = false,
 )
 
 /**
- * Lets any screen raise Walker without owning it. Walker is rendered once by
- * the app shell; a "Suggest a Floor" card or a support prompt deep inside a
- * feature just flips this.
+ * The questions people actually arrive with. Offering them is not decoration:
+ * a support box with no prompts gets "it doesn't work", and a support box with
+ * the right five prompts gets an answerable question.
  */
-@javax.inject.Singleton
-class WalkerBus @Inject constructor() {
-    val open = MutableStateFlow(false)
-    fun open() { open.value = true }
-    fun close() { open.value = false }
-}
+val WALKER_TOPICS = listOf(
+    "Where are my points?",
+    "Am I verified?",
+    "What tier am I?",
+    "How do I submit a Spotlight?",
+    "How does Invite & Grow pay?",
+)
 
 @HiltViewModel
-class WalkerViewModel @Inject constructor() : ViewModel() {
+class WalkerViewModel @Inject constructor(
+    private val support: com.thefloor.app.core.data.SupportRepository,
+) : ViewModel() {
 
     val state = MutableStateFlow(WalkerState())
-    private var nextId = 1L
+
+    init {
+        viewModelScope.launch {
+            support.conversation().onSuccess { apply(it) }
+        }
+    }
 
     fun send(text: String) {
         val body = text.trim()
-        if (body.isEmpty() || state.value.replying) return
-        state.update {
-            it.copy(
-                messages = it.messages + WalkerMessage(nextId++, WalkerSender.USER, body),
-                replying = true,
-            )
-        }
+        if (body.isEmpty() || state.value.sending) return
+        state.update { it.copy(sending = true) }
         viewModelScope.launch {
-            delay(650)
-            val reply = answerFor(body)
-            state.update {
-                it.copy(
-                    messages = it.messages + WalkerMessage(nextId++, WalkerSender.AI, reply),
-                    status = if (it.status == WalkerStatus.OPEN) WalkerStatus.AI_HANDLED else it.status,
-                    replying = false,
-                )
-            }
+            support.send(body)
+                .onSuccess { apply(it) }
+                .onError { state.update { s -> s.copy(sending = false) } }
         }
     }
 
-    /** Explicit hand-off. Honest: it opens a ticket, it does not summon a person. */
+    /** Hands the whole thread over and comes back with a reference. */
     fun escalate() {
-        if (state.value.status == WalkerStatus.ESCALATED) return
-        state.update {
-            it.copy(
-                status = WalkerStatus.ESCALATED,
-                messages = it.messages + WalkerMessage(
-                    nextId++,
-                    WalkerSender.AGENT,
-                    "This conversation is now with the Walker team. We'll come back to you " +
-                        "here — you'll get a notification when someone replies. Support runs " +
-                        "across timezones, so an answer may not be instant.",
-                ),
-            )
+        if (state.value.status == WalkerStatus.ESCALATED || state.value.sending) return
+        state.update { it.copy(sending = true) }
+        viewModelScope.launch {
+            support.send(body = "", escalate = true)
+                .onSuccess { apply(it) }
+                .onError { state.update { s -> s.copy(sending = false) } }
         }
     }
 
-    /** In-context replies keyed off what the member actually asked about. */
-    private fun answerFor(q: String): String {
-        val t = q.lowercase()
-        return when {
-            listOf("point", "balance", "credit", "pts").any { t.contains(it) } ->
-                "Every Floor Point has a source, a timestamp and a ledger entry — nothing is " +
-                    "awarded by a click alone. Open Rewards & Games to see your full history. " +
-                    "If a point you expected is missing, tell me which action and when, and " +
-                    "I'll check the record."
-            listOf("verif", "badge", "workplace").any { t.contains(it) } ->
-                "Workplace verification is what unlocks Recognised Member and lets you submit " +
-                    "to Workplace Spotlight. The quickest route is a work email on your " +
-                    "employer's domain — add it under Profile → Edit."
-            listOf("floor", "communit", "join", "group").any { t.contains(it) } ->
-                "Floors are open — joining is one tap, with no approval step. If the Floor you " +
-                    "want doesn't exist, use \"Suggest a Floor\" on The Floor tab and it comes " +
-                    "straight to us."
-            listOf("spotlight", "submit", "story").any { t.contains(it) } ->
-                "Spotlight submission unlocks at Floor Voice — 10,000 Floor Points plus a " +
-                    "verified workplace. Approved stories pay +75 points back into your ledger."
-            listOf("refer", "invite", "commission", "payout").any { t.contains(it) } ->
-                "Invite & Grow is a separate record from Floor Points on purpose: referrals " +
-                    "never add points and never buy stature. No pay-to-play, no downlines, no " +
-                    "commissions from other people's referrals."
-            listOf("password", "log in", "login", "sign in", "locked").any { t.contains(it) } ->
-                "I can't reset a password from here, but the \"Forgot password\" link on the " +
-                    "login screen emails you a reset link. If it doesn't arrive, check spam " +
-                    "and tell me the address you used."
-            listOf("delete", "close my account", "leave").any { t.contains(it) } ->
-                "You can delete your account under Settings → Delete account. It removes your " +
-                    "profile and your posts. If you'd rather just step back, you can go quiet " +
-                    "from Profile → Privacy instead."
-            listOf("radio", "on air", "listen").any { t.contains(it) } ->
-                "Floor Radio runs six regional feeds — Global, Africa, Philippines, India, " +
-                    "UK & Europe and the Americas — each with its own schedule and live chat. " +
-                    "Your region choice is remembered on this device."
-            listOf("human", "person", "someone", "agent", "real").any { t.contains(it) } ->
-                "I can pass this to the Walker team — tap \"Talk to a person\" below and I'll " +
-                    "hand the whole conversation over."
-            else ->
-                "Got it. I've logged that. If it's account, payment or something broken, tap " +
-                    "\"Talk to a person\" and the Walker team picks it up with this " +
-                    "conversation attached."
-        }
+    private fun apply(dto: com.thefloor.app.core.network.SupportConversationDto) {
+        state.value = WalkerState(
+            messages = dto.messages.mapIndexed { index, m ->
+                WalkerMessage(
+                    id = index.toLong(),
+                    sender = when (m.sender) {
+                        "user" -> WalkerSender.USER
+                        "agent" -> WalkerSender.AGENT
+                        else -> WalkerSender.AI
+                    },
+                    body = m.body,
+                )
+            },
+            status = when (dto.status) {
+                "escalated" -> WalkerStatus.ESCALATED
+                "closed" -> WalkerStatus.CLOSED
+                "ai_handled" -> WalkerStatus.AI_HANDLED
+                else -> WalkerStatus.OPEN
+            },
+            reference = dto.reference,
+            sending = false,
+        )
     }
 }
 
@@ -276,9 +241,10 @@ internal fun WalkerConversation(
                 Text("Walker", style = FloorTheme.typography.title, color = FloorTheme.colors.textPrimary)
                 Text(
                     when (state.status) {
-                        WalkerStatus.ESCALATED -> "With the Walker team"
+                        WalkerStatus.ESCALATED ->
+                            state.reference?.let { "With the Walker team · $it" } ?: "With the Walker team"
                         WalkerStatus.CLOSED -> "Closed"
-                        else -> "Support across The Floor"
+                        else -> "Automated first line · a person on request"
                     },
                     style = FloorTheme.typography.caption,
                     color = if (state.status == WalkerStatus.ESCALATED) {
@@ -299,13 +265,25 @@ internal fun WalkerConversation(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             items(state.messages, key = { it.id }) { m -> WalkerBubble(m) }
-            if (state.replying) {
+            if (state.sending) {
                 item {
                     Text(
-                        "Walker is typing…",
+                        "Walker is checking…",
                         style = FloorTheme.typography.caption,
                         color = FloorTheme.colors.textMuted,
                     )
+                }
+            }
+        }
+
+        // Prompts, while the thread is still short enough for them to help.
+        if (state.messages.count { it.sender == WalkerSender.USER } < 2) {
+            Spacer(Modifier.height(10.dp))
+            androidx.compose.foundation.lazy.LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(WALKER_TOPICS) { topic ->
+                    FloorChip(text = topic, selected = false, onClick = { onSend(topic) })
                 }
             }
         }
@@ -336,7 +314,7 @@ internal fun WalkerConversation(
                     onSend(draft)
                     draft = ""
                 },
-                enabled = draft.isNotBlank() && !state.replying,
+                enabled = draft.isNotBlank() && !state.sending,
             ) {
                 Icon(
                     Icons.AutoMirrored.Filled.Send,
@@ -347,8 +325,12 @@ internal fun WalkerConversation(
         }
         Spacer(Modifier.height(4.dp))
         Text(
-            "Walker answers automatically first. Asking for a person opens a ticket with " +
-                "the Walker team — replies arrive here.",
+            if (state.reference != null) {
+                "Reference ${state.reference}. Replies from the Walker team arrive in this thread."
+            } else {
+                "Walker answers from what The Floor knows — your points, your verification, your " +
+                    "tier. It is automated, not a person. Ask for one any time."
+            },
             style = FloorTheme.typography.caption,
             color = FloorTheme.colors.textMuted,
         )

@@ -31,6 +31,10 @@ import com.thefloor.app.core.network.ReferralSummaryDto
 import com.thefloor.app.core.network.RewardTransactionDto
 import com.thefloor.app.core.network.RewardTransactionsDto
 import com.thefloor.app.core.network.RewardsSummaryDto
+import com.thefloor.app.core.network.SpotlightListDto
+import com.thefloor.app.core.network.SpotlightSubmissionDto
+import com.thefloor.app.core.network.SupportConversationDto
+import com.thefloor.app.core.network.SupportMessageDto
 import com.thefloor.app.core.network.TokenPairDto
 import com.thefloor.app.core.network.WayToEarnDto
 import kotlinx.serialization.json.Json
@@ -112,6 +116,10 @@ class DemoBackend @Inject constructor() {
     private val pulses = seedPulses().toMutableList()
     private val notifications = seedNotifications().toMutableList()
     private val transactions = seedTransactions().toMutableList()
+    private val spotlight = seedSpotlight().toMutableList()
+    private val supportMessages = seedSupport().toMutableList()
+    private var supportStatus = "open"
+    private var supportReference: String? = null
     private var prefs = PrefsDto(master = true, categories = mapOf("talk" to true, "rewards" to true, "floors" to true))
     private var nextId = 1000
 
@@ -246,6 +254,18 @@ class DemoBackend @Inject constructor() {
                 json.encodeToString(kotlinx.serialization.builtins.ListSerializer(FaqItemDto.serializer()), FAQ)
             seg.firstOrNull() == "referrals" -> ok
 
+            // ---- workplace spotlight ----
+            seg == listOf("spotlight", "submissions") && method == "POST" ->
+                json.encodeToString(SpotlightSubmissionDto.serializer(), createSubmission(body))
+            seg == listOf("spotlight", "submissions") ->
+                json.encodeToString(SpotlightListDto.serializer(), SpotlightListDto(spotlight))
+
+            // ---- walker ----
+            seg == listOf("support", "conversation") ->
+                json.encodeToString(SupportConversationDto.serializer(), conversation())
+            seg == listOf("support", "messages") ->
+                json.encodeToString(SupportConversationDto.serializer(), handleSupport(body))
+
             // ---- notifications ----
             seg == listOf("notifications", "preferences") && method != "GET" -> {
                 runCatching { prefs = json.decodeFromString(PrefsDto.serializer(), body) }
@@ -284,6 +304,8 @@ class DemoBackend @Inject constructor() {
             authorId = DemoMode.USER_ID,
             authorName = profile.displayName,
             authorLevel = profile.careerLevel,
+            authorTier = myTier(),
+            authorCountry = countryCode(profile.country),
             categoryId = categoryId,
             categoryName = CATEGORIES.firstOrNull { it.id == categoryId }?.name.orEmpty(),
             communityId = "za",
@@ -309,6 +331,8 @@ class DemoBackend @Inject constructor() {
             id = id("cm"),
             authorId = DemoMode.USER_ID,
             authorName = profile.displayName,
+            authorTier = myTier(),
+            authorCountry = countryCode(profile.country),
             parentId = req?.parentId,
             body = req?.body.orEmpty(),
             createdAt = now(),
@@ -326,6 +350,8 @@ class DemoBackend @Inject constructor() {
             id = id("x"),
             authorId = DemoMode.USER_ID,
             authorName = profile.displayName,
+            authorTier = myTier(),
+            authorCountry = countryCode(profile.country),
             body = req?.body.orEmpty().take(220),
             mediaUrl = req?.mediaUrl,
             mediaType = req?.mediaType,
@@ -377,6 +403,152 @@ class DemoBackend @Inject constructor() {
 
     private fun markAllRead() {
         for (i in notifications.indices) notifications[i] = notifications[i].copy(read = true)
+    }
+
+    /**
+     * A submission is a record, not a screen state. It lands in the queue as
+     * pending and stays there — approval is a human decision, so nothing here
+     * pretends to make one.
+     */
+    private fun createSubmission(body: String): SpotlightSubmissionDto {
+        val req = runCatching {
+            json.decodeFromString(com.thefloor.app.core.network.CreateSpotlightRequestDto.serializer(), body)
+        }.getOrNull()
+        val submission = SpotlightSubmissionDto(
+            id = id("sp"),
+            category = req?.category.orEmpty(),
+            title = req?.title.orEmpty(),
+            story = req?.story.orEmpty(),
+            proofText = req?.proofText.orEmpty(),
+            mediaUrl = req?.mediaUrl,
+            company = profile.employer.orEmpty(),
+            country = profile.country.orEmpty(),
+            status = "pending",
+            createdAt = now(),
+        )
+        spotlight.add(0, submission)
+        notifications.add(
+            0,
+            com.thefloor.app.core.network.NotificationDto(
+                id = id("n"),
+                type = "SPOTLIGHT",
+                title = "Your Spotlight is in review",
+                body = submission.title,
+                deepLink = "thefloor://insights",
+                read = false,
+                createdAt = now(),
+            ),
+        )
+        return submission
+    }
+
+    private fun conversation() = SupportConversationDto(
+        id = "conv-demo",
+        status = supportStatus,
+        reference = supportReference,
+        messages = supportMessages,
+    )
+
+    /**
+     * Walker's first line. Deterministic on purpose: it answers from what the
+     * app actually knows rather than guessing, and when it cannot, it says so
+     * and opens a ticket with a reference the member can quote.
+     */
+    private fun handleSupport(body: String): SupportConversationDto {
+        val req = runCatching {
+            json.decodeFromString(com.thefloor.app.core.network.SupportSendRequestDto.serializer(), body)
+        }.getOrNull()
+        val text = req?.body.orEmpty().trim()
+
+        if (text.isNotEmpty()) {
+            supportMessages.add(SupportMessageDto(id("m"), "user", text, now()))
+        }
+
+        if (req?.escalate == true) {
+            if (supportStatus != "escalated") {
+                supportStatus = "escalated"
+                supportReference = "WLK-%04d".format((1000..9999).random())
+                supportMessages.add(
+                    SupportMessageDto(
+                        id("m"), "agent",
+                        "Passed to the Walker team. Your reference is $supportReference — quote it " +
+                            "if you follow up. Replies land in this thread; support runs across " +
+                            "timezones, so it may not be instant.",
+                        now(),
+                    ),
+                )
+            }
+            return conversation()
+        }
+
+        if (text.isNotEmpty()) {
+            supportMessages.add(SupportMessageDto(id("m"), "ai", walkerAnswer(text), now()))
+            if (supportStatus == "open") supportStatus = "ai_handled"
+        }
+        return conversation()
+    }
+
+    private fun walkerAnswer(question: String): String {
+        val t = question.lowercase()
+        fun has(vararg keys: String) = keys.any { t.contains(it) }
+        return when {
+            has("point", "balance", "pts", "credit") ->
+                "Your balance is %,d Floor Points right now. Every award carries a source and a timestamp, so a missing one can be traced — tell me which action and roughly when.".format(balance)
+            has("verif", "workplace", "badge") -> {
+                val verified = profile.emailVerified && !profile.employer.isNullOrBlank()
+                if (verified) {
+                    "Your workplace is verified as ${profile.employer}. That is what unlocks Recognised Member and Spotlight submission."
+                } else {
+                    "Your workplace is not verified yet. Add your employer under Profile → Edit; a work email on your employer's domain is the quickest route."
+                }
+            }
+            has("tier", "level", "recognition", "ambassador", "floor voice") ->
+                "You are ${myTier()} at %,d points. The ladder is Contributor 1,000, Recognised Member 5,000 with a verified workplace, Floor Voice 10,000, Workplace Ambassador 15,000 with a trusted history.".format(balance)
+            has("spotlight", "submit", "story") ->
+                "Spotlight submission unlocks at Floor Voice — 10,000 points and a verified workplace. Every submission is read by a person, and an approved story pays +75 back into your ledger."
+            has("floor", "communit", "join", "group") ->
+                "Joining a Floor is one tap with no approval step. If the one you want does not exist, use Suggest a Floor on The Floor tab and it comes to us."
+            has("refer", "invite", "commission", "payout") ->
+                "Invite & Grow is a separate record from Floor Points on purpose. Referrals never add points and never buy stature — no pay-to-play, no downlines, no commissions."
+            has("radio", "pass", "listen", "subscri") ->
+                "Floor Radio runs six regional feeds and stays free. The Radio Pass is not on sale yet — no price and no payment provider — so nothing can be charged to you today."
+            has("password", "login", "log in", "sign in", "locked") ->
+                "I cannot reset a password from here. The Forgot password link on the login screen emails a reset link; if it does not arrive, check spam and tell me which address you used."
+            has("delete", "close my account", "leave") ->
+                "Settings → Delete account removes your profile and your posts. If you would rather just step back quietly, Profile → Privacy lets you narrow who sees what instead."
+            has("pulse") ->
+                "Pulse earns no Floor Points — deliberately. It is the low-stakes side of the app. A considered opinion on Talk earns +10, and an answer someone marks Helpful earns +25."
+            has("human", "person", "agent", "someone", "real") ->
+                "I can hand this to the Walker team — use Talk to a person below and the whole conversation goes with it, along with a reference number."
+            else ->
+                "I have not got a confident answer for that one. Use Talk to a person below and the Walker team picks it up with this conversation attached."
+        }
+    }
+
+    /** My tier, from the same computation Profile and Spotlight use. */
+    private fun myTier(): String {
+        val workplaceVerified = profile.emailVerified && !profile.employer.isNullOrBlank()
+        return com.thefloor.app.core.model.recognitionLevel(
+            floorPoints = balance.toInt(),
+            workplaceVerified = workplaceVerified,
+            trustedHistory = workplaceVerified && profile.completeness >= 80,
+        ).label
+    }
+
+    /** Profiles store a country name; the flag needs the ISO code. */
+    private fun countryCode(name: String?): String? = when (name?.lowercase()) {
+        null -> null
+        "south africa" -> "ZA"
+        "philippines" -> "PH"
+        "india" -> "IN"
+        "kenya" -> "KE"
+        "colombia" -> "CO"
+        "mexico" -> "MX"
+        "egypt" -> "EG"
+        "poland" -> "PL"
+        "brazil" -> "BR"
+        "united states" -> "US"
+        else -> name.takeIf { it.length == 2 }?.uppercase()
     }
 
     /** The only path that writes the ledger — as on the real backend. */
@@ -580,29 +752,46 @@ class DemoBackend @Inject constructor() {
     private fun post(
         id: String, author: String, level: String, cat: String,
         body: String, comments: Int, reactions: Int, hours: Long,
+        tier: String = "Contributor", country: String = "ZA",
     ) = PostDto(
         id = id, authorId = "u$id", authorName = author, authorLevel = level,
+        authorTier = tier, authorCountry = country,
         categoryId = cat, categoryName = CATEGORIES.first { it.id == cat }.name,
         communityId = "za", body = body, commentCount = comments,
         reactionCount = reactions, saved = false, createdAt = ago(hours),
     )
 
     private fun seedPosts() = listOf(
-        post("p1", "Mika R.", "TEAM_LEADER", "c1", "Should agents be penalised for AHT when the customer genuinely needs more time?", 118, 296, 3),
-        post("p2", "Thabo N.", "SENIOR_AGENT", "c2", "When does coaching become micromanagement? Where should a Team Leader draw the line?", 76, 184, 8),
-        post("p3", "Priya S.", "SME", "c3", "Are BPO salaries keeping pace with what companies now expect agents to handle?", 129, 341, 14),
-        post("p4", "Owen K.", "AGENT", "c4", "AI quality scoring is here. Should an algorithm be allowed to affect an agent bonus?", 143, 267, 22),
-        post("p5", "Grace A.", "AGENT", "c3", "What should a real career path from Agent to Team Leader actually look like?", 82, 219, 30),
-        post("p6", "Carmen V.", "MANAGER", "c5", "Is the industry ready to give frontline employees a stronger voice in how operations are designed?", 105, 198, 46),
+        post("p1", "Mika R.", "TEAM_LEADER", "c1", "Should agents be penalised for AHT when the customer genuinely needs more time?", 118, 296, 3, "Workplace Ambassador", "ZA"),
+        post("p2", "Thabo N.", "SENIOR_AGENT", "c2", "When does coaching become micromanagement? Where should a Team Leader draw the line?", 76, 184, 8, "Floor Voice", "ZA"),
+        post("p3", "Priya S.", "SME", "c3", "Are BPO salaries keeping pace with what companies now expect agents to handle?", 129, 341, 14, "Floor Voice", "IN"),
+        post("p4", "Owen K.", "AGENT", "c4", "AI quality scoring is here. Should an algorithm be allowed to affect an agent bonus?", 143, 267, 22, "Recognised Member", "PH"),
+        post("p5", "Grace A.", "AGENT", "c3", "What should a real career path from Agent to Team Leader actually look like?", 82, 219, 30, "Contributor", "KE"),
+        post("p6", "Carmen V.", "MANAGER", "c5", "Is the industry ready to give frontline employees a stronger voice in how operations are designed?", 105, 198, 46, "Workplace Ambassador", "CO"),
     )
 
     private fun seedComments(): MutableMap<String, MutableList<CommentDto>> = mutableMapOf(
         "p1" to mutableListOf(
-            CommentDto("cm1", "u9", "Sipho D.", null, "We measure AHT but never measure whether the problem actually got solved. That is the real gap.", ago(2)),
-            CommentDto("cm2", "u4", "Carmen V.", null, "My TL protects us from the stopwatch and our CSAT is the highest on site. It can be done.", ago(1)),
+            CommentDto(
+                id = "cm1", authorId = "u9", authorName = "Sipho D.",
+                authorTier = "Recognised Member", authorCountry = "ZA",
+                body = "We measure AHT but never measure whether the problem actually got solved. That is the real gap.",
+                createdAt = ago(2),
+            ),
+            CommentDto(
+                id = "cm2", authorId = "u4", authorName = "Carmen V.",
+                authorTier = "Workplace Ambassador", authorCountry = "CO",
+                body = "My TL protects us from the stopwatch and our CSAT is the highest on site. It can be done.",
+                createdAt = ago(1),
+            ),
         ),
         "p2" to mutableListOf(
-            CommentDto("cm3", "u5", "Joan D.", null, "Coaching is asking what I need. Micromanagement is telling me what I did wrong after the fact.", ago(4)),
+            CommentDto(
+                id = "cm3", authorId = "u5", authorName = "Joan D.",
+                authorTier = "Floor Voice", authorCountry = "PH",
+                body = "Coaching is asking what I need. Micromanagement is telling me what I did wrong after the fact.",
+                createdAt = ago(4),
+            ),
         ),
     )
 
@@ -611,21 +800,25 @@ class DemoBackend @Inject constructor() {
     private fun seedPulses() = listOf(
         PulseDto(
             id = "x1", authorId = "u2", authorName = "Thabo N.",
+            authorTier = "Floor Voice", authorCountry = "ZA",
             body = "Third escalation before 9am and the coffee machine is broken. Send help.",
             likeCount = 24, liked = false, createdAt = ago(2),
         ),
         PulseDto(
             id = "x2", authorId = DemoMode.USER_ID, authorName = "Naledi M.",
+            authorTier = "Floor Voice", authorCountry = "ZA",
             body = "Just closed the longest call of my life. 74 minutes. We got there.",
             likeCount = 61, liked = true, createdAt = ago(5),
         ),
         PulseDto(
             id = "x3", authorId = "u3", authorName = "Grace A.",
+            authorTier = "Contributor", authorCountry = "KE",
             body = "Night shift crew — what are we listening to tonight?",
             likeCount = 12, liked = false, createdAt = ago(9),
         ),
         PulseDto(
             id = "x4", authorId = "u7", authorName = "Owen K.",
+            authorTier = "Recognised Member", authorCountry = "PH",
             body = "Passed my QA review with 96%. Six months ago I was at 71%.",
             likeCount = 88, liked = false, createdAt = ago(20),
         ),
@@ -635,6 +828,43 @@ class DemoBackend @Inject constructor() {
         NotificationDto("n1", "TALK", "Mika R. replied to your comment", "\"That is exactly the point I was making.\"", "thefloor://talk/p1", false, ago(4)),
         NotificationDto("n2", "REWARD", "You earned 50 Floor Points", "Verified profile completed.", "thefloor://rewards", false, ago(26)),
         NotificationDto("n3", "FLOOR", "Welcome to the South Africa Floor", "23,461 people are already here.", "thefloor://floor/za", true, ago(50)),
+    )
+
+    private fun seedSpotlight() = listOf(
+        SpotlightSubmissionDto(
+            id = "sp1",
+            category = "People & Culture",
+            title = "Night shift finally got a proper canteen",
+            story = "Sixteen of us signed the case and facilities opened the kitchen from 10pm.",
+            proofText = "Internal announcement and photographs.",
+            company = "Meridian Contact Solutions",
+            country = "South Africa",
+            status = "approved",
+            createdAt = ago(400),
+        ),
+        SpotlightSubmissionDto(
+            id = "sp2",
+            category = "Career Growth",
+            title = "Four of my team made Team Leader this year",
+            story = "Every one of them started on voice in the same intake as me.",
+            proofText = "HR confirmation.",
+            company = "Meridian Contact Solutions",
+            country = "South Africa",
+            status = "rejected",
+            reviewerNote = "Needs the names removed or their written agreement attached.",
+            createdAt = ago(300),
+        ),
+    )
+
+    private fun seedSupport() = listOf(
+        SupportMessageDto(
+            id = "m0",
+            sender = "ai",
+            body = "Hi — I'm Walker. I can answer from what The Floor actually knows: your points, " +
+                "your verification, your tier, how a feature works. If I can't, I'll pass it to a " +
+                "person with a reference number.",
+            createdAt = ago(1),
+        ),
     )
 
     private fun seedTransactions() = listOf(
